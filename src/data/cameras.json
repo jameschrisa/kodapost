@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "camera_name": "Sony Mavica",
+    "style_prompt": "1990s digital camera aesthetic, 0.3MP resolution, heavy JPEG artifacts, CRT-optimized colors, muted dynamic range, floppy disk storage style",
+    "processing_tags": {
+      "dither": "floyd-steinberg",
+      "pixelation": 0.85,
+      "color_depth": 8,
+      "compression_artifacts": "high"
+    }
+  },
+  {
+    "id": 2,
+    "camera_name": "Canon PowerShot ELPH",
+    "style_prompt": "Y2K party photography, high-intensity direct flash, punchy reds and blues, high contrast, slight peripheral lens blur, paparazzi snapshot look",
+    "processing_tags": {
+      "flash_intensity": 1.0,
+      "saturation": 1.25,
+      "vignette": 0.3,
+      "contrast": 1.4
+    }
+  },
+  {
+    "id": 3,
+    "camera_name": "Nikon Coolpix",
+    "style_prompt": "Early 2000s prosumer digital look, industrial sharpness, fine luminance noise, neutral color balance, crunchy digital texture",
+    "processing_tags": {
+      "sharpness": 1.5,
+      "noise_grain": 0.15,
+      "micro_contrast": 1.2,
+      "white_balance": "daylight"
+    }
+  },
+  {
+    "id": 4,
+    "camera_name": "Olympus Camedia",
+    "style_prompt": "Warm lo-fi glow, soft highlight diffusion, blocky shadows, dreamy CCD sensor bloom, nostalgic early digital memory",
+    "processing_tags": {
+      "bloom_intensity": 0.6,
+      "shadow_clipping": 0.2,
+      "edge_softness": "2px",
+      "warmth": 1.1
+    }
+  },
+  {
+    "id": 5,
+    "camera_name": "Fujifilm FinePix",
+    "style_prompt": "Vibrant Velvia film simulation, smooth skin tones, deep saturated greens, film-like CCD grain, high-quality vintage digital",
+    "processing_tags": {
+      "film_sim": "velvia",
+      "skin_tone_smoothing": 0.4,
+      "green_saturation": 1.2,
+      "grain_size": "medium"
+    }
+  },
+  {
+    "id": 6,
+    "camera_name": "Casio Exilim",
+    "style_prompt": "Flat lighting, sharp digital contours, cool blue shadows, early 2000s ultra-compact pocket camera vibe, over-sharpened JPEGs",
+    "processing_tags": {
+      "shadow_temp": -15,
+      "contour_enhancement": 1.3,
+      "brightness": 0.1,
+      "black_point": 0.05
+    }
+  },
+  {
+    "id": 7,
+    "camera_name": "Kodak EasyShare",
+    "style_prompt": "Golden amber tint, soft focus family album style, high highlight bloom, low resolution nostalgic warmth",
+    "processing_tags": {
+      "yellow_tint": 0.15,
+      "gamma": 1.15,
+      "blur_radius": "1px",
+      "bloom": 0.5
+    }
+  },
+  {
+    "id": 8,
+    "camera_name": "Panasonic Lumix (Leica Era)",
+    "style_prompt": "Leica lens precision, high dynamic compression, blue-biased tones, muted professional palette, precise geometric lines",
+    "processing_tags": {
+      "blue_channel_boost": 0.08,
+      "contrast": 1.2,
+      "dynamic_range_compression": 0.7,
+      "clarity": 1.1
+    }
+  },
+  {
+    "id": 9,
+    "camera_name": "Polaroid 600",
+    "style_prompt": "Instant film aesthetic, heavy vignette, matte blacks, chemical fading, light leaks on edges, soft focus texture",
+    "processing_tags": {
+      "vignette": 0.75,
+      "matte_effect": 0.2,
+      "grain_texture": "paper",
+      "chromatic_aberration": 0.3
+    }
+  },
+  {
+    "id": 10,
+    "camera_name": "Apple iPhone 3G",
+    "style_prompt": "Plastic lens glow, 2MP fixed focus blur, heavy edge softening, early mobile photography, Y2K cellphone aesthetic",
+    "processing_tags": {
+      "resolution_limit": "1600x1200",
+      "edge_blur": 0.6,
+      "noise_level": "moderate",
+      "lens_flare": 0.4
+    }
+  }
+]

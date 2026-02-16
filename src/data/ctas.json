@@ -1,0 +1,62 @@
+[
+  {
+    "category": "visit_site",
+    "ctas": [
+      {
+        "cta_text": "Explore More",
+        "description": "General traffic driver to the main landing page",
+        "marketing_goal": "Brand Awareness"
+      },
+      {
+        "cta_text": "Visit Link in Bio",
+        "description": "Standard social media conversion phrase",
+        "marketing_goal": "Traffic Distribution"
+      },
+      {
+        "cta_text": "Unlock Experience",
+        "description": "High-engagement driver for interactive content",
+        "marketing_goal": "User Immersion"
+      }
+    ]
+  },
+  {
+    "category": "shop_now",
+    "ctas": [
+      {
+        "cta_text": "Shop the Collection",
+        "description": "Directs users to a product catalog or gallery",
+        "marketing_goal": "Direct Sales"
+      },
+      {
+        "cta_text": "Claim Discount",
+        "description": "Incentivized click-through using a promo code",
+        "marketing_goal": "Customer Acquisition"
+      },
+      {
+        "cta_text": "Get the Look",
+        "description": "Style-focused CTA for lifestyle and brand imagery",
+        "marketing_goal": "Average Order Value"
+      }
+    ]
+  },
+  {
+    "category": "learn_more",
+    "ctas": [
+      {
+        "cta_text": "Get the Guide",
+        "description": "Value-add offer to capture lead information",
+        "marketing_goal": "Lead Generation"
+      },
+      {
+        "cta_text": "Join the Community",
+        "description": "Promotes newsletter or social group sign-ups",
+        "marketing_goal": "Retention"
+      },
+      {
+        "cta_text": "Book a Tour",
+        "description": "Specific to brand experience and IRL events",
+        "marketing_goal": "Event Conversion"
+      }
+    ]
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "bold_centered_dark",
+    "name": "Bold Centered (Dark)",
+    "category": "impact",
+    "description": "Maximum readability with dark overlay",
+    "styling": {
+      "fontFamily": "Inter",
+      "fontSize": {
+        "primary": 72,
+        "secondary": 32,
+        "accent": 18
+      },
+      "fontWeight": "bold",
+      "textColor": "#FFFFFF",
+      "backgroundColor": "rgba(0, 0, 0, 0.85)",
+      "textShadow": false,
+      "strokeWidth": 0,
+      "strokeColor": ""
+    },
+    "positioning": {
+      "alignment": "center",
+      "horizontalAlign": "center",
+      "padding": {
+        "top": 80,
+        "right": 60,
+        "bottom": 80,
+        "left": 60
+      }
+    }
+  },
+  {
+    "id": "top_banner_gold",
+    "name": "Top Banner (Gold Accent)",
+    "category": "header",
+    "description": "Eye-catching top banner with luxury feel",
+    "styling": {
+      "fontFamily": "Inter",
+      "fontSize": {
+        "primary": 56,
+        "secondary": 24,
+        "accent": 14
+      },
+      "fontWeight": "bold",
+      "textColor": "#FFD700",
+      "backgroundColor": "rgba(0, 0, 0, 0.9)",
+      "textShadow": true,
+      "strokeWidth": 2,
+      "strokeColor": "#000000"
+    },
+    "positioning": {
+      "alignment": "top",
+      "horizontalAlign": "left",
+      "padding": {
+        "top": 40,
+        "right": 30,
+        "bottom": 40,
+        "left": 30
+      }
+    }
+  },
+  {
+    "id": "minimal_white_outline",
+    "name": "Minimal White Outline",
+    "category": "clean",
+    "description": "Clean, modern with strong contrast",
+    "styling": {
+      "fontFamily": "Inter",
+      "fontSize": {
+        "primary": 64,
+        "secondary": 28,
+        "accent": 16
+      },
+      "fontWeight": "bold",
+      "textColor": "#FFFFFF",
+      "backgroundColor": "",
+      "textShadow": false,
+      "strokeWidth": 4,
+      "strokeColor": "#000000"
+    },
+    "positioning": {
+      "alignment": "bottom",
+      "horizontalAlign": "left",
+      "padding": {
+        "top": 0,
+        "right": 40,
+        "bottom": 60,
+        "left": 40
+      }
+    }
+  },
+  {
+    "id": "subtitle_bottom",
+    "name": "Subtitle Bottom Bar",
+    "category": "subtle",
+    "description": "Non-intrusive bottom caption",
+    "styling": {
+      "fontFamily": "Inter",
+      "fontSize": {
+        "primary": 42,
+        "secondary": 20,
+        "accent": 14
+      },
+      "fontWeight": "semibold",
+      "textColor": "#FFFFFF",
+      "backgroundColor": "rgba(0, 0, 0, 0.75)",
+      "textShadow": false,
+      "strokeWidth": 0,
+      "strokeColor": ""
+    },
+    "positioning": {
+      "alignment": "bottom",
+      "horizontalAlign": "center",
+      "padding": {
+        "top": 0,
+        "right": 30,
+        "bottom": 30,
+        "left": 30
+      }
+    }
+  }
+]
