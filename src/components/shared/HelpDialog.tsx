@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Camera, ChevronDown, ChevronRight, Mail, MessageCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, Mail, MessageCircle } from "lucide-react";
+import { KodaPostIcon } from "@/components/icons";
 import {
   Dialog,
   DialogContent,
@@ -60,7 +61,7 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Camera className="h-5 w-5" />
+            <KodaPostIcon className="h-5 w-5" />
             KodaPost Help
           </DialogTitle>
           <DialogDescription>

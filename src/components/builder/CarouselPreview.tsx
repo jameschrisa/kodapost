@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Camera,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -29,6 +28,7 @@ import { PublishDialog } from "@/components/builder/PublishDialog";
 import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-css";
 import { DEFAULT_FILTER_CONFIG } from "@/lib/filter-presets";
 import type { CarouselProject, CarouselSlide } from "@/lib/types";
+import { KodaPostIcon } from "@/components/icons";
 
 interface CarouselPreviewProps {
   project: CarouselProject;
@@ -389,7 +389,7 @@ export function CarouselPreview({
               <div className="absolute right-1.5 top-1.5 z-10 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">
                 {slide.metadata?.source === "user_upload" ? (
                   <>
-                    <Camera className="h-2.5 w-2.5" />
+                    <KodaPostIcon className="h-2.5 w-2.5" />
                     Photo
                   </>
                 ) : (

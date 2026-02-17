@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
-import { LegalNav } from "@/components/legal/LegalNav";
 import { PageTransition } from "@/components/shared/PageTransition";
 
-export default function LegalLayout({
+export default function IntroductionLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -28,11 +27,8 @@ export default function LegalLayout({
           </div>
         </div>
       </header>
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        <LegalNav />
-      </div>
       <PageTransition>
-        <main className="legal-content mx-auto max-w-5xl px-4 pb-16 sm:px-6 lg:px-8">
+        <main className="legal-content mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
           {children}
         </main>
       </PageTransition>

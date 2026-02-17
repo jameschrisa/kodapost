@@ -14,9 +14,12 @@ import {
   Syne,
   Bebas_Neue,
 } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import "./globals.css";
+
+const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const inter = Inter({
   subsets: ["latin"],
@@ -106,7 +109,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
+  const content = (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${playfairDisplay.variable} ${merriweather.variable} ${lora.variable} ${bodoniModa.variable} ${cinzel.variable} ${abrilFatface.variable} ${dmSerifDisplay.variable} ${prata.variable} ${syne.variable} ${bebasNeue.variable} font-sans antialiased`}>
         <ThemeProvider>
@@ -116,4 +119,11 @@ export default function RootLayout({
       </body>
     </html>
   );
+
+  // Wrap with ClerkProvider only when publishable key is configured
+  if (clerkPubKey) {
+    return <ClerkProvider>{content}</ClerkProvider>;
+  }
+
+  return content;
 }

@@ -5,11 +5,11 @@ import {
   Settings,
   HelpCircle,
   CircleUser,
-  Camera,
   Shield,
   FileText,
   Database,
 } from "lucide-react";
+import { KodaPostIcon } from "@/components/icons";
 
 interface FooterProps {
   onOpenSettings: () => void;
@@ -100,7 +100,7 @@ export function Footer({
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="flex items-center gap-2 text-sm font-semibold mb-3">
-              <Camera className="h-4 w-4" />
+              <KodaPostIcon className="h-4 w-4" />
               KodaPost
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">

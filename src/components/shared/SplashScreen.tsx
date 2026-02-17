@@ -1,10 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { IconArrowBounce } from "@tabler/icons-react";
+import { KodaPostIcon } from "@/components/icons";
 import { springGentle } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const QUOTES = [
   { text: "Every image tells a story. Make yours unforgettable.", author: null },
@@ -27,9 +36,11 @@ interface SplashScreenProps {
   onComplete: () => void;
   /** When true, bypass the sessionStorage check and always show the splash */
   forceShow?: boolean;
+  /** Optional external handler for "Get started". Receives a dismiss function to trigger the exit animation. */
+  onGetStarted?: (dismiss: () => void) => void;
 }
 
-export function SplashScreen({ onComplete, forceShow = false }: SplashScreenProps) {
+export function SplashScreen({ onComplete, forceShow = false, onGetStarted }: SplashScreenProps) {
   const [visible, setVisible] = useState(true);
 
   // Check if splash was already shown this session (skip when forced via brand click)
@@ -161,7 +172,7 @@ export function SplashScreen({ onComplete, forceShow = false }: SplashScreenProp
               transition={{ ...springGentle, delay: 0.1 }}
               className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 shadow-2xl"
             >
-              <Camera className="h-7 w-7 text-white" />
+              <KodaPostIcon className="h-7 w-7 text-white" />
             </motion.div>
 
             {/* Brand name — large and clean */}
@@ -190,35 +201,69 @@ export function SplashScreen({ onComplete, forceShow = false }: SplashScreenProp
               initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
-              className="max-w-xs sm:max-w-sm"
+              className="max-w-sm sm:max-w-md"
             >
               <p
-                className="text-sm italic leading-relaxed text-white/35"
+                className="text-lg font-semibold leading-relaxed text-white sm:text-xl"
                 style={{ fontFamily: "var(--font-playfair), serif" }}
               >
                 &ldquo;{quote.text}&rdquo;
               </p>
               {quote.author && (
-                <p className="mt-1.5 text-[11px] font-medium text-white/25">
-                  &mdash; {quote.author}
+                <p className="mt-2 text-xs font-medium text-white/50">
+                  - {quote.author}
                 </p>
               )}
             </motion.div>
 
-            {/* Get Started button */}
+            {/* Split button: Get Started + Introduction dropdown */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 1.4, ease: "easeOut" }}
               className="mt-4"
             >
-              <Button
-                size="lg"
-                onClick={() => setVisible(false)}
-                className="rounded-full px-8 text-base font-medium shadow-lg"
-              >
-                Get started
-              </Button>
+              <div className="inline-flex rounded-full shadow-lg">
+                {/* Primary action */}
+                <Button
+                  size="lg"
+                  onClick={() => {
+                    if (onGetStarted) {
+                      onGetStarted(() => setVisible(false));
+                    } else {
+                      setVisible(false);
+                    }
+                  }}
+                  className="rounded-l-full rounded-r-none border-r-0 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-8 text-base font-medium text-white hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                >
+                  Get started
+                </Button>
+                {/* Divider */}
+                <div className="w-px bg-white/20" />
+                {/* Secondary action dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="lg"
+                      className="rounded-l-none rounded-r-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-3 text-white hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                      aria-label="More options"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="z-[60] min-w-[160px]">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/introduction"
+                        className="flex items-center gap-2"
+                      >
+                        <IconArrowBounce className="h-3.5 w-3.5" />
+                        Introduction
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </motion.div>
           </div>
         </motion.div>

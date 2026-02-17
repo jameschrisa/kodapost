@@ -591,3 +591,59 @@ export async function compositeSlideImages(
     return { success: false, error: handleAPIError(error) };
   }
 }
+
+// -----------------------------------------------------------------------------
+// Audio Transcription
+// -----------------------------------------------------------------------------
+
+/**
+ * Validates and passes through a client-side transcription.
+ *
+ * Audio transcription is performed client-side using the Web Speech API
+ * (SpeechRecognition). This server action receives the transcribed text
+ * and optionally enriches it using Claude for carousel generation context.
+ */
+export async function transcribeAudio(
+  rawTranscription: string
+): Promise<ActionResult<string>> {
+  try {
+    if (!rawTranscription || rawTranscription.trim().length < 3) {
+      return {
+        success: false,
+        error: "Transcription is too short or empty. Please try recording again.",
+      };
+    }
+
+    // Use Claude to clean up and enrich the raw transcription
+    const message = await getAnthropicClient().messages.create({
+      model: "claude-sonnet-4-5-20250929",
+      max_tokens: 512,
+      messages: [
+        {
+          role: "user",
+          content: `Clean up the following voice transcription from a user describing what they want in a social media carousel post. Fix grammar, remove filler words, but preserve their intent, themes, and key phrases.
+
+Raw transcription: "${rawTranscription}"
+
+Rules:
+- Keep the cleaned text concise (1-3 sentences)
+- Preserve the speaker's creative vision and key details
+- Fix obvious speech-to-text errors
+- Write ONLY the cleaned transcription, nothing else`,
+        },
+      ],
+    });
+
+    const textBlock = message.content.find((b) => b.type === "text");
+    if (textBlock && textBlock.type === "text") {
+      return { success: true, data: textBlock.text.trim() };
+    }
+
+    // Fallback: return the raw transcription if Claude doesn't respond
+    return { success: true, data: rawTranscription.trim() };
+  } catch (error) {
+    // If Claude fails, still return the raw transcription
+    console.error("Failed to enrich transcription:", error);
+    return { success: true, data: rawTranscription.trim() };
+  }
+}

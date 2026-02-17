@@ -156,3 +156,17 @@ export const iconSwapVariants: Variants = {
     transition: { duration: 0.15 },
   },
 };
+
+// -----------------------------------------------------------------------------
+// Page Transition Variants (mount-only, route changes)
+// -----------------------------------------------------------------------------
+
+/** Fade + slight slide-up on page mount. Used by PageTransition wrapper. */
+export const pageTransitionVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+};

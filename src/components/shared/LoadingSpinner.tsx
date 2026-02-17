@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera } from "lucide-react";
+import { KodaPostIcon } from "@/components/icons";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { breathingVariants } from "@/lib/motion";
@@ -32,7 +32,7 @@ export default function LoadingSpinner({
           s.container
         )}
       >
-        <Camera className={s.icon} />
+        <KodaPostIcon className={s.icon} />
       </motion.div>
       {text && (
         <motion.p

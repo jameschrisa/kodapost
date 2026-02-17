@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Camera } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { KodaPostIcon } from "@/components/icons";
+import { useClerkAuth } from "@/hooks/useClerkAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import { SaveProjectButton } from "@/components/shared/SaveProjectButton";
 import { HeaderMenu } from "@/components/shared/HeaderMenu";
@@ -11,6 +12,8 @@ import { SettingsDialog } from "@/components/shared/SettingsDialog";
 import { HelpDialog } from "@/components/shared/HelpDialog";
 import { ProfileDialog } from "@/components/shared/ProfileDialog";
 import { Footer } from "@/components/shared/Footer";
+import { AssistantBanner, isAssistantEnabled, setAssistantPreference } from "@/components/shared/AssistantBanner";
+import { AssistantChat } from "@/components/assistant/AssistantChat";
 import { StepIndicator } from "@/components/builder/StepIndicator";
 import { ImageUploader } from "@/components/builder/ImageUploader";
 import { ConfigurationPanel } from "@/components/builder/ConfigurationPanel";
@@ -87,7 +90,18 @@ function OAuthRedirectHandler({
   return null;
 }
 
+/** Redirects unauthenticated users to sign-in (belt-and-suspenders guard). */
+function AuthRedirect() {
+  const router = useRouter();
+  useEffect(() => {
+    router.push("/sign-in");
+  }, [router]);
+  return null;
+}
+
 export default function Home() {
+  const { isSignedIn, isLoaded: authLoaded, isClerkEnabled } = useClerkAuth();
+  const router = useRouter();
   const [project, setProject] = useState<CarouselProject>(createEmptyProject);
   const [step, setStep] = useState<Step>("upload");
   const [direction, setDirection] = useState(1); // 1=forward, -1=backward
@@ -97,6 +111,7 @@ export default function Home() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [splashForced, setSplashForced] = useState(false);
+  const [assistantMode, setAssistantMode] = useState(false);
 
   // Hydrate from localStorage after mount
   useEffect(() => {
@@ -136,8 +151,20 @@ export default function Home() {
     } else {
       setStep(savedStep);
     }
+    // Check if assistant mode was previously enabled
+    if (isAssistantEnabled()) {
+      setAssistantMode(true);
+    }
+
     setHydrated(true);
   }, []);
+
+  // Auto-dismiss splash for signed-in users returning from auth
+  useEffect(() => {
+    if (authLoaded && isSignedIn && !splashDismissed && hydrated) {
+      setSplashDismissed(true);
+    }
+  }, [authLoaded, isSignedIn, splashDismissed, hydrated]);
 
   // Auto-save project and step on changes
   useEffect(() => {
@@ -263,6 +290,53 @@ export default function Home() {
     setSplashDismissed(false);
   }, []);
 
+  const handleGetStarted = useCallback(
+    (dismiss: () => void) => {
+      if (!authLoaded) return;
+      if (isSignedIn) {
+        dismiss(); // Trigger splash exit animation → builder
+      } else {
+        router.push("/sign-in");
+      }
+    },
+    [authLoaded, isSignedIn, router]
+  );
+
+  const handleEnableAssistant = useCallback(() => {
+    setAssistantMode(true);
+    setAssistantPreference(true);
+    toast.success("Assistant Mode enabled", {
+      description: "Send photos, audio, or text to create carousels.",
+    });
+  }, []);
+
+  const handleToggleAssistant = useCallback(() => {
+    const next = !assistantMode;
+    setAssistantMode(next);
+    setAssistantPreference(next);
+    toast.info(next ? "Switched to Assistant Mode" : "Switched to Manual Mode");
+  }, [assistantMode]);
+
+  const handleAssistantApprove = useCallback(
+    (generatedProject: CarouselProject) => {
+      setProject(generatedProject);
+      setAssistantMode(false);
+      navigateToStep("publish");
+      toast.success("Carousel approved! Ready to publish.");
+    },
+    [navigateToStep]
+  );
+
+  const handleAssistantEdit = useCallback(
+    (generatedProject: CarouselProject) => {
+      setProject(generatedProject);
+      setAssistantMode(false);
+      navigateToStep("edit");
+      toast.info("Switching to editor for fine-tuning.");
+    },
+    [navigateToStep]
+  );
+
   const handleResetApp = useCallback(() => {
     clearAllStorage();
     setProject(createEmptyProject());
@@ -284,7 +358,7 @@ export default function Home() {
           animate="animate"
           className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary"
         >
-          <Camera className="h-6 w-6" />
+          <KodaPostIcon className="h-6 w-6" />
         </motion.div>
       </div>
     );
@@ -300,12 +374,13 @@ export default function Home() {
             setSplashDismissed(true);
             setSplashForced(false);
           }}
+          onGetStarted={handleGetStarted}
         />
       )}
 
       {/* Header */}
       <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-4 sm:px-6">
           <button
             type="button"
             onClick={handleBrandClick}
@@ -313,7 +388,7 @@ export default function Home() {
             aria-label="Show start screen"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Camera className="h-5 w-5" />
+              <KodaPostIcon className="h-5 w-5" />
             </div>
             <div className="text-left">
               <h1 className="text-lg font-bold leading-tight">KodaPost</h1>
@@ -335,6 +410,8 @@ export default function Home() {
             onOpenProfile={() => setProfileOpen(true)}
             onOpenSettings={() => setSettingsOpen(true)}
             onResetApp={handleResetApp}
+            assistantMode={assistantMode}
+            onToggleAssistant={handleToggleAssistant}
           />
         </div>
       </header>
@@ -351,13 +428,32 @@ export default function Home() {
       <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
 
-      {/* Step indicator */}
-      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
-        <StepIndicator currentStep={step} onStepClick={handleStepClick} />
-      </div>
+      {/* Step indicator — hidden in assistant mode */}
+      {!assistantMode && (
+        <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
+          <StepIndicator currentStep={step} onStepClick={handleStepClick} />
+        </div>
+      )}
 
-      {/* Main content with animated step transitions */}
+      {/* Main content */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-8 sm:px-6">
+        {/* Auth guard — redirect unauthenticated users who bypassed splash */}
+        {splashDismissed && authLoaded && !isSignedIn && isClerkEnabled && (
+          <AuthRedirect />
+        )}
+
+        {/* Assistant banner — shown when preference not yet set */}
+        {!assistantMode && (
+          <AssistantBanner onEnable={handleEnableAssistant} />
+        )}
+
+        {/* Assistant mode: chat interface */}
+        {assistantMode ? (
+          <AssistantChat
+            onApproveToPublish={handleAssistantApprove}
+            onEditCarousel={handleAssistantEdit}
+          />
+        ) : (
         <AnimatePresence mode="wait" custom={direction}>
           {step === "upload" && (
             <motion.div
@@ -489,6 +585,7 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
+        )}
       </main>
 
       {/* Footer */}
