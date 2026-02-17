@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
+import { sql } from "drizzle-orm";
+
+// Force dynamic rendering — health checks must run at request time
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/v1/health
@@ -13,21 +17,12 @@ export async function GET() {
   try {
     const db = getDb();
     // Simple query to verify database connectivity
-    await db.run(
-      // Raw SQL via the underlying client
-      { sql: "SELECT 1", args: [] } as never
-    );
+    await db.get(sql`SELECT 1 as ok`);
     dbStatus = "connected";
   } catch {
     // If getDb() fails (missing env var) or query fails, report as disconnected
     // but don't crash the health endpoint
-    try {
-      // Try just instantiating — if env var exists, DB is likely fine
-      getDb();
-      dbStatus = "connected";
-    } catch {
-      dbStatus = "disconnected";
-    }
+    dbStatus = "disconnected";
   }
 
   return NextResponse.json({
