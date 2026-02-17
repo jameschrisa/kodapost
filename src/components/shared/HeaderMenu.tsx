@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { SignedIn, SignedOut, UserButton } from "@/components/shared/ClerkComponents";
+import { SignedIn, UserButton } from "@/components/shared/ClerkComponents";
 import { CircleUser, HelpCircle, Menu, Moon, RefreshCw, Settings, Sun } from "lucide-react";
 import { AutomationIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -61,12 +61,10 @@ export function HeaderMenu({ onOpenHelp, onOpenProfile, onOpenSettings, onResetA
             <HelpCircle className="h-4 w-4" />
             Help
           </DropdownMenuItem>
-          <SignedOut>
-            <DropdownMenuItem onClick={onOpenProfile}>
-              <CircleUser className="h-4 w-4" />
-              Profile
-            </DropdownMenuItem>
-          </SignedOut>
+          <DropdownMenuItem onClick={onOpenProfile}>
+            <CircleUser className="h-4 w-4" />
+            Profile
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenSettings}>
             <Settings className="h-4 w-4" />
             Settings

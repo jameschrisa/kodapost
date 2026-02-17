@@ -98,6 +98,10 @@ const bebasNeue = Bebas_Neue({
   variable: "--font-bebas-neue",
 });
 
+// When Clerk is configured, the root layout wraps ClerkProvider which
+// requires runtime context — so we force dynamic rendering.
+export const dynamic = clerkPubKey ? "force-dynamic" : "auto";
+
 export const metadata: Metadata = {
   title: "KodaPost - Create Stunning Carousels",
   description:
@@ -109,9 +113,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const content = (
+  const bodyClasses = `${inter.variable} ${montserrat.variable} ${poppins.variable} ${playfairDisplay.variable} ${merriweather.variable} ${lora.variable} ${bodoniModa.variable} ${cinzel.variable} ${abrilFatface.variable} ${dmSerifDisplay.variable} ${prata.variable} ${syne.variable} ${bebasNeue.variable} font-sans antialiased`;
+
+  // When Clerk is configured, ClerkProvider wraps the entire tree (required
+  // by Clerk — must be the outermost provider above any useAuth/useUser calls).
+  if (clerkPubKey) {
+    return (
+      <ClerkProvider publishableKey={clerkPubKey}>
+        <html lang="en" suppressHydrationWarning>
+          <body className={bodyClasses}>
+            <ThemeProvider>
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </body>
+        </html>
+      </ClerkProvider>
+    );
+  }
+
+  return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${montserrat.variable} ${poppins.variable} ${playfairDisplay.variable} ${merriweather.variable} ${lora.variable} ${bodoniModa.variable} ${cinzel.variable} ${abrilFatface.variable} ${dmSerifDisplay.variable} ${prata.variable} ${syne.variable} ${bebasNeue.variable} font-sans antialiased`}>
+      <body className={bodyClasses}>
         <ThemeProvider>
           {children}
           <Toaster />
@@ -119,11 +142,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-
-  // Wrap with ClerkProvider only when publishable key is configured
-  if (clerkPubKey) {
-    return <ClerkProvider>{content}</ClerkProvider>;
-  }
-
-  return content;
 }

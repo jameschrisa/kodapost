@@ -2,12 +2,21 @@
 
 /**
  * Safe Clerk component wrappers that render nothing when Clerk is not configured.
- * This allows the app to build and run without Clerk credentials during development.
+ * Uses direct imports from @clerk/nextjs (tree-shaken when not used).
+ * When Clerk is not configured, falls back to passthrough/null components.
  */
 
 import React from "react";
+import {
+  SignedIn as ClerkSignedIn,
+  SignedOut as ClerkSignedOut,
+  UserButton as ClerkUserButton,
+  SignInButton as ClerkSignInButton,
+  SignUpButton as ClerkSignUpButton,
+  UserProfile as ClerkUserProfile,
+} from "@clerk/nextjs";
 
-const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+export const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 // Fallback components for when Clerk is not configured
 function FallbackPassthrough({ children }: { children: React.ReactNode }) {
@@ -18,37 +27,12 @@ function FallbackNull() {
   return null;
 }
 
-// Resolve Clerk or fallback components
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let resolvedSignedIn: React.ComponentType<any> = FallbackPassthrough;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let resolvedSignedOut: React.ComponentType<any> = FallbackNull;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let resolvedUserButton: React.ComponentType<any> = FallbackNull;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let resolvedSignInButton: React.ComponentType<any> = FallbackPassthrough;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let resolvedSignUpButton: React.ComponentType<any> = FallbackPassthrough;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let resolvedUserProfile: React.ComponentType<any> = FallbackNull;
-
-if (isClerkEnabled) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const clerk = require("@clerk/nextjs");
-  resolvedSignedIn = clerk.SignedIn;
-  resolvedSignedOut = clerk.SignedOut;
-  resolvedUserButton = clerk.UserButton;
-  resolvedSignInButton = clerk.SignInButton;
-  resolvedSignUpButton = clerk.SignUpButton;
-  resolvedUserProfile = clerk.UserProfile;
-}
-
-export {
-  resolvedSignedIn as SignedIn,
-  resolvedSignedOut as SignedOut,
-  resolvedUserButton as UserButton,
-  resolvedSignInButton as SignInButton,
-  resolvedSignUpButton as SignUpButton,
-  resolvedUserProfile as UserProfile,
-  isClerkEnabled,
-};
+// When Clerk is enabled, use real components; otherwise use fallbacks.
+// We use ternary assignment so that tree-shaking still works and
+// the components always have display names.
+export const SignedIn = isClerkEnabled ? ClerkSignedIn : FallbackPassthrough;
+export const SignedOut = isClerkEnabled ? ClerkSignedOut : FallbackNull;
+export const UserButton = isClerkEnabled ? ClerkUserButton : FallbackNull;
+export const SignInButton = isClerkEnabled ? ClerkSignInButton : FallbackPassthrough;
+export const SignUpButton = isClerkEnabled ? ClerkSignUpButton : FallbackPassthrough;
+export const UserProfile = isClerkEnabled ? ClerkUserProfile : FallbackNull;

@@ -113,6 +113,13 @@ export default function Home() {
   const [splashForced, setSplashForced] = useState(false);
   const [assistantMode, setAssistantMode] = useState(false);
 
+  // Prefetch key routes so navigation feels instant
+  useEffect(() => {
+    router.prefetch("/introduction");
+    router.prefetch("/sign-in");
+    router.prefetch("/sign-up");
+  }, [router]);
+
   // Hydrate from localStorage after mount
   useEffect(() => {
     const saved = loadProject();
@@ -159,12 +166,17 @@ export default function Home() {
     setHydrated(true);
   }, []);
 
-  // Auto-dismiss splash for signed-in users returning from auth
+  // Auto-dismiss splash for signed-in users returning from auth (initial load only).
+  // Uses a ref to ensure this only fires once and doesn't interfere with
+  // user-triggered splash (brand click, Start Fresh).
+  const initialAuthCheckDone = useRef(false);
   useEffect(() => {
-    if (authLoaded && isSignedIn && !splashDismissed && hydrated) {
+    if (!hydrated || !authLoaded || initialAuthCheckDone.current) return;
+    initialAuthCheckDone.current = true;
+    if (isSignedIn && !splashDismissed) {
       setSplashDismissed(true);
     }
-  }, [authLoaded, isSignedIn, splashDismissed, hydrated]);
+  }, [hydrated, authLoaded, isSignedIn, splashDismissed]);
 
   // Auto-save project and step on changes
   useEffect(() => {
@@ -342,7 +354,7 @@ export default function Home() {
     setProject(createEmptyProject());
     setDirection(-1);
     setStep("upload");
-    setSplashForced(false);
+    setSplashForced(true);
     setSplashDismissed(false);
     toast.success("App reset", {
       description: "All data cleared. Starting fresh as a new user.",

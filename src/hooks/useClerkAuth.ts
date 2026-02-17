@@ -1,31 +1,26 @@
 "use client";
 
 /**
- * Safe wrapper around Clerk's useUser hook.
- * Returns sensible defaults when Clerk is not configured (no publishable key).
- * This allows the app to build and run without Clerk credentials during development.
+ * Safe wrapper around Clerk's useAuth hook.
+ * When Clerk is not configured (no NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY),
+ * returns defaults that treat everyone as signed in.
+ * When configured, delegates to Clerk's real useAuth().
  */
 
-const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+import { useAuth as useClerkAuthHook } from "@clerk/nextjs";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let useUserHook: () => { isSignedIn: boolean | undefined; isLoaded: boolean; user: any };
-
-if (isClerkEnabled) {
-  // Dynamic import at module level won't work for hooks, so we use require
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const clerk = require("@clerk/nextjs");
-  useUserHook = clerk.useUser;
-} else {
-  // When Clerk is not configured, treat everyone as signed in
-  useUserHook = () => ({ isSignedIn: true, isLoaded: true, user: null });
-}
+export const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export function useClerkAuth() {
-  const { isSignedIn, isLoaded } = useUserHook();
+  if (!isClerkEnabled) {
+    return { isSignedIn: true, isLoaded: true, isClerkEnabled: false as const };
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { isSignedIn, isLoaded } = useClerkAuthHook();
   return {
     isSignedIn: isSignedIn ?? false,
-    isLoaded,
-    isClerkEnabled,
+    isLoaded: isLoaded ?? false,
+    isClerkEnabled: true as const,
   };
 }

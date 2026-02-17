@@ -9,6 +9,7 @@ Deploy KodaPost to **Vercel** with **Turso Cloud** as the production database.
 - [Turso CLI](https://docs.turso.tech/cli/introduction) installed
 - [Vercel](https://vercel.com) account (free Hobby tier works)
 - [Anthropic API key](https://console.anthropic.com/settings/keys)
+- [Clerk account](https://dashboard.clerk.com) for user authentication
 - GitHub repository (this repo)
 
 ### Install Turso CLI
@@ -102,6 +103,21 @@ In the Vercel dashboard, go to **Project Settings > Environment Variables** and 
 | `API_ADMIN_SECRET` | Generated in Step 3 | Admin secret for creating API keys |
 | `TOKEN_ENCRYPTION_KEY` | Generated in Step 3 | AES-256-GCM key for OAuth token encryption |
 
+### Authentication (Clerk)
+
+| Variable | Value | Description |
+|----------|-------|-------------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | From [Clerk Dashboard](https://dashboard.clerk.com) | Clerk publishable key (enables auth) |
+| `CLERK_SECRET_KEY` | From [Clerk Dashboard](https://dashboard.clerk.com) | Clerk secret key for server-side auth |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` | Sign-in page route |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` | Sign-up page route |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/` | Redirect after sign-in |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | `/` | Redirect after sign-up |
+
+> **Clerk Setup:** Create an app at [dashboard.clerk.com](https://dashboard.clerk.com), enable Email + Password sign-in, and optionally configure Google and Apple SSO under **User & Authentication > SSO Connections**. The Clerk Hobby plan includes 50,000 free monthly active users.
+
+> **Admin Dashboard:** Manage users, view sessions, and configure auth settings at [dashboard.clerk.com](https://dashboard.clerk.com). The Users tab lets you view, ban, or delete users, and the Sessions tab shows active sessions.
+
 ### Optional (Social Media Publishing)
 
 Only needed if you want to enable social publishing for specific platforms:
@@ -158,11 +174,15 @@ Open your app in a browser, open DevTools (Network tab), and verify these respon
 - `Referrer-Policy: strict-origin-when-cross-origin`
 - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 
-### 3. UI Smoke Test
+### 3. Authentication Test
 
-Visit `https://your-app.vercel.app` — the splash screen should load with animated gradient orbs. Upload a photo and step through the carousel builder to confirm the Anthropic API integration works.
+Visit `https://your-app.vercel.app` — you should be redirected to the sign-in page. Sign in with email/password or use Google/Apple SSO. After sign-in, you should see the carousel builder with your avatar in the header.
 
-### 4. Create Your First API Key
+### 4. UI Smoke Test
+
+Upload a photo and step through the carousel builder to confirm the Anthropic API integration works. Open the Profile dialog from the header menu to verify Clerk's user management UI.
+
+### 5. Create Your First API Key
 
 ```bash
 curl -X POST https://your-app.vercel.app/api/v1/keys \
@@ -173,7 +193,7 @@ curl -X POST https://your-app.vercel.app/api/v1/keys \
 
 Save the `key` value from the response — **it is shown only once**.
 
-### 5. Test the API Key
+### 6. Test the API Key
 
 ```bash
 curl https://your-app.vercel.app/api/v1/health \

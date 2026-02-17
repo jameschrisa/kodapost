@@ -4,6 +4,47 @@ All notable changes to KodaPost are documented in this file.
 
 ---
 
+## CR 19 -- Clerk Authentication Integration & Route Prefetching
+
+### Added
+- **Clerk authentication** -- Full end-to-end user authentication with email/password, Google SSO, and Apple SSO via Clerk (`@clerk/nextjs` v6.37.4)
+- **ClerkProvider integration** -- Root layout wraps the app in `ClerkProvider` with explicit `publishableKey` prop when Clerk keys are configured
+- **Sign-in page** (`/sign-in`) -- Clerk `SignIn` component with catch-all route for multi-step auth flows
+- **Sign-up page** (`/sign-up`) -- Clerk `SignUp` component with catch-all route
+- **Middleware-based route protection** -- `clerkMiddleware` in `src/middleware.ts` with `createRouteMatcher` for public routes (`/`, `/introduction`, `/sign-in`, `/sign-up`, `/api/v1/*`)
+- **Profile dialog** -- In-app `UserProfile` component with `routing="hash"` for modal display, showing profile details, email, phone, connected accounts, and security settings
+- **useClerkAuth hook** (`src/hooks/useClerkAuth.ts`) -- Auth state hook with graceful degradation when Clerk is not configured (`isClerkEnabled` flag)
+- **ClerkComponents wrapper** (`src/components/shared/ClerkComponents.tsx`) -- Direct ESM import wrappers (`SignedIn`, `SignedOut`, `UserButton`, `SignInButton`, `SignUpButton`, `UserProfile`) with fallback passthrough when Clerk is disabled
+- **Route prefetching** -- Added `router.prefetch()` calls for `/introduction`, `/sign-in`, `/sign-up` in `SplashScreen.tsx` and `page.tsx` to eliminate dev-mode lazy compilation delays
+- **Force-dynamic rendering** -- Layout exports `dynamic = "force-dynamic"` when Clerk is configured to avoid static page generation errors with Clerk hooks
+- **Vercel environment variables** -- All 6 Clerk env vars deployed to Vercel (Production, Preview, Development) via CLI
+
+### Changed
+- **layout.tsx** -- Restructured to conditionally wrap app in `ClerkProvider` with explicit `publishableKey` prop; added `force-dynamic` export when Clerk keys are present
+- **HeaderMenu.tsx** -- Profile menu item now visible when Clerk auth is active
+- **SplashScreen.tsx** -- Added `useRouter` import and `router.prefetch("/introduction")` for instant navigation
+- **page.tsx** -- Added `router.prefetch()` for key routes on mount
+- **.env.example** -- Added Clerk environment variable documentation (8 new variables)
+- **README.md** -- Added Clerk to Tech Stack, Features, Prerequisites, Environment Variables, Project Structure, and Deployment sections
+- **DEPLOYMENT.md** -- Added Clerk setup instructions, Authentication section in env vars table, auth verification step in deployment checklist
+
+### Files Modified
+| File | Change Type |
+|------|-------------|
+| `src/app/layout.tsx` | ClerkProvider integration, force-dynamic |
+| `src/app/page.tsx` | Route prefetching |
+| `src/hooks/useClerkAuth.ts` | Rewritten: direct ESM imports from @clerk/nextjs |
+| `src/components/shared/ClerkComponents.tsx` | Rewritten: direct imports with fallback wrappers |
+| `src/components/shared/ProfileDialog.tsx` | Added `routing="hash"` to UserProfile |
+| `src/components/shared/HeaderMenu.tsx` | Profile menu visibility |
+| `src/components/shared/SplashScreen.tsx` | Route prefetching for /introduction |
+| `.env.example` | Clerk env var documentation |
+| `README.md` | Auth docs, tech stack, project structure |
+| `DEPLOYMENT.md` | Clerk deployment instructions |
+| `CHANGELOG.md` | This entry |
+
+---
+
 ## CR 11 — YouTube, Reddit, Lemon8 Platforms + Portrait-Only Mobile Preview
 
 ### Added

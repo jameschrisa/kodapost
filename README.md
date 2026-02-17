@@ -43,6 +43,12 @@ Transform your personal photos into stunning nostalgic social media carousels us
 - **Job Tracking** -- Async generation with progress reporting and result retrieval
 - **Full Pipeline** -- Image analysis, text overlay generation, Sharp compositing, and AI caption in one call
 
+### Authentication & User Management
+- **Clerk Authentication** -- Full-featured auth with email/password, Google SSO, and Apple SSO
+- **User Profile Management** -- In-app profile dialog with email, phone, connected accounts, and security settings
+- **Protected Routes** -- Middleware-based route protection with public route allowlist
+- **Graceful Degradation** -- App runs without auth when Clerk keys are not configured
+
 ### General
 - **Welcome Screen** -- Animated splash with ambient orb effects and random creative quotes
 - **Start Fresh** -- One-click app reset via the header menu to simulate a first-time user experience
@@ -62,6 +68,7 @@ Transform your personal photos into stunning nostalgic social media carousels us
 | AI Text & Analysis | [Anthropic Claude API](https://docs.anthropic.com/) (Claude Sonnet 4.5) |
 | Image Processing | [Sharp](https://sharp.pixelplumbing.com/) (server-side compositing, filters, HEIC conversion) |
 | Database | [Turso](https://turso.tech/) (libSQL/SQLite) via [Drizzle ORM](https://orm.drizzle.team/) |
+| Authentication | [Clerk](https://clerk.com/) (email, Google SSO, Apple SSO, user management) |
 | Animation | [Framer Motion](https://www.framer.com/motion/) |
 | Icons | [Lucide React](https://lucide.dev/) |
 | Notifications | [Sonner](https://sonner.emilkowal.dev/) |
@@ -72,6 +79,7 @@ Transform your personal photos into stunning nostalgic social media carousels us
 
 - **Node.js 18.17 or later** -- [Download here](https://nodejs.org/)
 - **Anthropic API Key** -- [Get one at console.anthropic.com](https://console.anthropic.com/)
+- **Clerk Account** (optional) -- [Sign up at clerk.com](https://clerk.com/) for authentication features
 
 ---
 
@@ -135,6 +143,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 |---|---|---|
 | `NOSTALGIA_ANTHROPIC_KEY` | Yes | Anthropic API key for Claude (image analysis, text overlays, captions) |
 | `NEXT_PUBLIC_APP_URL` | No | Base URL of the app (defaults to `http://localhost:3000`) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | No | Clerk publishable key (enables auth when set) |
+| `CLERK_SECRET_KEY` | No | Clerk secret key for server-side auth |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | No | Sign-in page path (default: `/sign-in`) |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | No | Sign-up page path (default: `/sign-up`) |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | No | Redirect after sign-in (default: `/`) |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | No | Redirect after sign-up (default: `/`) |
 | `TURSO_DATABASE_URL` | No | Turso database URL. Defaults to `file:local.db` for local SQLite |
 | `TURSO_AUTH_TOKEN` | No | Turso auth token (only needed for Turso cloud, leave blank for local) |
 | `API_ADMIN_SECRET` | No | Admin secret for creating API keys via `POST /api/v1/keys` |
@@ -284,8 +298,11 @@ src/
 ├── app/
 │   ├── actions.ts                  # Server actions (Claude AI + Sharp compositing)
 │   ├── globals.css                 # Tailwind base + shadcn theme + custom fonts
-│   ├── layout.tsx                  # Root layout with fonts and Toaster
+│   ├── layout.tsx                  # Root layout with ClerkProvider, fonts, Toaster
 │   ├── page.tsx                    # Main 5-step wizard UI
+│   ├── sign-in/[[...sign-in]]/     # Clerk sign-in page (catch-all route)
+│   ├── sign-up/[[...sign-up]]/     # Clerk sign-up page (catch-all route)
+│   ├── introduction/               # Introduction/onboarding page
 │   └── api/
 │       ├── auth/                   # OAuth routes (authorize, callback, disconnect, verify, status)
 │       ├── convert-image/          # HEIC/HEIF → JPEG conversion
@@ -309,9 +326,16 @@ src/
 │   │   ├── SplashScreen.tsx        #   Animated welcome screen with ambient orbs
 │   │   ├── CameraSelector.tsx      #   10-camera visual grid
 │   │   ├── FilterSelector.tsx      #   9-filter visual grid + custom sliders
-│   │   ├── HeaderMenu.tsx          #   Theme toggle, help, settings, reset
+│   │   ├── HeaderMenu.tsx          #   Theme toggle, help, settings, profile, reset
+│   │   ├── ClerkComponents.tsx     #   Clerk auth component wrappers (SSO-safe)
+│   │   ├── ProfileDialog.tsx       #   User profile dialog (Clerk UserProfile)
 │   │   └── ...
 │   └── ui/                         # shadcn/ui primitives
+│
+├── hooks/
+│   └── useClerkAuth.ts             # Clerk auth hook with graceful degradation
+│
+├── middleware.ts                    # Clerk auth middleware (route protection)
 │
 ├── data/
 │   ├── cameras.json                # 10 vintage camera profiles
@@ -378,6 +402,9 @@ KodaPost is built for Vercel deployment. Connect your GitHub repo to Vercel and 
 - `API_ADMIN_SECRET` (required for API key management)
 - `NEXT_PUBLIC_APP_URL` (set to your production domain)
 - `TOKEN_ENCRYPTION_KEY` (required for OAuth publishing)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (required for auth)
+- `CLERK_SECRET_KEY` (required for auth)
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL`, `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` (auth route config)
 - Any platform OAuth credentials you want to enable
 
 **Vercel function timeout:**

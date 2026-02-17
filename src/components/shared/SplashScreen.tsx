@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { IconArrowBounce } from "@tabler/icons-react";
@@ -41,7 +42,13 @@ interface SplashScreenProps {
 }
 
 export function SplashScreen({ onComplete, forceShow = false, onGetStarted }: SplashScreenProps) {
+  const router = useRouter();
   const [visible, setVisible] = useState(true);
+
+  // Prefetch the Introduction route so it's instant when clicked
+  useEffect(() => {
+    router.prefetch("/introduction");
+  }, [router]);
 
   // Check if splash was already shown this session (skip when forced via brand click)
   useEffect(() => {
@@ -251,7 +258,7 @@ export function SplashScreen({ onComplete, forceShow = false, onGetStarted }: Sp
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="z-[60] min-w-[160px]">
+                  <DropdownMenuContent align="end" className="min-w-[160px]" style={{ zIndex: 60 }}>
                     <DropdownMenuItem asChild>
                       <Link
                         href="/introduction"
