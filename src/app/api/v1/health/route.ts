@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db/client";
-import { sql } from "drizzle-orm";
+import { createClient } from "@libsql/client";
 
 // Force dynamic rendering — health checks must run at request time
 export const dynamic = "force-dynamic";
@@ -15,14 +14,18 @@ export async function GET() {
   let dbStatus = "disconnected";
 
   try {
-    const db = getDb();
-    // Simple query to verify database connectivity
-    await db.get(sql`SELECT 1 as ok`);
-    dbStatus = "connected";
-  } catch {
-    // If getDb() fails (missing env var) or query fails, report as disconnected
-    // but don't crash the health endpoint
-    dbStatus = "disconnected";
+    const url = process.env.TURSO_DATABASE_URL;
+    if (url) {
+      const client = createClient({
+        url,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      });
+      await client.execute("SELECT 1");
+      dbStatus = "connected";
+    }
+  } catch (e) {
+    // If connection fails, report as disconnected but don't crash
+    dbStatus = `error: ${e instanceof Error ? e.message : "unknown"}`;
   }
 
   return NextResponse.json({
