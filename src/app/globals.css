@@ -88,6 +88,15 @@
   [role="button"] {
     @apply transition-colors duration-200;
   }
+
+  /* Legal pages — smooth scroll and anchor offset for sticky header */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .legal-content [id] {
+    scroll-margin-top: 6rem;
+  }
 }
 
 /* ==========================================================================

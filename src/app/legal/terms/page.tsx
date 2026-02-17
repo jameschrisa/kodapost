@@ -1,151 +1,172 @@
 import type { Metadata } from "next";
+import { TableOfContents } from "@/components/legal/TableOfContents";
 
 export const metadata: Metadata = {
   title: "Terms of Use - KodaPost",
   description: "KodaPost terms of use and service agreement.",
 };
 
+const sections = [
+  { id: "service-description", title: "Service Description" },
+  { id: "user-responsibilities", title: "User Responsibilities" },
+  { id: "acceptable-use", title: "Acceptable Use" },
+  { id: "intellectual-property", title: "Intellectual Property" },
+  { id: "ai-generated-content", title: "AI-Generated Content" },
+  { id: "social-media-publishing", title: "Social Media Publishing" },
+  { id: "service-availability", title: "Service Availability" },
+  { id: "limitation-of-liability", title: "Limitation of Liability" },
+  { id: "indemnification", title: "Indemnification" },
+  { id: "modifications-to-terms", title: "Modifications to Terms" },
+  { id: "governing-law", title: "Governing Law" },
+  { id: "contact-us", title: "Contact Us" },
+];
+
 export default function TermsOfUsePage() {
   return (
-    <article className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
-      <h1>Terms of Use</h1>
-      <p className="text-muted-foreground">Last updated: February 2026</p>
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-10">
+      <article className="prose prose-neutral dark:prose-invert max-w-none">
+        <h1>Terms of Use</h1>
+        <p className="border-l-4 border-foreground/20 pl-4 text-muted-foreground !mt-2">
+          Effective Date: February 2026
+        </p>
 
-      <p>
-        Welcome to KodaPost. By accessing or using our service, you agree to
-        be bound by these Terms of Use. Please read them carefully before
-        using the service.
-      </p>
-
-      <h2>1. Service Description</h2>
-      <p>
-        KodaPost is an AI-powered carousel creation tool that transforms your
-        photos into social media carousels with vintage camera styles, film
-        filters, and AI-generated text overlays. The service includes image
-        processing, text generation, and optional direct publishing to social
-        media platforms.
-      </p>
-
-      <h2>2. User Responsibilities</h2>
-      <ul>
-        <li>
-          You represent that you own or have the necessary rights and
-          permissions to use any images you upload to KodaPost.
-        </li>
-        <li>
-          You are solely responsible for the content you create, upload, and
-          publish through the service.
-        </li>
-        <li>
-          You agree not to upload content that infringes on any third
-          party&rsquo;s intellectual property rights, privacy rights, or
-          other legal rights.
-        </li>
-        <li>
-          You agree to comply with all applicable laws and regulations when
+        <p>
+          Welcome to KodaPost. By accessing or using our service, you agree to
+          be bound by these Terms of Use. Please read them carefully before
           using the service.
-        </li>
-      </ul>
+        </p>
 
-      <h2>3. Acceptable Use</h2>
-      <p>You agree not to use KodaPost to:</p>
-      <ul>
-        <li>Upload, process, or distribute illegal, harmful, or offensive content.</li>
-        <li>Infringe on copyrights, trademarks, or other intellectual property rights.</li>
-        <li>Create content that promotes violence, harassment, or discrimination.</li>
-        <li>Attempt to reverse-engineer, decompile, or disassemble the service.</li>
-        <li>Interfere with or disrupt the service or its infrastructure.</li>
-        <li>Use automated means to access the service beyond normal usage patterns.</li>
-      </ul>
+        <h2 id="service-description">1. Service Description</h2>
+        <p>
+          KodaPost is an AI-powered carousel creation tool that transforms your
+          photos into social media carousels with vintage camera styles, film
+          filters, and AI-generated text overlays. The service includes image
+          processing, text generation, and optional direct publishing to social
+          media platforms.
+        </p>
 
-      <h2>4. Intellectual Property</h2>
-      <h3>Your Content</h3>
-      <p>
-        You retain full ownership of all images you upload and all carousels
-        you create using KodaPost. We do not claim any ownership rights over
-        your content. By using the service, you grant us a limited,
-        temporary license to process your images solely for the purpose of
-        generating your carousel.
-      </p>
+        <h2 id="user-responsibilities">2. User Responsibilities</h2>
+        <ul>
+          <li>
+            You represent that you own or have the necessary rights and
+            permissions to use any images you upload to KodaPost.
+          </li>
+          <li>
+            You are solely responsible for the content you create, upload, and
+            publish through the service.
+          </li>
+          <li>
+            You agree not to upload content that infringes on any third
+            party&rsquo;s intellectual property rights, privacy rights, or
+            other legal rights.
+          </li>
+          <li>
+            You agree to comply with all applicable laws and regulations when
+            using the service.
+          </li>
+        </ul>
 
-      <h3>Our Service</h3>
-      <p>
-        KodaPost, including its design, interface, code, and AI models, is
-        protected by intellectual property laws. You may not copy, modify, or
-        distribute any part of the service without our written permission.
-      </p>
+        <h2 id="acceptable-use">3. Acceptable Use</h2>
+        <p>You agree not to use KodaPost to:</p>
+        <ul>
+          <li>Upload, process, or distribute illegal, harmful, or offensive content.</li>
+          <li>Infringe on copyrights, trademarks, or other intellectual property rights.</li>
+          <li>Create content that promotes violence, harassment, or discrimination.</li>
+          <li>Attempt to reverse-engineer, decompile, or disassemble the service.</li>
+          <li>Interfere with or disrupt the service or its infrastructure.</li>
+          <li>Use automated means to access the service beyond normal usage patterns.</li>
+        </ul>
 
-      <h2>5. AI-Generated Content</h2>
-      <p>
-        Text overlays, captions, and image enhancements generated by our AI
-        are created for your use. You own the output and may use it for any
-        lawful purpose. However, AI-generated content may not always be
-        accurate or appropriate. You are responsible for reviewing and
-        approving all generated content before publishing.
-      </p>
+        <h2 id="intellectual-property">4. Intellectual Property</h2>
+        <h3>Your Content</h3>
+        <p>
+          You retain full ownership of all images you upload and all carousels
+          you create using KodaPost. We do not claim any ownership rights over
+          your content. By using the service, you grant us a limited,
+          temporary license to process your images solely for the purpose of
+          generating your carousel.
+        </p>
 
-      <h2>6. Social Media Publishing</h2>
-      <p>
-        When you connect social media accounts and publish carousels, you are
-        subject to the respective platform&rsquo;s terms of service. KodaPost
-        is not responsible for content moderation actions taken by third-party
-        platforms on your published content.
-      </p>
+        <h3>Our Service</h3>
+        <p>
+          KodaPost, including its design, interface, code, and AI models, is
+          protected by intellectual property laws. You may not copy, modify, or
+          distribute any part of the service without our written permission.
+        </p>
 
-      <h2>7. Service Availability</h2>
-      <p>
-        KodaPost is provided on an &ldquo;as-is&rdquo; and
-        &ldquo;as-available&rdquo; basis. We do not guarantee uninterrupted
-        or error-free service. We reserve the right to modify, suspend, or
-        discontinue the service at any time with reasonable notice.
-      </p>
+        <h2 id="ai-generated-content">5. AI-Generated Content</h2>
+        <p>
+          Text overlays, captions, and image enhancements generated by our AI
+          are created for your use. You own the output and may use it for any
+          lawful purpose. However, AI-generated content may not always be
+          accurate or appropriate. You are responsible for reviewing and
+          approving all generated content before publishing.
+        </p>
 
-      <h2>8. Limitation of Liability</h2>
-      <p>
-        To the maximum extent permitted by law, KodaPost and its operators
-        shall not be liable for any indirect, incidental, special,
-        consequential, or punitive damages, including but not limited to loss
-        of data, revenue, or business opportunities, arising from your use of
-        the service.
-      </p>
-      <p>
-        Our total liability for any claim arising from or related to the
-        service shall not exceed the amount you paid for the service in the
-        twelve months preceding the claim, or $100, whichever is greater.
-      </p>
+        <h2 id="social-media-publishing">6. Social Media Publishing</h2>
+        <p>
+          When you connect social media accounts and publish carousels, you are
+          subject to the respective platform&rsquo;s terms of service. KodaPost
+          is not responsible for content moderation actions taken by third-party
+          platforms on your published content.
+        </p>
 
-      <h2>9. Indemnification</h2>
-      <p>
-        You agree to indemnify and hold harmless KodaPost, its operators,
-        and affiliates from any claims, damages, or expenses arising from
-        your use of the service, your content, or your violation of these
-        Terms.
-      </p>
+        <h2 id="service-availability">7. Service Availability</h2>
+        <p>
+          KodaPost is provided on an &ldquo;as-is&rdquo; and
+          &ldquo;as-available&rdquo; basis. We do not guarantee uninterrupted
+          or error-free service. We reserve the right to modify, suspend, or
+          discontinue the service at any time with reasonable notice.
+        </p>
 
-      <h2>10. Modifications to Terms</h2>
-      <p>
-        We may update these Terms from time to time. Continued use of the
-        service after changes are posted constitutes your acceptance of the
-        updated Terms. We will notify users of material changes by updating
-        the &ldquo;Last updated&rdquo; date and, where appropriate, providing
-        additional notice.
-      </p>
+        <h2 id="limitation-of-liability">8. Limitation of Liability</h2>
+        <p>
+          To the maximum extent permitted by law, KodaPost and its operators
+          shall not be liable for any indirect, incidental, special,
+          consequential, or punitive damages, including but not limited to loss
+          of data, revenue, or business opportunities, arising from your use of
+          the service.
+        </p>
+        <p>
+          Our total liability for any claim arising from or related to the
+          service shall not exceed the amount you paid for the service in the
+          twelve months preceding the claim, or $100, whichever is greater.
+        </p>
 
-      <h2>11. Governing Law</h2>
-      <p>
-        These Terms shall be governed by and construed in accordance with the
-        laws of the jurisdiction in which KodaPost operates, without regard to
-        conflict of law principles.
-      </p>
+        <h2 id="indemnification">9. Indemnification</h2>
+        <p>
+          You agree to indemnify and hold harmless KodaPost, its operators,
+          and affiliates from any claims, damages, or expenses arising from
+          your use of the service, your content, or your violation of these
+          Terms.
+        </p>
 
-      <h2>12. Contact Us</h2>
-      <p>
-        If you have questions about these Terms of Use, please contact us at{" "}
-        <a href="mailto:legal@kodapost.app" className="underline">
-          legal@kodapost.app
-        </a>
-        .
-      </p>
-    </article>
+        <h2 id="modifications-to-terms">10. Modifications to Terms</h2>
+        <p>
+          We may update these Terms from time to time. Continued use of the
+          service after changes are posted constitutes your acceptance of the
+          updated Terms. We will notify users of material changes by updating
+          the &ldquo;Effective Date&rdquo; and, where appropriate, providing
+          additional notice.
+        </p>
+
+        <h2 id="governing-law">11. Governing Law</h2>
+        <p>
+          These Terms shall be governed by and construed in accordance with the
+          laws of the jurisdiction in which KodaPost operates, without regard to
+          conflict of law principles.
+        </p>
+
+        <h2 id="contact-us">12. Contact Us</h2>
+        <p>
+          If you have questions about these Terms of Use, please contact us at{" "}
+          <a href="mailto:legal@kodapost.app">
+            legal@kodapost.app
+          </a>
+          .
+        </p>
+      </article>
+      <TableOfContents sections={sections} />
+    </div>
   );
 }

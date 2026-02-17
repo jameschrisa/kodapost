@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
 const config: Config = {
     darkMode: ["class"],
@@ -57,9 +58,44 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		typography: {
+  			DEFAULT: {
+  				css: {
+  					'--tw-prose-body': 'hsl(var(--foreground))',
+  					'--tw-prose-headings': 'hsl(var(--foreground))',
+  					'--tw-prose-links': 'hsl(var(--foreground))',
+  					'--tw-prose-bold': 'hsl(var(--foreground))',
+  					'--tw-prose-counters': 'hsl(var(--muted-foreground))',
+  					'--tw-prose-bullets': 'hsl(var(--muted-foreground))',
+  					'--tw-prose-hr': 'hsl(var(--border))',
+  					'--tw-prose-quotes': 'hsl(var(--foreground))',
+  					'--tw-prose-quote-borders': 'hsl(var(--border))',
+  					'--tw-prose-captions': 'hsl(var(--muted-foreground))',
+  					'--tw-prose-th-borders': 'hsl(var(--border))',
+  					'--tw-prose-td-borders': 'hsl(var(--border))',
+  					'--tw-prose-invert-body': 'hsl(var(--foreground))',
+  					'--tw-prose-invert-headings': 'hsl(var(--foreground))',
+  					'--tw-prose-invert-links': 'hsl(var(--foreground))',
+  					'--tw-prose-invert-bold': 'hsl(var(--foreground))',
+  					'--tw-prose-invert-counters': 'hsl(var(--muted-foreground))',
+  					'--tw-prose-invert-bullets': 'hsl(var(--muted-foreground))',
+  					'--tw-prose-invert-hr': 'hsl(var(--border))',
+  					'--tw-prose-invert-th-borders': 'hsl(var(--border))',
+  					'--tw-prose-invert-td-borders': 'hsl(var(--border))',
+  					// Link underline styling
+  					'a': {
+  						textDecoration: 'underline',
+  						textUnderlineOffset: '2px',
+  						'&:hover': {
+  							opacity: '0.8',
+  						},
+  					},
+  				},
+  			},
+  		},
   	}
   },
-  plugins: [animate],
+  plugins: [animate, typography],
 };
 export default config;
