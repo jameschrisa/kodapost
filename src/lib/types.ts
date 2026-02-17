@@ -437,10 +437,15 @@ export interface UserSettings {
 // Core Project Type
 // -----------------------------------------------------------------------------
 
+/** Whether the user is creating a single post or a multi-slide carousel */
+export type PostMode = "single" | "carousel";
+
 /** Top-level carousel project containing all configuration and slide data */
 export interface CarouselProject {
   /** Unique project identifier */
   id: string;
+  /** Single post or multi-slide carousel */
+  postMode: PostMode;
   /** Selected nostalgic theme (e.g., "90s_disposable", "polaroid") */
   theme: string;
   /** User-provided keywords describing the carousel content */

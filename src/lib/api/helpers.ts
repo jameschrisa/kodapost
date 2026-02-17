@@ -259,6 +259,7 @@ export function mapToCarouselProject(
 
   return {
     id: `api-${generateId("proj")}`,
+    postMode: slideCount === 1 ? "single" as const : "carousel" as const,
     theme: config.theme,
     keywords: config.keywords || [],
     slideCount,

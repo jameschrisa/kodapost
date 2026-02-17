@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { SignedIn, UserButton } from "@/components/shared/ClerkComponents";
-import { CircleUser, HelpCircle, Menu, Moon, RefreshCw, Settings, Sun } from "lucide-react";
+import { SignedIn } from "@/components/shared/ClerkComponents";
+import { HelpCircle, Menu, Moon, RefreshCw, Settings, Sun } from "lucide-react";
+import { UserHexagonIcon } from "@/components/icons";
 import { AutomationIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +36,15 @@ export function HeaderMenu({ onOpenHelp, onOpenProfile, onOpenSettings, onResetA
   return (
     <div className="flex items-center gap-2">
       <SignedIn>
-        <UserButton afterSignOutUrl="/" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onOpenProfile}
+          aria-label="Open profile"
+          className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+        >
+          <UserHexagonIcon className="h-5 w-5" />
+        </Button>
       </SignedIn>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -60,10 +69,6 @@ export function HeaderMenu({ onOpenHelp, onOpenProfile, onOpenSettings, onResetA
           <DropdownMenuItem onClick={onOpenHelp}>
             <HelpCircle className="h-4 w-4" />
             Help
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onOpenProfile}>
-            <CircleUser className="h-4 w-4" />
-            Profile
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenSettings}>
             <Settings className="h-4 w-4" />

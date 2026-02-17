@@ -193,12 +193,14 @@ export const ANALOG_MODE_CONFIG = {
 
 export const DEFAULT_PROJECT_SETTINGS: Pick<
   CarouselProject,
+  | "postMode"
   | "slideCount"
   | "analogCreativityMode"
   | "imageAllocationMode"
   | "captionStyle"
   | "targetPlatforms"
 > = {
+  postMode: "carousel",
   slideCount: 5,
   analogCreativityMode: "recommended",
   imageAllocationMode: "sequential",

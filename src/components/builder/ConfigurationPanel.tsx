@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, AlertTriangle, ArrowRight, FileSpreadsheet, Loader2, Mic, MicOff, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Wand2, X } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowRight, FileSpreadsheet, Image as ImageIcon, Layers, Loader2, Mic, MicOff, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Wand2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { staggerContainerVariants, staggerItemVariants, buttonTapScale } from "@/lib/motion";
@@ -27,7 +27,7 @@ import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-
 import Image from "next/image";
 import { loadFilterTemplates, saveFilterTemplates } from "@/lib/storage";
 import { computeConfigHash } from "@/lib/utils";
-import type { CarouselProject, FilterTemplate, PredefinedFilterName, FilterConfig } from "@/lib/types";
+import type { CarouselProject, FilterTemplate, PredefinedFilterName, FilterConfig, PostMode } from "@/lib/types";
 
 interface ConfigurationPanelProps {
   project: CarouselProject;
@@ -318,6 +318,57 @@ export function ConfigurationPanel({
         </motion.div>
       )}
 
+      {/* 0. Post Mode */}
+      <motion.div variants={staggerItemVariants}>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Post Type</CardTitle>
+            <CardHelpIcon title="Post Type">
+              Choose between a single image post or a multi-slide carousel.
+              Single posts use one image with optional text overlay and caption.
+              Carousels let you tell a story across multiple slides.
+            </CardHelpIcon>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              { mode: "single" as PostMode, label: "Single Post", description: "One image, one story", icon: ImageIcon },
+              { mode: "carousel" as PostMode, label: "Carousel", description: "Multi-slide storytelling", icon: Layers },
+            ]).map(({ mode, label, description, icon: Icon }) => {
+              const isSelected = (project.postMode ?? "carousel") === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => {
+                    updateField("postMode", mode);
+                    if (mode === "single") {
+                      updateField("slideCount", 1);
+                    } else if (project.slideCount < 2) {
+                      updateField("slideCount", 5);
+                    }
+                  }}
+                  className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-all ${
+                    isSelected
+                      ? "border-purple-500 bg-purple-500/10 shadow-sm"
+                      : "border-muted hover:border-muted-foreground/30 hover:bg-muted/50"
+                  }`}
+                >
+                  <Icon className={`h-6 w-6 ${isSelected ? "text-purple-400" : "text-muted-foreground"}`} />
+                  <div>
+                    <p className={`text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>{label}</p>
+                    <p className="text-xs text-muted-foreground">{description}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+      </motion.div>
+
       {/* 1. Theme & Story */}
       <motion.div variants={staggerItemVariants}>
       <Card>
@@ -326,7 +377,7 @@ export function ConfigurationPanel({
             <CardTitle className="text-base">Theme & Story</CardTitle>
             <CardHelpIcon title="Theme & Story">
               Set the creative theme and keywords that guide AI text generation
-              for your carousel slides. Use the Record Story button to dictate
+              for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel slides"}. Use the Record Story button to dictate
               via voice. Keywords help the AI understand your content&apos;s
               context and tone.
             </CardHelpIcon>
@@ -460,7 +511,8 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 3. Slide Count + CSV Import */}
+      {/* 3. Slide Count + CSV Import (carousel mode only) */}
+      {(project.postMode ?? "carousel") === "carousel" && (
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader>
@@ -500,8 +552,10 @@ export function ConfigurationPanel({
         </CardContent>
       </Card>
       </motion.div>
+      )}
 
-      {/* 4. Image Source Strategy */}
+      {/* 4. Image Source Strategy (carousel mode only) */}
+      {(project.postMode ?? "carousel") === "carousel" && (
       <motion.div variants={staggerItemVariants} className="space-y-2">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium">Image Source Strategy</h3>
@@ -513,6 +567,7 @@ export function ConfigurationPanel({
         </div>
         <ImageSourceIndicator project={project} />
       </motion.div>
+      )}
 
       {/* 5. Camera Style */}
       <motion.div variants={staggerItemVariants}>
