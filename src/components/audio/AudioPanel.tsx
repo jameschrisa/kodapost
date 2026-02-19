@@ -22,7 +22,6 @@ import { Waveform } from "./Waveform";
 import { AudioPlayer } from "./AudioPlayer";
 import { MusicBrowser } from "./MusicBrowser";
 import { AudioHelpDialog } from "./AudioHelpDialog";
-import { CardHelpIcon } from "@/components/shared/CardHelpIcon";
 import type { AudioClip, MusicTrack } from "@/lib/types";
 
 type AudioInputMode = "record" | "upload" | "library";
@@ -222,16 +221,25 @@ export function AudioPanel({
             <p className="text-sm font-medium">
               {audioClip ? "Audio Track" : "Add Audio"}
             </p>
-            <CardHelpIcon title="About Audio">
-              <p className="mb-1.5">
-                Adding audio converts your export from a standard image ZIP into
-                a <strong>Nano-Cast package</strong> containing images, audio,
-                and a manifest file.
-              </p>
-              <p>
-                Without audio, you get a standard image-only ZIP export.
-              </p>
-            </CardHelpIcon>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                setHelpOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setHelpOpen(true);
+                }
+              }}
+              className="inline-flex items-center justify-center rounded-full p-0.5 text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+              aria-label="Audio help guide"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
             {audioClip
@@ -252,26 +260,6 @@ export function AudioPanel({
                 : "Library"}
           </span>
         )}
-        {/* Help guide button */}
-        <span
-          role="button"
-          tabIndex={0}
-          onClick={(e) => {
-            e.stopPropagation();
-            setHelpOpen(true);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.stopPropagation();
-              e.preventDefault();
-              setHelpOpen(true);
-            }
-          }}
-          className="rounded-md p-1 text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-          aria-label="Audio help guide"
-        >
-          <HelpCircle className="h-4 w-4" />
-        </span>
         {isExpanded ? (
           <ChevronUp className="h-4 w-4 text-muted-foreground" />
         ) : (
