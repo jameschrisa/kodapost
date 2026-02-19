@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Check,
   CheckCircle2,
+  ClipboardCopy,
   Download,
   ImageIcon,
   Instagram,
@@ -675,6 +676,30 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           </>
         )}
       </Button>
+
+      {/* Copy caption to clipboard — useful for manual posting */}
+      {project.caption && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2 text-xs"
+          onClick={async () => {
+            let text = project.caption ?? "";
+            if (includeAttribution && project.audioClip?.attribution) {
+              text += `\n\n🎵 ${project.audioClip.attribution.attributionText}`;
+            }
+            try {
+              await navigator.clipboard.writeText(text);
+              toast.success("Caption copied to clipboard");
+            } catch {
+              toast.error("Could not copy to clipboard");
+            }
+          }}
+        >
+          <ClipboardCopy className="h-3.5 w-3.5" />
+          Copy Caption to Clipboard
+        </Button>
+      )}
 
       {/* Post Directly section — only shown when platforms are connected */}
       {connectedPlatforms.length > 0 && (
