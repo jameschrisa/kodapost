@@ -428,6 +428,18 @@ export function MusicBrowser({
               <p className="text-sm text-muted-foreground">
                 Search for music to add to your carousel
               </p>
+              <div className="flex flex-wrap gap-1.5 mt-2 justify-center">
+                {["chill", "upbeat", "cinematic", "lofi beats", "acoustic"].map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => setQuery(term)}
+                    className="rounded-full bg-zinc-800 px-2.5 py-1 text-xs text-muted-foreground hover:bg-purple-500/10 hover:text-purple-400 transition-colors"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
             </motion.div>
           )}
 

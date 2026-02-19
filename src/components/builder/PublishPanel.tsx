@@ -401,19 +401,35 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
   // -- Success state --
   if (isComplete) {
+    const wasNanoCast = exportMode === "nanocast" && project.audioClip?.objectUrl;
     return (
       <div className="flex flex-col items-center gap-6 py-12 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-          <CheckCircle2 className="h-8 w-8 text-green-500" />
+        <div className={cn(
+          "flex h-16 w-16 items-center justify-center rounded-full",
+          wasNanoCast ? "bg-purple-500/10" : "bg-green-500/10"
+        )}>
+          {wasNanoCast ? (
+            <Package className="h-8 w-8 text-purple-400" />
+          ) : (
+            <CheckCircle2 className="h-8 w-8 text-green-500" />
+          )}
         </div>
         <div>
-          <h2 className="text-xl font-semibold">Carousel Ready</h2>
+          <h2 className="text-xl font-semibold">
+            {wasNanoCast ? "Nano-Cast Package Ready" : "Carousel Ready"}
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {readySlides.length} slides exported for{" "}
             {Array.from(selected)
               .map((p) => PLATFORMS.find((pl) => pl.key === p)?.label)
               .join(", ")}
           </p>
+          {wasNanoCast && project.audioClip && (
+            <div className="mt-2 flex items-center justify-center gap-2 text-xs text-purple-400">
+              <Music className="h-3.5 w-3.5" />
+              <span>Includes {project.audioClip.name}</span>
+            </div>
+          )}
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={onComplete} className="gap-2">
