@@ -254,7 +254,7 @@ export function AudioPanel({
               setHelpOpen(true);
             }
           }}
-          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground/70 transition-colors hover:text-muted-foreground hover:bg-muted/50"
+          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-purple-400 transition-colors hover:text-purple-300 hover:bg-purple-500/10"
           aria-label="Audio help guide"
         >
           <HelpCircle className="h-3.5 w-3.5" />
