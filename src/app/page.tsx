@@ -42,6 +42,7 @@ import {
   buttonTapScale,
   breathingVariants,
 } from "@/lib/motion";
+import { PenLine, CalendarDays } from "lucide-react";
 import { cn, computeConfigHash } from "@/lib/utils";
 import { ContentSchedule } from "@/components/history/ContentSchedule";
 import type { CarouselProject, UploadedImage } from "@/lib/types";
@@ -419,24 +420,25 @@ export default function Home() {
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <ContentBotPanel open={contentBotOpen} onOpenChange={setContentBotOpen} />
 
-      {/* App mode tabs — Create / Content Schedule */}
+      {/* App mode tabs — Create Post / Content Calendar */}
       <div className="border-b">
         <div className="mx-auto flex max-w-5xl items-center gap-1 px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setAppMode("create")}
             className={cn(
-              "relative px-4 py-3 text-sm font-medium transition-colors",
+              "relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
               appMode === "create"
-                ? "text-foreground"
+                ? "text-purple-400"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Create
+            <PenLine className="h-4 w-4" />
+            Create Post
             {appMode === "create" && (
               <motion.div
                 layoutId="app-mode-indicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               />
             )}
@@ -445,17 +447,18 @@ export default function Home() {
             type="button"
             onClick={() => setAppMode("schedule")}
             className={cn(
-              "relative px-4 py-3 text-sm font-medium transition-colors",
+              "relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
               appMode === "schedule"
-                ? "text-foreground"
+                ? "text-purple-400"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Content Schedule
+            <CalendarDays className="h-4 w-4" />
+            Content Calendar
             {appMode === "schedule" && (
               <motion.div
                 layoutId="app-mode-indicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
               />
             )}

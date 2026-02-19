@@ -76,7 +76,7 @@ export function ContentSchedule() {
       {/* Header row */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold">Content Schedule</h2>
+          <h2 className="text-xl font-semibold">Content Calendar</h2>
           <p className="text-sm text-muted-foreground">
             {hasAnyPosts
               ? "View your published, scheduled, and draft posts"
