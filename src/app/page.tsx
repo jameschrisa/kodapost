@@ -42,10 +42,12 @@ import {
   buttonTapScale,
   breathingVariants,
 } from "@/lib/motion";
-import { computeConfigHash } from "@/lib/utils";
+import { cn, computeConfigHash } from "@/lib/utils";
+import { ContentSchedule } from "@/components/history/ContentSchedule";
 import type { CarouselProject, UploadedImage } from "@/lib/types";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
+type AppMode = "create" | "schedule";
 
 const STEP_ORDER: Step[] = ["upload", "configure", "edit", "review", "publish"];
 
@@ -114,6 +116,7 @@ export default function Home() {
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [splashForced, setSplashForced] = useState(false);
   const [contentBotOpen, setContentBotOpen] = useState(false);
+  const [appMode, setAppMode] = useState<AppMode>("create");
 
   // Prefetch key routes so navigation feels instant
   useEffect(() => {
@@ -416,6 +419,65 @@ export default function Home() {
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <ContentBotPanel open={contentBotOpen} onOpenChange={setContentBotOpen} />
 
+      {/* App mode tabs — Create / Content Schedule */}
+      <div className="border-b">
+        <div className="mx-auto flex max-w-5xl items-center gap-1 px-4 sm:px-6">
+          <button
+            type="button"
+            onClick={() => setAppMode("create")}
+            className={cn(
+              "relative px-4 py-3 text-sm font-medium transition-colors",
+              appMode === "create"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Create
+            {appMode === "create" && (
+              <motion.div
+                layoutId="app-mode-indicator"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAppMode("schedule")}
+            className={cn(
+              "relative px-4 py-3 text-sm font-medium transition-colors",
+              appMode === "schedule"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Content Schedule
+            {appMode === "schedule" && (
+              <motion.div
+                layoutId="app-mode-indicator"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Auth guard — redirect unauthenticated users who bypassed splash */}
+      {splashDismissed && authLoaded && !isSignedIn && isClerkEnabled && (
+        <AuthRedirect />
+      )}
+
+      {/* === CONTENT SCHEDULE VIEW === */}
+      {appMode === "schedule" && (
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-8 sm:px-6">
+          <ContentSchedule />
+        </main>
+      )}
+
+      {/* === CREATE VIEW === */}
+      {appMode === "create" && (
+        <>
       {/* Step indicator */}
       <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
         <StepIndicator currentStep={step} onStepClick={handleStepClick} />
@@ -423,11 +485,6 @@ export default function Home() {
 
       {/* Main content */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-8 sm:px-6">
-        {/* Auth guard — redirect unauthenticated users who bypassed splash */}
-        {splashDismissed && authLoaded && !isSignedIn && isClerkEnabled && (
-          <AuthRedirect />
-        )}
-
         {/* Assistant banner — shown when preference not yet set */}
         <AssistantBanner />
 
@@ -571,6 +628,8 @@ export default function Home() {
           )}
         </AnimatePresence>
       </main>
+        </>
+      )}
 
       {/* Footer */}
       <Footer
