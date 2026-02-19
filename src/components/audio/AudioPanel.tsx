@@ -217,30 +217,9 @@ export function AudioPanel({
           <Music className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium">
-              {audioClip ? "Audio Track" : "Add Audio"}
-            </p>
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation();
-                setHelpOpen(true);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setHelpOpen(true);
-                }
-              }}
-              className="inline-flex items-center justify-center rounded-full p-0.5 text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-              aria-label="Audio help guide"
-            >
-              <HelpCircle className="h-3.5 w-3.5" />
-            </span>
-          </div>
+          <p className="text-sm font-medium">
+            {audioClip ? "Audio Track" : "Add Audio"}
+          </p>
           <p className="text-xs text-muted-foreground">
             {audioClip
               ? `${audioClip.name} · ${formatTime(audioClip.duration)}${
@@ -260,6 +239,27 @@ export function AudioPanel({
                 : "Library"}
           </span>
         )}
+        {/* Guide button */}
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.stopPropagation();
+            setHelpOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.stopPropagation();
+              e.preventDefault();
+              setHelpOpen(true);
+            }
+          }}
+          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground/70 transition-colors hover:text-muted-foreground hover:bg-muted/50"
+          aria-label="Audio help guide"
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          Guide
+        </span>
         {isExpanded ? (
           <ChevronUp className="h-4 w-4 text-muted-foreground" />
         ) : (
