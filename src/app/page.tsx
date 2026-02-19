@@ -642,23 +642,23 @@ export default function Home() {
                 animate="visible"
               >
                 <motion.div className="mb-6" variants={staggerItemVariants}>
-                  <h2 className="text-xl font-semibold">Review Your Carousel</h2>
+                  <h2 className="text-xl font-semibold">Finalize Your Post</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Preview your slides, reorder, and export your carousel.
+                    Add audio, preview your slides, and prepare for publishing.
                   </p>
                 </motion.div>
                 <motion.div variants={staggerItemVariants}>
+                  <AudioPanel
+                    audioClip={project.audioClip}
+                    onAudioChange={handleAudioChange}
+                  />
+                </motion.div>
+                <motion.div variants={staggerItemVariants} className="mt-4">
                   <CarouselPreview
                     project={project}
                     onEdit={handleProjectUpdate}
                     onPublish={handlePublish}
                     onBack={handleBack}
-                  />
-                </motion.div>
-                <motion.div variants={staggerItemVariants} className="mt-4">
-                  <AudioPanel
-                    audioClip={project.audioClip}
-                    onAudioChange={handleAudioChange}
                   />
                 </motion.div>
               </motion.div>

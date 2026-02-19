@@ -6,7 +6,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS='--disable-warning=DEP0040' next dev",
+    "dev": "rm -rf .next && NODE_OPTIONS='--disable-warning=DEP0040' next dev",
     "build": "NODE_OPTIONS='--disable-warning=DEP0040' next build",
     "start": "next start",
     "lint": "next lint",

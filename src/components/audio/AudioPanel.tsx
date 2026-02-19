@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
+  HelpCircle,
   Mic,
   Music,
   Scissors,
@@ -20,6 +21,8 @@ import { useAudioFile } from "@/hooks/useAudioFile";
 import { Waveform } from "./Waveform";
 import { AudioPlayer } from "./AudioPlayer";
 import { MusicBrowser } from "./MusicBrowser";
+import { AudioHelpDialog } from "./AudioHelpDialog";
+import { CardHelpIcon } from "@/components/shared/CardHelpIcon";
 import type { AudioClip, MusicTrack } from "@/lib/types";
 
 type AudioInputMode = "record" | "upload" | "library";
@@ -51,6 +54,7 @@ export function AudioPanel({
   className,
 }: AudioPanelProps) {
   const [isExpanded, setIsExpanded] = useState(!!audioClip);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [inputMode, setInputMode] = useState<AudioInputMode | null>(null);
   const [trimStart, setTrimStart] = useState(audioClip?.trimStart ?? 0);
   const [trimEnd, setTrimEnd] = useState<number | undefined>(
@@ -214,9 +218,21 @@ export function AudioPanel({
           <Music className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium">
-            {audioClip ? "Audio Track" : "Add Audio"}
-          </p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium">
+              {audioClip ? "Audio Track" : "Add Audio"}
+            </p>
+            <CardHelpIcon title="About Audio">
+              <p className="mb-1.5">
+                Adding audio converts your export from a standard image ZIP into
+                a <strong>Nano-Cast package</strong> containing images, audio,
+                and a manifest file.
+              </p>
+              <p>
+                Without audio, you get a standard image-only ZIP export.
+              </p>
+            </CardHelpIcon>
+          </div>
           <p className="text-xs text-muted-foreground">
             {audioClip
               ? `${audioClip.name} · ${formatTime(audioClip.duration)}${
@@ -236,12 +252,35 @@ export function AudioPanel({
                 : "Library"}
           </span>
         )}
+        {/* Help guide button */}
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.stopPropagation();
+            setHelpOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.stopPropagation();
+              e.preventDefault();
+              setHelpOpen(true);
+            }
+          }}
+          className="rounded-md p-1 text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+          aria-label="Audio help guide"
+        >
+          <HelpCircle className="h-4 w-4" />
+        </span>
         {isExpanded ? (
           <ChevronUp className="h-4 w-4 text-muted-foreground" />
         ) : (
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
         )}
       </button>
+
+      {/* Audio help guide dialog */}
+      <AudioHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
 
       <AnimatePresence>
         {isExpanded && (
