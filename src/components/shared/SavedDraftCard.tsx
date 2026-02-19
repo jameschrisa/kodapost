@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Clock, FileText, Play, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, Clock, FileText, Pencil, Play, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import {
   loadProjectName,
   loadProjectSavedAt,
   loadStep,
+  saveProjectName,
   clearProject,
 } from "@/lib/storage";
 
@@ -53,6 +54,10 @@ export function SavedDraftCard({ onResume, onDiscard }: SavedDraftCardProps) {
     imageCount: number;
   } | null>(null);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const project = loadProject();
     if (!project) return;
@@ -76,6 +81,36 @@ export function SavedDraftCard({ onResume, onDiscard }: SavedDraftCardProps) {
     });
   }, []);
 
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  function startEditing() {
+    if (!draft) return;
+    setEditName(draft.name);
+    setIsEditing(true);
+  }
+
+  function commitName() {
+    if (!draft) return;
+    const trimmed = editName.trim() || "Untitled Project";
+    saveProjectName(trimmed);
+    setDraft({ ...draft, name: trimmed });
+    setIsEditing(false);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitName();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+    }
+  }
+
   if (!draft) return null;
 
   return (
@@ -83,6 +118,7 @@ export function SavedDraftCard({ onResume, onDiscard }: SavedDraftCardProps) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
+      className="mb-4"
     >
       <Card className="border-purple-500/20 bg-purple-500/5">
         <CardContent className="p-4">
@@ -91,7 +127,41 @@ export function SavedDraftCard({ onResume, onDiscard }: SavedDraftCardProps) {
               <FileText className="h-4 w-4 text-purple-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{draft.name}</p>
+              {/* Editable project name */}
+              {isEditing ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={commitName}
+                    className="h-6 flex-1 min-w-0 rounded border border-purple-500/30 bg-transparent px-1.5 text-sm font-medium outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50"
+                    maxLength={60}
+                  />
+                  <button
+                    type="button"
+                    onClick={commitName}
+                    className="shrink-0 rounded p-0.5 text-purple-400 hover:text-purple-300 transition-colors"
+                    aria-label="Save name"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={startEditing}
+                  className="group flex items-center gap-1.5 text-left"
+                >
+                  <span className="text-sm font-medium truncate">
+                    {draft.name}
+                  </span>
+                  <Pencil className="h-3 w-3 shrink-0 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
+                </button>
+              )}
+
               <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
