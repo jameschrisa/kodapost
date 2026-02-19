@@ -1,17 +1,34 @@
 "use client";
 
-import { Fragment } from "react";
-import { Check, Upload, Settings, Type, Eye, Rocket } from "lucide-react";
+import { Fragment, useEffect, useRef } from "react";
+import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { springBouncy } from "@/lib/motion";
+import { CloudUploadIcon } from "@/components/icons/animated/cloud-upload";
+import { SlidersHorizontalIcon } from "@/components/icons/animated/sliders-horizontal";
+import { FeatherIcon } from "@/components/icons/animated/feather";
+import { ClapIcon } from "@/components/icons/animated/clap";
+import { GalleryVerticalEndIcon } from "@/components/icons/animated/gallery-vertical-end";
+import type { CloudUploadIconHandle } from "@/components/icons/animated/cloud-upload";
+import type { SlidersHorizontalIconHandle } from "@/components/icons/animated/sliders-horizontal";
+import type { FeatherIconHandle } from "@/components/icons/animated/feather";
+import type { ClapIconHandle } from "@/components/icons/animated/clap";
+import type { GalleryVerticalEndIconHandle } from "@/components/icons/animated/gallery-vertical-end";
+
+type IconHandle =
+  | CloudUploadIconHandle
+  | SlidersHorizontalIconHandle
+  | FeatherIconHandle
+  | ClapIconHandle
+  | GalleryVerticalEndIconHandle;
 
 const STEPS = [
-  { key: "upload", label: "Upload", icon: Upload },
-  { key: "configure", label: "Configure", icon: Settings },
-  { key: "edit", label: "Editorial", icon: Type },
-  { key: "review", label: "Review", icon: Eye },
-  { key: "publish", label: "Publish", icon: Rocket },
+  { key: "upload", label: "Upload", AnimatedIcon: CloudUploadIcon },
+  { key: "configure", label: "Configure", AnimatedIcon: SlidersHorizontalIcon },
+  { key: "edit", label: "Editorial", AnimatedIcon: FeatherIcon },
+  { key: "review", label: "Review", AnimatedIcon: ClapIcon },
+  { key: "publish", label: "Publish", AnimatedIcon: GalleryVerticalEndIcon },
 ] as const;
 
 type StepKey = (typeof STEPS)[number]["key"];
@@ -19,6 +36,43 @@ type StepKey = (typeof STEPS)[number]["key"];
 interface StepIndicatorProps {
   currentStep: StepKey;
   onStepClick?: (step: StepKey) => void;
+}
+
+/** Wrapper that loops the icon animation when active */
+function LoopingIcon({
+  AnimatedIcon,
+  isActive,
+  size = 16,
+}: {
+  AnimatedIcon: (typeof STEPS)[number]["AnimatedIcon"];
+  isActive: boolean;
+  size?: number;
+}) {
+  const iconRef = useRef<IconHandle>(null);
+
+  useEffect(() => {
+    if (!isActive || !iconRef.current) return;
+
+    // Play immediately on mount / becoming active
+    iconRef.current.startAnimation();
+
+    // Then replay on an interval — 2.5s gives all animations time to complete
+    const interval = setInterval(() => {
+      iconRef.current?.startAnimation();
+    }, 2500);
+
+    return () => {
+      clearInterval(interval);
+      iconRef.current?.stopAnimation();
+    };
+  }, [isActive]);
+
+  // Cast needed because the union of forwardRef types is complex
+  const Icon = AnimatedIcon as React.ForwardRefExoticComponent<
+    { size?: number } & React.RefAttributes<IconHandle>
+  >;
+
+  return <Icon ref={iconRef} size={size} />;
 }
 
 export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) {
@@ -32,7 +86,6 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
           const isClickable = isCompleted && onStepClick;
-          const Icon = step.icon;
 
           return (
             <Fragment key={step.key}>
@@ -93,7 +146,11 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
                         <Check className="h-4 w-4" />
                       </motion.div>
                     ) : (
-                      <Icon className="h-4 w-4" />
+                      <LoopingIcon
+                        AnimatedIcon={step.AnimatedIcon}
+                        isActive={isCurrent}
+                        size={16}
+                      />
                     )}
                   </div>
                   <span
