@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  Bot,
   Instagram,
   Linkedin,
   Save,
@@ -36,6 +37,10 @@ import {
   buttonTapScale,
   iconSwapVariants,
 } from "@/lib/motion";
+import {
+  isAssistantEnabled,
+  setAssistantPreference,
+} from "@/components/shared/AssistantBanner";
 import type {
   SocialMediaAccount,
   OAuthConnection,
@@ -305,6 +310,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [loadingConnections, setLoadingConnections] = useState(false);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [testStates, setTestStates] = useState<Record<string, TestState>>({});
+  const [contentBotEnabled, setContentBotEnabled] = useState(false);
 
   // Load settings and OAuth status when dialog opens
   useEffect(() => {
@@ -312,6 +318,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       const settings = loadSettings();
       setAccounts(settings.socialAccounts);
       setTestStates({});
+      setContentBotEnabled(isAssistantEnabled());
 
       // Fetch OAuth connection status from server
       setLoadingConnections(true);
@@ -495,8 +502,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="primary" className="w-full">
+        <Tabs defaultValue="general" className="w-full">
           <TabsList className="w-full">
+            <TabsTrigger value="general" className="flex-1">
+              General
+            </TabsTrigger>
             <TabsTrigger value="primary" className="flex-1">
               Primary
             </TabsTrigger>
@@ -504,6 +514,42 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               More Platforms
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="general" className="mt-4">
+            <div className="space-y-4">
+              <div className="rounded-lg border p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bot className="h-4 w-4 text-purple-400" />
+                    <span className="text-sm font-medium">
+                      Production Assistant
+                    </span>
+                  </div>
+                  <Switch
+                    checked={contentBotEnabled}
+                    onCheckedChange={(checked) => {
+                      setContentBotEnabled(checked);
+                      setAssistantPreference(checked);
+                    }}
+                    aria-label="Toggle Production Assistant"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Enable the Telegram Content Bot (
+                  <a
+                    href="https://t.me/kodacontentbot"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-purple-400 hover:underline"
+                  >
+                    @kodacontentbot
+                  </a>
+                  ) for creating carousels through conversation. Send your photos
+                  and the bot will guide you through the rest.
+                </p>
+              </div>
+            </div>
+          </TabsContent>
 
           <TabsContent value="primary" className="mt-4">
             {renderPlatforms(PRIMARY_PLATFORMS)}

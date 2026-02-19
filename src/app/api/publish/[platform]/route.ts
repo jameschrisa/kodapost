@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { getTokenCookie, isTokenExpired, setTokenCookie } from "@/lib/token-storage";
 import { refreshToken, tokenResponseToData } from "@/lib/oauth";
 import { publishToInstagram } from "@/lib/publishers/instagram";
@@ -11,12 +12,60 @@ import {
   saveTemporaryImages,
   cleanupTemporaryImages,
 } from "@/lib/publishers/media-server";
+import { getDb } from "@/lib/db/client";
+import { posts } from "@/lib/db/schema";
 import type { OAuthPlatform } from "@/lib/constants";
 
 const VALID_PLATFORMS = ["instagram", "tiktok", "linkedin", "youtube", "reddit", "lemon8"] as const;
+const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function getAppUrl(): string {
   return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+}
+
+/**
+ * Records a published post in the database.
+ * Best-effort — failures are logged but don't affect the publish response.
+ */
+async function recordPublishedPost(opts: {
+  platform: string;
+  caption: string;
+  slideCount: number;
+  platformPostId?: string;
+  postUrl?: string;
+}) {
+  try {
+    let userId = "dev";
+    if (isClerkEnabled) {
+      const user = await currentUser();
+      if (user) userId = user.id;
+    }
+
+    const now = new Date().toISOString();
+    const id = `post_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const title = opts.caption
+      ? opts.caption.slice(0, 80) + (opts.caption.length > 80 ? "..." : "")
+      : "Untitled Post";
+
+    const db = getDb();
+    await db.insert(posts).values({
+      id,
+      userId,
+      title,
+      postType: opts.slideCount > 1 ? "carousel" : "single",
+      status: "published",
+      platform: opts.platform,
+      platformPostId: opts.platformPostId ?? null,
+      postUrl: opts.postUrl ?? null,
+      slideCount: opts.slideCount,
+      publishedAt: now,
+      scheduledAt: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+  } catch (error) {
+    console.warn("[Publish] Failed to record post in history:", error);
+  }
 }
 
 /**
@@ -108,6 +157,7 @@ export async function POST(
 
   // 5. Convert base64 strings to Buffers
   const imageBuffers = slideImages.map((b64) => Buffer.from(b64, "base64"));
+  const slideCount = slideImages.length;
 
   // 6. Dispatch to platform-specific publisher
   try {
@@ -124,6 +174,16 @@ export async function POST(
             tokenData.accessToken,
             tokenData.platformUserId || ""
           );
+
+          if (result.success) {
+            await recordPublishedPost({
+              platform,
+              caption,
+              slideCount,
+              platformPostId: result.postId,
+              postUrl: result.permalink,
+            });
+          }
 
           return NextResponse.json({
             success: result.success,
@@ -143,6 +203,15 @@ export async function POST(
           caption,
           tokenData.accessToken
         );
+
+        if (result.success) {
+          await recordPublishedPost({
+            platform,
+            caption,
+            slideCount,
+            platformPostId: result.publishId,
+          });
+        }
 
         return NextResponse.json({
           success: result.success,
@@ -170,6 +239,15 @@ export async function POST(
           authorUrn
         );
 
+        if (result.success) {
+          await recordPublishedPost({
+            platform,
+            caption,
+            slideCount,
+            platformPostId: result.postUrn,
+          });
+        }
+
         return NextResponse.json({
           success: result.success,
           postUrn: result.postUrn,
@@ -184,6 +262,15 @@ export async function POST(
           tokenData.accessToken,
           tokenData.platformUserId || ""
         );
+
+        if (ytResult.success) {
+          await recordPublishedPost({
+            platform,
+            caption,
+            slideCount,
+            postUrl: ytResult.postUrl,
+          });
+        }
 
         return NextResponse.json({
           success: ytResult.success,
@@ -200,6 +287,15 @@ export async function POST(
           tokenData.platformUserId || ""
         );
 
+        if (redditResult.success) {
+          await recordPublishedPost({
+            platform,
+            caption,
+            slideCount,
+            postUrl: redditResult.postUrl,
+          });
+        }
+
         return NextResponse.json({
           success: redditResult.success,
           postUrl: redditResult.postUrl,
@@ -213,6 +309,15 @@ export async function POST(
           caption,
           tokenData.accessToken
         );
+
+        if (lemon8Result.success) {
+          await recordPublishedPost({
+            platform,
+            caption,
+            slideCount,
+            postUrl: lemon8Result.postUrl,
+          });
+        }
 
         return NextResponse.json({
           success: lemon8Result.success,

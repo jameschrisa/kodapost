@@ -104,3 +104,41 @@ export const telegramSessions = sqliteTable("telegram_sessions", {
   /** ISO timestamp when session was created */
   createdAt: text("created_at").notNull(),
 });
+
+/**
+ * Post history tracking.
+ * Records every published, scheduled, or draft post so users can view
+ * their content calendar and publishing history.
+ */
+export const posts = sqliteTable("posts", {
+  /** Unique identifier (e.g., "post_abc123") */
+  id: text("id").primaryKey(),
+  /** Clerk user ID who created this post */
+  userId: text("user_id").notNull(),
+  /** Post title/description snippet */
+  title: text("title").notNull(),
+  /** single or carousel */
+  postType: text("post_type", {
+    enum: ["single", "carousel"],
+  }).notNull(),
+  /** Current status */
+  status: text("status", {
+    enum: ["draft", "scheduled", "published", "failed"],
+  }).notNull(),
+  /** Platform published/scheduled to */
+  platform: text("platform"),
+  /** Platform-specific post ID returned after publish */
+  platformPostId: text("platform_post_id"),
+  /** URL to the published post */
+  postUrl: text("post_url"),
+  /** Number of slides/images */
+  slideCount: integer("slide_count").notNull().default(1),
+  /** ISO timestamp when published */
+  publishedAt: text("published_at"),
+  /** ISO timestamp for scheduled publish */
+  scheduledAt: text("scheduled_at"),
+  /** ISO timestamp when created */
+  createdAt: text("created_at").notNull(),
+  /** ISO timestamp of last update */
+  updatedAt: text("updated_at").notNull(),
+});

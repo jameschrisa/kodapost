@@ -114,6 +114,9 @@ export function AssistantBanner() {
                     >
                       Not now
                     </button>
+                    <span className="text-[11px] text-purple-400/50">
+                      You can enable this later in Settings
+                    </span>
                     <Link
                       href="/guide"
                       className="ml-auto flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors"

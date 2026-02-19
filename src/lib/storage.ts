@@ -339,6 +339,7 @@ export function clearAllStorage(): void {
     localStorage.removeItem(SETTINGS_KEY);
     localStorage.removeItem(FILTER_TEMPLATES_KEY);
     localStorage.removeItem("kodapost:admin-view-mode");
+    localStorage.removeItem("kodapost:assistant-preference");
   } catch {
     // Ignore localStorage failures
   }

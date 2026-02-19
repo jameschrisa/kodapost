@@ -489,3 +489,46 @@ export interface CarouselProject {
   /** User-assigned project name */
   projectName?: string;
 }
+
+// -----------------------------------------------------------------------------
+// Post History Types
+// -----------------------------------------------------------------------------
+
+/** Post publication status */
+export type PostStatus = "draft" | "scheduled" | "published" | "failed";
+
+/** Type of post content */
+export type PostType = "single" | "carousel";
+
+/** Calendar view mode */
+export type CalendarView = "daily" | "weekly" | "monthly";
+
+/** A recorded post in the user's content history */
+export interface PostRecord {
+  /** Unique identifier */
+  id: string;
+  /** Clerk user ID who created this post */
+  userId: string;
+  /** Post title/description snippet */
+  title: string;
+  /** single or carousel */
+  postType: PostType;
+  /** Current status */
+  status: PostStatus;
+  /** Platform published/scheduled to */
+  platform?: string;
+  /** Platform-specific post ID returned after publish */
+  platformPostId?: string;
+  /** URL to the published post */
+  postUrl?: string;
+  /** Number of slides/images */
+  slideCount: number;
+  /** ISO timestamp when published */
+  publishedAt?: string;
+  /** ISO timestamp for scheduled publish */
+  scheduledAt?: string;
+  /** ISO timestamp when created */
+  createdAt: string;
+  /** ISO timestamp of last update */
+  updatedAt: string;
+}

@@ -9,6 +9,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import {
   Bot,
+  CalendarDays,
   Eye,
   EyeOff,
   HelpCircle,
@@ -182,6 +183,11 @@ export function HeaderMenu({
           <DropdownMenuItem onClick={onOpenContentBot}>
             <Bot className="h-4 w-4" />
             Content Bot
+          </DropdownMenuItem>
+          {/* Post History */}
+          <DropdownMenuItem onClick={() => router.push("/history")}>
+            <CalendarDays className="h-4 w-4" />
+            Post History
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onOpenHelp}>
