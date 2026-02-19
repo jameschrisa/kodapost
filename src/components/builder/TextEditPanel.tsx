@@ -429,7 +429,8 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         </div>
       </div>
 
-      {/* Global Style Toolbar */}
+      {/* Global Style Toolbar — only for carousel mode (multiple slides) */}
+      {(project.postMode ?? "carousel") === "carousel" && (
       <div className="rounded-lg border">
         <button
           type="button"
@@ -468,7 +469,8 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 </div>
                 <Slider min={24} max={96} step={2} value={[globalFontSizePrimary]} onValueChange={([v]) => setGlobalFontSizePrimary(v)} />
               </div>
-              {/* Subtitle Size */}
+              {/* Subtitle Size — only visible when subtitle is enabled */}
+              {globalShowSubtitle && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">Subtitle Size</Label>
@@ -476,6 +478,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 </div>
                 <Slider min={14} max={56} step={2} value={[globalFontSizeSecondary]} onValueChange={([v]) => setGlobalFontSizeSecondary(v)} />
               </div>
+              )}
               {/* Vertical Position */}
               <div className="space-y-1.5">
                 <Label className="text-xs">Vertical Position</Label>
@@ -607,6 +610,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
           </div>
         )}
       </div>
+      )}
 
       {/* Main editing area: sidebar + preview + controls */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[180px_1fr]">
@@ -809,7 +813,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 </Select>
               </div>
 
-              {/* Font Size */}
+              {/* Headline Font Size */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">Headline Size</Label>
@@ -821,6 +825,21 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                   onValueChange={([v]) => setEditFontSizePrimary(v)}
                 />
               </div>
+
+              {/* Subtitle Font Size — only visible when subtitle is enabled */}
+              {editSubtitleEnabled && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Subtitle Size</Label>
+                  <span className="text-xs text-muted-foreground tabular-nums">{editFontSizeSecondary}px</span>
+                </div>
+                <Slider
+                  min={14} max={56} step={2}
+                  value={[editFontSizeSecondary]}
+                  onValueChange={([v]) => setEditFontSizeSecondary(v)}
+                />
+              </div>
+              )}
 
               {/* Text Align + Italic + Color Scheme */}
               <div className="flex items-center gap-1">

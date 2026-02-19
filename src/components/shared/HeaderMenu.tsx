@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { SignedIn } from "@/components/shared/ClerkComponents";
-import { HelpCircle, Menu, Moon, RefreshCw, Settings, Sun } from "lucide-react";
+import { useSignOut } from "@/components/shared/ClerkComponents";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Bot, HelpCircle, LogOut, Menu, Moon, RefreshCw, Settings, Shield, Sun } from "lucide-react";
 import { UserHexagonIcon } from "@/components/icons";
-import { AutomationIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,13 +21,15 @@ interface HeaderMenuProps {
   onOpenHelp: () => void;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
+  onOpenContentBot: () => void;
   onResetApp: () => void;
-  assistantMode?: boolean;
-  onToggleAssistant?: () => void;
 }
 
-export function HeaderMenu({ onOpenHelp, onOpenProfile, onOpenSettings, onResetApp, assistantMode, onToggleAssistant }: HeaderMenuProps) {
+export function HeaderMenu({ onOpenHelp, onOpenProfile, onOpenSettings, onOpenContentBot, onResetApp }: HeaderMenuProps) {
+  const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
+  const { signOut } = useSignOut();
+  const role = useUserRole();
   const [mounted, setMounted] = useState(false);
 
   // Avoid hydration mismatch — render placeholder until mounted
@@ -58,13 +62,11 @@ export function HeaderMenu({ onOpenHelp, onOpenProfile, onOpenSettings, onResetA
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             {mounted ? (isDark ? "Light Mode" : "Dark Mode") : "Toggle Theme"}
           </DropdownMenuItem>
-          {/* Assistant mode toggle */}
-          {onToggleAssistant && (
-            <DropdownMenuItem onClick={onToggleAssistant}>
-              <AutomationIcon className="h-4 w-4" />
-              {assistantMode ? "Manual Mode" : "Assistant Mode"}
-            </DropdownMenuItem>
-          )}
+          {/* Content Bot panel */}
+          <DropdownMenuItem onClick={onOpenContentBot}>
+            <Bot className="h-4 w-4" />
+            Content Bot
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onOpenHelp}>
             <HelpCircle className="h-4 w-4" />
@@ -79,6 +81,24 @@ export function HeaderMenu({ onOpenHelp, onOpenProfile, onOpenSettings, onResetA
             <RefreshCw className="h-4 w-4" />
             Start Fresh
           </DropdownMenuItem>
+          {/* Admin Dashboard — admin only */}
+          {role.isAdmin && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push("/admin")}>
+                <Shield className="h-4 w-4" />
+                Admin Dashboard
+              </DropdownMenuItem>
+            </>
+          )}
+          {/* Log Out — signed in only */}
+          <SignedIn>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => signOut({ redirectUrl: "/" })}>
+              <LogOut className="h-4 w-4" />
+              Log Out
+            </DropdownMenuItem>
+          </SignedIn>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

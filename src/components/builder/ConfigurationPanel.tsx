@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, AlertTriangle, ArrowRight, FileSpreadsheet, Image as ImageIcon, Layers, Loader2, Mic, MicOff, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Wand2, X } from "lucide-react";
+import { AlertCircle, ArrowRight, FileSpreadsheet, Image as ImageIcon, ImagePlus, Layers, Loader2, Mic, MicOff, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Type, Wand2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { staggerContainerVariants, staggerItemVariants, buttonTapScale } from "@/lib/motion";
@@ -19,9 +19,19 @@ import { ImageSourceIndicator } from "@/components/builder/ImageSourceIndicator"
 import { CSVImportDialog } from "@/components/builder/CSVImportDialog";
 import { CardHelpIcon } from "@/components/shared/CardHelpIcon";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { validateCarouselReadiness } from "@/lib/carousel-validator";
 import { generateCaption } from "@/app/actions";
+import { DEFAULT_GLOBAL_OVERLAY_STYLE } from "@/lib/constants";
 import { PREDEFINED_FILTERS, CAMERA_FILTER_MAP, DEFAULT_FILTER_CONFIG } from "@/lib/filter-presets";
 import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-css";
 import Image from "next/image";
@@ -45,11 +55,18 @@ export function ConfigurationPanel({
   onBack,
 }: ConfigurationPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [keywordsInput, setKeywordsInput] = useState(
-    project.keywords.join(", ")
-  );
+  const [hasAttemptedGenerate, setHasAttemptedGenerate] = useState(false);
   const [csvImportOpen, setCsvImportOpen] = useState(false);
   const [filterTuneOpen, setFilterTuneOpen] = useState(false);
+  const [carouselWarningOpen, setCarouselWarningOpen] = useState(false);
+
+  // Headline visibility — derived from globalOverlayStyle or default
+  const showHeadline = project.globalOverlayStyle?.showHeadline ?? DEFAULT_GLOBAL_OVERLAY_STYLE.showHeadline;
+
+  function updateShowHeadline(value: boolean) {
+    const gos = project.globalOverlayStyle ?? { ...DEFAULT_GLOBAL_OVERLAY_STYLE };
+    onUpdate({ ...project, globalOverlayStyle: { ...gos, showHeadline: value } });
+  }
 
   // Filter template state
   const [savedTemplates, setSavedTemplates] = useState<FilterTemplate[]>([]);
@@ -172,14 +189,7 @@ export function ConfigurationPanel({
     onUpdate({ ...project, [key]: value });
   }
 
-  function handleKeywordsChange(raw: string) {
-    setKeywordsInput(raw);
-    const keywords = raw
-      .split(",")
-      .map((k) => k.trim())
-      .filter(Boolean);
-    updateField("keywords", keywords);
-  }
+
 
   // ── Audio Recording ──
   function startRecording() {
@@ -211,7 +221,16 @@ export function ConfigurationPanel({
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
-      toast.error("Speech recognition error", { description: event.error });
+      // Only show toast for meaningful errors — not for user-cancel or silence
+      const silent = ["no-speech", "aborted"];
+      if (!silent.includes(event.error)) {
+        toast.error("Microphone error", {
+          description:
+            event.error === "not-allowed"
+              ? "Microphone access was denied. Check your browser permissions."
+              : event.error,
+        });
+      }
       setIsRecording(false);
     };
 
@@ -228,11 +247,11 @@ export function ConfigurationPanel({
     recognitionRef.current?.stop();
     setIsRecording(false);
     if (transcription) {
-      // Save transcription and copy it into the theme/story field
+      // Save transcription and copy it into the story field
       onUpdate({
         ...project,
         storyTranscription: transcription,
-        theme: transcription.slice(0, 100), // ThemeInput max length is 100
+        theme: transcription.slice(0, 300), // ThemeInput max length is 300
       });
     }
   }
@@ -271,7 +290,10 @@ export function ConfigurationPanel({
   }
 
   async function handleGenerate() {
-    if (!validation.canProceed || isGenerating) return;
+    if (isGenerating) return;
+    // Mark that user attempted — this makes validation errors visible
+    setHasAttemptedGenerate(true);
+    if (!validation.canProceed) return;
     setIsGenerating(true);
     try {
       await onGenerate();
@@ -286,12 +308,13 @@ export function ConfigurationPanel({
   }
 
   if (isGenerating) {
+    const isSingle = (project.postMode ?? "carousel") === "single";
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-6 py-12">
-        <LoadingSpinner size="lg" text="Generating your carousel..." />
+        <LoadingSpinner size="lg" text={isSingle ? "Generating your post..." : "Generating your carousel..."} />
         <div className="max-w-xs text-center">
           <p className="text-sm text-muted-foreground">
-            AI is crafting your slides with the{" "}
+            AI is crafting your {isSingle ? "post" : "slides"} with the{" "}
             <span className="font-medium text-foreground">
               {project.theme || "selected"}
             </span>{" "}
@@ -343,11 +366,20 @@ export function ConfigurationPanel({
                   key={mode}
                   type="button"
                   onClick={() => {
+                    // Show warning when switching to carousel with ≤1 image
+                    if (mode === "carousel" && project.uploadedImages.length <= 1) {
+                      setCarouselWarningOpen(true);
+                      return;
+                    }
                     updateField("postMode", mode);
                     if (mode === "single") {
                       updateField("slideCount", 1);
                     } else if (project.slideCount < 2) {
                       updateField("slideCount", 5);
+                    }
+                    // Auto-enable headline for carousel mode
+                    if (mode === "carousel") {
+                      updateShowHeadline(true);
                     }
                   }}
                   className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-all ${
@@ -369,48 +401,72 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 1. Theme & Story */}
+      {/* 0b. Headline Visibility Toggle */}
+      <motion.div variants={staggerItemVariants}>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Type className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Headline Text</CardTitle>
+              <CardHelpIcon title="Headline Text">
+                Toggle whether headline text overlays appear on your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"}.
+                When enabled, AI will generate contextual headlines. When disabled, your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"} will be image-only.
+              </CardHelpIcon>
+            </div>
+            <Switch
+              checked={showHeadline}
+              onCheckedChange={updateShowHeadline}
+              aria-label="Toggle headline visibility"
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-xs text-muted-foreground">
+            {showHeadline
+              ? (project.postMode ?? "carousel") === "carousel"
+                ? "Headlines will be generated for each slide. You can edit them after generation."
+                : "A headline will overlay your image. You can edit it after generation."
+              : "No headline text will be added. Your images will speak for themselves."}
+          </p>
+        </CardContent>
+      </Card>
+      </motion.div>
+
+      {/* 1. Your Story */}
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <CardTitle className="text-base">Theme & Story</CardTitle>
-            <CardHelpIcon title="Theme & Story">
-              Set the creative theme and keywords that guide AI text generation
-              for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel slides"}. Use the Record Story button to dictate
-              via voice. Keywords help the AI understand your content&apos;s
-              context and tone.
+            <CardTitle className="text-base">Your Story</CardTitle>
+            <CardHelpIcon title="Your Story">
+              Describe the moment, scene, or feeling you want to share. This drives
+              AI-generated headlines and captions for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel"}.
+              You can type or tap the mic to speak.
             </CardHelpIcon>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Theme</Label>
-              <Button
-                variant={isRecording ? "destructive" : "outline"}
-                size="sm"
-                className="gap-1.5 h-7 text-xs"
+          {/* Story textarea with inline mic button */}
+          <ThemeInput
+            value={project.theme}
+            onChange={(value) => updateField("theme", value)}
+            trailingAction={
+              <button
+                type="button"
                 onClick={isRecording ? stopRecording : startRecording}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
+                  isRecording
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "bg-muted text-muted-foreground hover:bg-muted-foreground/20 hover:text-foreground"
+                }`}
+                title={isRecording ? "Stop recording" : "Speak your story"}
+                aria-label={isRecording ? "Stop recording" : "Speak your story"}
               >
-                {isRecording ? (
-                  <>
-                    <MicOff className="h-3 w-3" />
-                    Stop Recording
-                  </>
-                ) : (
-                  <>
-                    <Mic className="h-3 w-3" />
-                    Record Story
-                  </>
-                )}
-              </Button>
-            </div>
-            <ThemeInput
-              value={project.theme}
-              onChange={(value) => updateField("theme", value)}
-            />
-          </div>
+                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+            }
+          />
 
           {/* Audio transcription preview */}
           {(transcription || isRecording) && (
@@ -445,84 +501,143 @@ export function ConfigurationPanel({
             </div>
           )}
 
-          {/* Tags */}
+          {/* Vibe selector — replaces tags */}
           <div className="space-y-2">
-            <Label htmlFor="tags-input">Tags</Label>
-            <Input
-              id="tags-input"
-              value={keywordsInput}
-              onChange={(e) => handleKeywordsChange(e.target.value)}
-              placeholder="sunset, golden hour, travel, wanderlust"
-            />
+            <Label className="text-xs">Vibe</Label>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: "relatable", label: "Relatable", emoji: "💬" },
+                { value: "inspirational", label: "Inspirational", emoji: "✨" },
+                { value: "promotional", label: "Promotional", emoji: "📢" },
+                { value: "controversial", label: "Controversial", emoji: "🔥" },
+                { value: "observational", label: "Observational", emoji: "👀" },
+              ] as const).map(({ value, label, emoji }) => {
+                const isActive = project.keywords.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      const next = isActive
+                        ? project.keywords.filter((k) => k !== value)
+                        : [...project.keywords, value];
+                      updateField("keywords", next);
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                      isActive
+                        ? "bg-purple-500/15 text-purple-400 border border-purple-500/40"
+                        : "bg-muted text-muted-foreground border border-transparent hover:bg-muted-foreground/10"
+                    }`}
+                  >
+                    <span>{emoji}</span>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Comma-separated tags. These will be appended as hashtags to your caption.
+              Choose the tone of your story. This shapes how AI crafts your caption and headlines.
             </p>
           </div>
         </CardContent>
       </Card>
       </motion.div>
 
-      {/* 2. AI Caption */}
+      {/* 2. Social Caption (Required) — auto-generates from story, editable */}
       <motion.div variants={staggerItemVariants}>
-      <Card>
+      <Card className={hasAttemptedGenerate && !captionText.trim() ? "border-destructive/50" : ""}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-base">Social Caption</CardTitle>
-              <CardHelpIcon title="AI Caption">
-                Generate a social media caption using AI based on your
-                carousel&apos;s theme and content. Choose a writing style that
-                matches your brand voice.
+              <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-medium text-purple-400">
+                Required
+              </span>
+              <CardHelpIcon title="Social Caption">
+                Your caption is crafted from your story and vibes above. Write your own or
+                generate one with AI — then refine it as many times as you like.
               </CardHelpIcon>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-7 text-xs"
-              onClick={handleGenerateCaption}
-              disabled={isGeneratingCaption || !project.theme}
-            >
-              {isGeneratingCaption ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Generating...
-                </>
+            <div className="flex items-center gap-1.5">
+              {captionText.trim() ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-7 text-xs"
+                  onClick={handleGenerateCaption}
+                  disabled={isGeneratingCaption || !project.theme}
+                >
+                  {isGeneratingCaption ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Refining...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3 w-3" />
+                      Refine with AI
+                    </>
+                  )}
+                </Button>
               ) : (
-                <>
-                  <Sparkles className="h-3 w-3" />
-                  Generate with AI
-                </>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-7 text-xs"
+                  onClick={handleGenerateCaption}
+                  disabled={isGeneratingCaption || !project.theme}
+                >
+                  {isGeneratingCaption ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3 w-3" />
+                      Generate Caption from Story
+                    </>
+                  )}
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           <Textarea
-            placeholder="Your social media caption will appear here. Click 'Generate with AI' or type your own..."
+            placeholder="Write your own caption, or generate one from your story &amp; vibes above..."
             value={captionText}
             onChange={(e) => setCaptionText(e.target.value)}
             rows={3}
             className="resize-none text-sm"
           />
-          <p className="text-xs text-muted-foreground mt-1.5">
-            {captionText.length} / 2200 characters
-          </p>
+          <div className="flex items-center justify-between mt-1.5">
+            <p className="text-xs text-muted-foreground">
+              {captionText.length} / 2200 characters
+            </p>
+            {!captionText.trim() && project.theme.trim() && (
+              <p className="text-xs text-purple-400">
+                ✨ Story ready — tap <span className="font-medium">Generate</span> above
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
       </motion.div>
 
-      {/* 3. Slide Count + CSV Import (carousel mode only) */}
+      {/* 3. Slides & Images — unified card (carousel mode only) */}
       {(project.postMode ?? "carousel") === "carousel" && (
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base">Slide Count</CardTitle>
-              <CardHelpIcon title="Carousel Length">
-                Choose how many slides your carousel will have (3&ndash;10).
-                More slides allow for deeper storytelling. The recommended
-                count depends on your uploaded images.
+              <CardTitle className="text-base">Slides &amp; Images</CardTitle>
+              <CardHelpIcon title="Slides & Images">
+                Set how many slides your carousel will have and see how your
+                uploaded images are distributed across them. The slide count
+                defaults to your uploaded image count — increase it to add
+                text-only slides.
               </CardHelpIcon>
             </div>
             <div className="flex items-center gap-2">
@@ -544,28 +659,14 @@ export function ConfigurationPanel({
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <SlideCountSelector
             value={project.slideCount}
             onChange={(count) => updateField("slideCount", count)}
           />
+          <ImageSourceIndicator project={project} />
         </CardContent>
       </Card>
-      </motion.div>
-      )}
-
-      {/* 4. Image Source Strategy (carousel mode only) */}
-      {(project.postMode ?? "carousel") === "carousel" && (
-      <motion.div variants={staggerItemVariants} className="space-y-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium">Image Source Strategy</h3>
-          <CardHelpIcon title="Image Source Strategy">
-            Control how your uploaded images are distributed across slides.
-            Sequential mode fills slides in order. Smart Auto optimizes
-            placement based on AI analysis.
-          </CardHelpIcon>
-        </div>
-        <ImageSourceIndicator project={project} />
       </motion.div>
       )}
 
@@ -910,8 +1011,8 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* Validation messages */}
-      {(validation.errors.length > 0 || validation.warnings.length > 0) && (
+      {/* Validation errors — only shown after the user attempts to generate */}
+      {hasAttemptedGenerate && validation.errors.length > 0 && (
         <div className="space-y-2">
           {validation.errors.map((err, i) => (
             <div
@@ -920,15 +1021,6 @@ export function ConfigurationPanel({
             >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               {err}
-            </div>
-          ))}
-          {validation.warnings.map((warn, i) => (
-            <div
-              key={`warn-${i}`}
-              className="flex items-start gap-2 rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400"
-            >
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              {warn}
             </div>
           ))}
         </div>
@@ -967,20 +1059,20 @@ export function ConfigurationPanel({
               <Button
                 size="lg"
                 className="w-full gap-2 text-base"
-                disabled={!validation.canProceed || isGenerating}
+                disabled={isGenerating}
                 onClick={handleGenerate}
               >
                 {isGenerating ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Generating Carousel...
+                    {(project.postMode ?? "carousel") === "single" ? "Generating Post..." : "Generating Carousel..."}
                   </>
                 ) : (
                   <>
                     <Wand2 className="h-5 w-5" />
-                    {hasExistingSlides && hasConfigChanged
-                      ? "Re-Generate Carousel"
-                      : "Generate Carousel"}
+                    {(project.postMode ?? "carousel") === "single"
+                      ? (hasExistingSlides && hasConfigChanged ? "Re-Generate Post" : "Generate Post")
+                      : (hasExistingSlides && hasConfigChanged ? "Re-Generate Carousel" : "Generate Carousel")}
                   </>
                 )}
               </Button>
@@ -996,6 +1088,58 @@ export function ConfigurationPanel({
         slideCount={project.slideCount}
         onImport={handleCSVImport}
       />
+
+      {/* Carousel Recommendation Dialog — shown when switching to carousel with ≤1 image */}
+      <Dialog open={carouselWarningOpen} onOpenChange={setCarouselWarningOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ImagePlus className="h-5 w-5 text-amber-500" />
+              More Images Recommended
+            </DialogTitle>
+            <DialogDescription>
+              You currently have {project.uploadedImages.length === 0 ? "no images" : "only 1 image"} uploaded.
+              For the best carousel storytelling experience, we recommend uploading at least <strong className="text-foreground">3 or more images</strong>.
+              More images allow each slide to have its own unique visual, creating a richer narrative.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
+            <p className="font-medium">Tip:</p>
+            <p className="mt-1">
+              Slides without an assigned image will require a headline text overlay.
+              Empty slides (no image and no headline) are not allowed.
+            </p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCarouselWarningOpen(false);
+                if (onBack) onBack();
+              }}
+            >
+              Go Back & Upload More
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => {
+                setCarouselWarningOpen(false);
+                updateField("postMode", "carousel");
+                if (project.slideCount < 2) {
+                  updateField("slideCount", 5);
+                }
+                // Force headline on since carousel with few images needs text
+                updateShowHeadline(true);
+                toast.info("Switched to Carousel mode", {
+                  description: "Headlines are enabled. Slides without images will need headline text.",
+                });
+              }}
+            >
+              Continue Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

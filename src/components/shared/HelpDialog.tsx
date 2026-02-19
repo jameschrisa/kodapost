@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Mail, MessageCircle } from "lucide-react";
-import { KodaPostIcon } from "@/components/icons";
+import { BookOpen, ChevronDown, ChevronRight, Mail, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { KodaPostIcon, AutomationIcon } from "@/components/icons";
 import {
   Dialog,
   DialogContent,
@@ -74,12 +75,67 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
           <div>
             <h3 className="text-sm font-semibold mb-2">Quick Start</h3>
             <ol className="list-decimal list-inside space-y-1.5 text-sm text-muted-foreground">
-              <li>Upload your photos (1\u201310 images)</li>
+              <li>Upload your photos (1&ndash;10 images)</li>
               <li>Pick a camera style and filter to set the mood</li>
               <li>Fine-tune grain, bloom, vignette, and color</li>
               <li>Edit AI-generated text overlays on each slide</li>
               <li>Review, reorder, and export or publish</li>
             </ol>
+          </div>
+
+          {/* Production Assistant Guide — Telegram only */}
+          <div>
+            <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+              <AutomationIcon className="h-4 w-4" />
+              Production Assistant
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Create posts via Telegram by messaging{" "}
+              <a
+                href="https://t.me/kodacontentbot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground underline underline-offset-2"
+              >
+                @kodacontentbot
+              </a>
+              . Send your photos and the bot guides you step-by-step.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-1">Workflow</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                  <li>Send your photos to the bot</li>
+                  <li>Tell your story &mdash; describe the moment or theme</li>
+                  <li>Pick vibes (relatable, inspirational, etc.)</li>
+                  <li>Review the generated caption</li>
+                  <li>Generate your carousel and get a preview link</li>
+                </ol>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-1">Telegram Bot Commands</p>
+                <div className="grid gap-1 text-sm">
+                  <div className="flex gap-2">
+                    <span className="font-mono text-foreground shrink-0">/start</span>
+                    <span className="text-muted-foreground">&mdash; Begin a new session</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="font-mono text-foreground shrink-0">/status</span>
+                    <span className="text-muted-foreground">&mdash; Check your current progress</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="font-mono text-foreground shrink-0">/reset</span>
+                    <span className="text-muted-foreground">&mdash; Clear everything and start over</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="font-mono text-foreground shrink-0">/help</span>
+                    <span className="text-muted-foreground">&mdash; Show the help guide</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* FAQ */}
@@ -131,6 +187,13 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
                 <MessageCircle className="h-4 w-4" />
                 Community Discord
               </a>
+              <Link
+                href="/guide"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <BookOpen className="h-4 w-4" />
+                Getting Started Guide
+              </Link>
             </div>
           </div>
         </div>

@@ -5,11 +5,13 @@ import {
   Settings,
   HelpCircle,
   CircleUser,
+  BookOpen,
   Shield,
   FileText,
   Database,
 } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface FooterProps {
   onOpenSettings: () => void;
@@ -22,6 +24,8 @@ export function Footer({
   onOpenHelp,
   onOpenProfile,
 }: FooterProps) {
+  const { isAdmin } = useUserRole();
+
   return (
     <footer className="border-t bg-muted/30 mt-8">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
@@ -94,6 +98,26 @@ export function Footer({
                   Settings
                 </button>
               </li>
+              <li>
+                <Link
+                  href="/guide"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Guide
+                </Link>
+              </li>
+              {isAdmin && (
+                <li>
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    Admin
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

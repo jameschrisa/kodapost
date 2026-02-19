@@ -49,7 +49,7 @@ export function FilterSelector({ value, onChange }: FilterSelectorProps) {
       <div
         ref={scrollRef}
         className={cn(
-          "flex gap-3 overflow-x-auto scroll-smooth pt-1.5 pb-2 snap-x snap-mandatory",
+          "flex gap-3 overflow-x-auto scroll-smooth pl-1 pt-1.5 pb-2 snap-x snap-mandatory",
           "[&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-muted",
           "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full"
         )}

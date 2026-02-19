@@ -12,8 +12,9 @@ import { SettingsDialog } from "@/components/shared/SettingsDialog";
 import { HelpDialog } from "@/components/shared/HelpDialog";
 import { ProfileDialog } from "@/components/shared/ProfileDialog";
 import { Footer } from "@/components/shared/Footer";
-import { AssistantBanner, isAssistantEnabled, setAssistantPreference } from "@/components/shared/AssistantBanner";
-import { AssistantChat } from "@/components/assistant/AssistantChat";
+import { AssistantBanner } from "@/components/shared/AssistantBanner";
+import { ContentBotPanel } from "@/components/shared/ContentBotPanel";
+import { TrialBanner } from "@/components/shared/TrialBanner";
 import { StepIndicator } from "@/components/builder/StepIndicator";
 import { ImageUploader } from "@/components/builder/ImageUploader";
 import { ConfigurationPanel } from "@/components/builder/ConfigurationPanel";
@@ -111,7 +112,7 @@ export default function Home() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
   const [splashForced, setSplashForced] = useState(false);
-  const [assistantMode, setAssistantMode] = useState(false);
+  const [contentBotOpen, setContentBotOpen] = useState(false);
 
   // Prefetch key routes so navigation feels instant
   useEffect(() => {
@@ -158,10 +159,6 @@ export default function Home() {
     } else {
       setStep(savedStep);
     }
-    // Check if assistant mode was previously enabled
-    if (isAssistantEnabled()) {
-      setAssistantMode(true);
-    }
 
     setHydrated(true);
   }, []);
@@ -203,14 +200,24 @@ export default function Home() {
 
   const handleUploadComplete = useCallback(
     (images: UploadedImage[]) => {
+      const isSingle = images.length === 1;
       setProject((prev) => ({
         ...prev,
         uploadedImages: images,
+        // Auto-set post mode based on image count
+        postMode: isSingle ? "single" : prev.postMode,
+        // Default slide count to number of uploaded images (clamped 2-12), user can override
+        slideCount: isSingle ? 1 : Math.max(2, Math.min(12, images.length)),
       }));
       navigateToStep("configure");
-      toast.success("Photos uploaded", {
-        description: `${images.length} image${images.length !== 1 ? "s" : ""} ready for your carousel.`,
-      });
+      toast.success(
+        isSingle ? "Photo uploaded" : "Photos uploaded",
+        {
+          description: isSingle
+            ? "1 image ready. Post type set to Single Post."
+            : `${images.length} images ready for your carousel.`,
+        }
+      );
     },
     [navigateToStep]
   );
@@ -242,8 +249,11 @@ export default function Home() {
         description: `${readySlides} slides ready, ${errorSlides} failed. You can retry failed slides later.`,
       });
     } else {
-      toast.success("Carousel generated", {
-        description: `${readySlides} slides created successfully.`,
+      const isSingleMode = (project.postMode ?? "carousel") === "single";
+      toast.success(isSingleMode ? "Post generated" : "Carousel generated", {
+        description: isSingleMode
+          ? "Your post has been created successfully."
+          : `${readySlides} slides created successfully.`,
       });
     }
   }, [project, navigateToStep]);
@@ -312,41 +322,6 @@ export default function Home() {
       }
     },
     [authLoaded, isSignedIn, router]
-  );
-
-  const handleEnableAssistant = useCallback(() => {
-    setAssistantMode(true);
-    setAssistantPreference(true);
-    toast.success("Assistant Mode enabled", {
-      description: "Send photos, audio, or text to create carousels.",
-    });
-  }, []);
-
-  const handleToggleAssistant = useCallback(() => {
-    const next = !assistantMode;
-    setAssistantMode(next);
-    setAssistantPreference(next);
-    toast.info(next ? "Switched to Assistant Mode" : "Switched to Manual Mode");
-  }, [assistantMode]);
-
-  const handleAssistantApprove = useCallback(
-    (generatedProject: CarouselProject) => {
-      setProject(generatedProject);
-      setAssistantMode(false);
-      navigateToStep("publish");
-      toast.success("Carousel approved! Ready to publish.");
-    },
-    [navigateToStep]
-  );
-
-  const handleAssistantEdit = useCallback(
-    (generatedProject: CarouselProject) => {
-      setProject(generatedProject);
-      setAssistantMode(false);
-      navigateToStep("edit");
-      toast.info("Switching to editor for fine-tuning.");
-    },
-    [navigateToStep]
   );
 
   const handleResetApp = useCallback(() => {
@@ -421,9 +396,8 @@ export default function Home() {
             onOpenHelp={() => setHelpOpen(true)}
             onOpenProfile={() => setProfileOpen(true)}
             onOpenSettings={() => setSettingsOpen(true)}
+            onOpenContentBot={() => setContentBotOpen(true)}
             onResetApp={handleResetApp}
-            assistantMode={assistantMode}
-            onToggleAssistant={handleToggleAssistant}
           />
         </div>
       </header>
@@ -439,13 +413,12 @@ export default function Home() {
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
+      <ContentBotPanel open={contentBotOpen} onOpenChange={setContentBotOpen} />
 
-      {/* Step indicator — hidden in assistant mode */}
-      {!assistantMode && (
-        <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
-          <StepIndicator currentStep={step} onStepClick={handleStepClick} />
-        </div>
-      )}
+      {/* Step indicator */}
+      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
+        <StepIndicator currentStep={step} onStepClick={handleStepClick} />
+      </div>
 
       {/* Main content */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-8 sm:px-6">
@@ -455,17 +428,11 @@ export default function Home() {
         )}
 
         {/* Assistant banner — shown when preference not yet set */}
-        {!assistantMode && (
-          <AssistantBanner onEnable={handleEnableAssistant} />
-        )}
+        <AssistantBanner />
 
-        {/* Assistant mode: chat interface */}
-        {assistantMode ? (
-          <AssistantChat
-            onApproveToPublish={handleAssistantApprove}
-            onEditCarousel={handleAssistantEdit}
-          />
-        ) : (
+        {/* Trial status banner */}
+        <TrialBanner />
+
         <AnimatePresence mode="wait" custom={direction}>
           {step === "upload" && (
             <motion.div
@@ -513,10 +480,12 @@ export default function Home() {
                 animate="visible"
               >
                 <motion.div className="mb-6" variants={staggerItemVariants}>
-                  <h2 className="text-xl font-semibold">Configure Your Carousel</h2>
+                  <h2 className="text-xl font-semibold">
+                    {(project.postMode ?? "carousel") === "single" ? "Configure Your Post" : "Configure Your Carousel"}
+                  </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Set your theme, choose a vintage camera style, and customize
-                    your carousel settings.
+                    your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel"} settings.
                   </p>
                 </motion.div>
                 <motion.div variants={staggerItemVariants}>
@@ -597,7 +566,6 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
-        )}
       </main>
 
       {/* Footer */}

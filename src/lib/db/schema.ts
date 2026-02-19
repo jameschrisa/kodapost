@@ -64,3 +64,43 @@ export const jobs = sqliteTable("jobs", {
   /** ISO timestamp: when the result can be cleaned up (default: 1 hour after creation) */
   expiresAt: text("expires_at").notNull(),
 });
+
+/**
+ * Telegram bot conversation sessions.
+ * Tracks each user's progress through the guided carousel creation flow.
+ * Sessions are stored per Telegram chat ID and expire after 24 hours of inactivity.
+ */
+export const telegramSessions = sqliteTable("telegram_sessions", {
+  /** Telegram chat ID (unique per user conversation) */
+  chatId: text("chat_id").primaryKey(),
+  /** Current flow stage */
+  stage: text("stage", {
+    enum: [
+      "waiting_photos",
+      "waiting_story",
+      "waiting_vibes",
+      "waiting_caption",
+      "generating",
+      "ready",
+      "published",
+    ],
+  })
+    .notNull()
+    .default("waiting_photos"),
+  /** User's story / theme text */
+  story: text("story"),
+  /** Comma-separated vibes (e.g., "relatable,inspirational") */
+  vibes: text("vibes"),
+  /** Generated or user-provided caption */
+  caption: text("caption"),
+  /** Number of slides requested (default: auto from image count) */
+  slideCount: integer("slide_count"),
+  /** JSON array of Telegram file_id strings for uploaded photos */
+  photoFileIds: text("photo_file_ids", { mode: "json" }),
+  /** The job ID from the generation pipeline (once triggered) */
+  jobId: text("job_id"),
+  /** ISO timestamp of last activity (for session expiry) */
+  lastActivityAt: text("last_activity_at").notNull(),
+  /** ISO timestamp when session was created */
+  createdAt: text("created_at").notNull(),
+});

@@ -189,11 +189,12 @@ export function CarouselPreview({
         </div>
       </div>
 
-      {/* Platform preview selector — shows ALL platforms + letterbox */}
+      {/* Platform preview selector */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground">Preview as:</span>
         <div className="flex gap-1 flex-wrap">
-          {(Object.keys(PLATFORM_PREVIEW_CONFIG) as PreviewPlatform[]).map((platform) => {
+          {/* Individual platform buttons (excluding reddit, lemon8 — consolidated below) */}
+          {(["instagram", "tiktok", "linkedin"] as PreviewPlatform[]).map((platform) => {
             const config = PLATFORM_PREVIEW_CONFIG[platform];
             return (
               <button
@@ -215,6 +216,23 @@ export function CarouselPreview({
               </button>
             );
           })}
+          {/* Consolidated 1:1 Square — uses YouTube config (1:1) */}
+          <button
+            type="button"
+            onClick={() => {
+              setPreviewPlatform("youtube");
+              setPreviewMode("platform");
+            }}
+            className={cn(
+              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+              previewMode === "platform" && (previewPlatform === "youtube" || previewPlatform === "reddit")
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            Square
+            <span className="ml-1 opacity-60">1:1</span>
+          </button>
           <button
             type="button"
             onClick={() => setPreviewMode(previewMode === "letterbox" ? "platform" : "letterbox")}

@@ -14,6 +14,7 @@ import {
   SignInButton as ClerkSignInButton,
   SignUpButton as ClerkSignUpButton,
   UserProfile as ClerkUserProfile,
+  useClerk as useClerkHook,
 } from "@clerk/nextjs";
 
 export const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -36,3 +37,19 @@ export const UserButton = isClerkEnabled ? ClerkUserButton : FallbackNull;
 export const SignInButton = isClerkEnabled ? ClerkSignInButton : FallbackPassthrough;
 export const SignUpButton = isClerkEnabled ? ClerkSignUpButton : FallbackPassthrough;
 export const UserProfile = isClerkEnabled ? ClerkUserProfile : FallbackNull;
+
+/**
+ * Safe wrapper around Clerk's useClerk().signOut.
+ * When Clerk is disabled, returns a no-op signOut function.
+ */
+export function useSignOut() {
+  if (!isClerkEnabled) {
+    return {
+      signOut: (/* opts?: { redirectUrl?: string } */) => Promise.resolve(),
+    };
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { signOut } = useClerkHook();
+  return { signOut };
+}

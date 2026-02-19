@@ -12,6 +12,7 @@ import type { NextRequest } from "next/server";
  * Public routes:
  *  - /              Home (splash screen is public; auth gate is client-side)
  *  - /introduction  Informational page
+ *  - /guide         Getting started guide
  *  - /legal/*       Legal pages (terms, privacy, data)
  *  - /sign-in, /sign-up  Clerk auth pages
  *  - /api/v1/*      Headless API (uses its own API-key auth)
@@ -22,14 +23,19 @@ import type { NextRequest } from "next/server";
 const isPublicRoute = createRouteMatcher([
   "/",
   "/introduction",
+  "/guide",
   "/legal(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/preview(.*)",
   "/api/v1(.*)",
   "/api/auth(.*)",
   "/api/convert-image",
   "/api/media(.*)",
   "/api/publish(.*)",
+  "/api/telegram(.*)",
+  "/api/preview(.*)",
+  "/api/webhooks(.*)",
 ]);
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;

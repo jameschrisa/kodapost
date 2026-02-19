@@ -408,7 +408,7 @@ Theme: ${theme}${hashtagsLine}${transcriptionLine}
 Rules:
 - Keep it engaging and authentic (2-4 sentences)
 - Include a call-to-action (e.g., "Save this for later", "Tag someone who needs this")
-- End with relevant hashtags from the keywords provided
+- End with relevant hashtags — use NO MORE than 8 hashtags total
 - Keep total length under 2200 characters
 - Do NOT use markdown formatting
 - Write ONLY the caption text, nothing else`,
