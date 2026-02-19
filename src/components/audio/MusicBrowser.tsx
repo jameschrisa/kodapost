@@ -95,6 +95,7 @@ export function MusicBrowser({
   const [query, setQuery] = useState("");
   const [source, setSource] = useState<SourceFilter>("all");
   const [instrumental, setInstrumental] = useState(false);
+  const [genre, setGenre] = useState<string | undefined>(undefined);
 
   // Data state
   const [results, setResults] = useState<MusicTrack[]>([]);
@@ -115,7 +116,7 @@ export function MusicBrowser({
   // -------------------------------------------
 
   const performSearch = useCallback(
-    async (searchQuery: string, searchSource: SourceFilter, inst: boolean) => {
+    async (searchQuery: string, searchSource: SourceFilter, inst: boolean, searchGenre?: string) => {
       const trimmed = searchQuery.trim();
       if (!trimmed) {
         setResults([]);
@@ -134,6 +135,10 @@ export function MusicBrowser({
           source: searchSource,
           instrumental: String(inst),
         });
+
+        if (searchGenre) {
+          params.set("genre", searchGenre);
+        }
 
         const res = await fetch(`/api/music/search?${params.toString()}`);
 
@@ -161,7 +166,7 @@ export function MusicBrowser({
     }
 
     debounceRef.current = setTimeout(() => {
-      performSearch(query, source, instrumental);
+      performSearch(query, source, instrumental, genre);
     }, 300);
 
     return () => {
@@ -169,7 +174,7 @@ export function MusicBrowser({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [query, source, instrumental, performSearch]);
+  }, [query, source, instrumental, genre, performSearch]);
 
   // -------------------------------------------
   // Audio preview controls
@@ -329,6 +334,35 @@ export function MusicBrowser({
         </label>
       </div>
 
+      {/* Genre quick-filter chips */}
+      <div className="flex flex-wrap gap-1.5">
+        {[
+          { value: undefined, label: "All Genres" },
+          { value: "ambient", label: "Ambient" },
+          { value: "electronic", label: "Electronic" },
+          { value: "lofi", label: "Lo-Fi" },
+          { value: "pop", label: "Pop" },
+          { value: "hiphop", label: "Hip-Hop" },
+          { value: "jazz", label: "Jazz" },
+          { value: "classical", label: "Classical" },
+          { value: "rock", label: "Rock" },
+        ].map((g) => (
+          <button
+            key={g.label}
+            type="button"
+            onClick={() => setGenre(g.value)}
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors",
+              genre === g.value
+                ? "bg-purple-500/20 text-purple-400"
+                : "bg-zinc-800 text-muted-foreground hover:bg-purple-500/10 hover:text-foreground"
+            )}
+          >
+            {g.label}
+          </button>
+        ))}
+      </div>
+
       {/* Hidden audio element for previews */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio
@@ -372,7 +406,7 @@ export function MusicBrowser({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => performSearch(query, source, instrumental)}
+                onClick={() => performSearch(query, source, instrumental, genre)}
               >
                 Retry
               </Button>
@@ -481,6 +515,11 @@ export function MusicBrowser({
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
                         {track.artist}
+                        {track.genre && (
+                          <span className="ml-1 text-[10px] opacity-60">
+                            · {track.genre}
+                          </span>
+                        )}
                       </p>
                     </div>
 
