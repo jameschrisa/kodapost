@@ -465,18 +465,30 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 0b. Headline Visibility Toggle */}
+      {/* 0b. Text Overlay Toggles */}
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader>
+          <div className="flex items-center gap-2">
+            <Type className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-base">Text Overlays</CardTitle>
+            <CardHelpIcon title="Text Overlays">
+              Control which text elements appear on your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"}.
+              Headlines are the main text; subtitles are smaller supporting text below.
+              You can also toggle these per-slide in the Editorial step.
+            </CardHelpIcon>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 pt-0">
+          {/* Headline toggle */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Type className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base">Headline Text</CardTitle>
-              <CardHelpIcon title="Headline Text">
-                Toggle whether headline text overlays appear on your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"}.
-                When enabled, AI will generate contextual headlines. When disabled, your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"} will be image-only.
-              </CardHelpIcon>
+            <div>
+              <p className="text-sm font-medium">Headlines</p>
+              <p className="text-xs text-muted-foreground">
+                {showHeadline
+                  ? "AI-generated headlines on each slide"
+                  : "No headline text — images only"}
+              </p>
             </div>
             <Switch
               checked={showHeadline}
@@ -484,50 +496,28 @@ export function ConfigurationPanel({
               aria-label="Toggle headline visibility"
             />
           </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <p className="text-xs text-muted-foreground">
-            {showHeadline
-              ? (project.postMode ?? "carousel") === "carousel"
-                ? "Headlines will be generated for each slide. You can edit them after generation."
-                : "A headline will overlay your image. You can edit it after generation."
-              : "No headline text will be added. Your images will speak for themselves."}
-          </p>
-        </CardContent>
-      </Card>
-      </motion.div>
 
-      {/* 0c. Subtitle Visibility Toggle */}
-      {showHeadline && (
-      <motion.div variants={staggerItemVariants}>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Type className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base">Subtitle Text</CardTitle>
-              <CardHelpIcon title="Subtitle Text">
-                Subtitles are smaller supporting text below each headline.
-                They add context but are optional. You can toggle them per-slide in the Editorial step.
-              </CardHelpIcon>
+          {/* Subtitle toggle — only shown when headlines are on */}
+          {showHeadline && (
+            <div className="flex items-center justify-between border-t pt-3">
+              <div>
+                <p className="text-sm font-medium">Subtitles</p>
+                <p className="text-xs text-muted-foreground">
+                  {showSubtitle
+                    ? "Supporting text below each headline"
+                    : "Off — enable per-slide in Editorial"}
+                </p>
+              </div>
+              <Switch
+                checked={showSubtitle}
+                onCheckedChange={updateShowSubtitle}
+                aria-label="Toggle subtitle visibility"
+              />
             </div>
-            <Switch
-              checked={showSubtitle}
-              onCheckedChange={updateShowSubtitle}
-              aria-label="Toggle subtitle visibility"
-            />
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <p className="text-xs text-muted-foreground">
-            {showSubtitle
-              ? "Subtitles will be generated below each headline. You can edit or hide them per-slide."
-              : "Subtitles are off. You can enable them per-slide in the Editorial step."}
-          </p>
+          )}
         </CardContent>
       </Card>
       </motion.div>
-      )}
 
       {/* 1. Your Story */}
       <motion.div variants={staggerItemVariants}>
