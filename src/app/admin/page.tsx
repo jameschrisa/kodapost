@@ -100,12 +100,13 @@ export default function AdminPage() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Guard: redirect non-admins
+  // Guard: redirect non-admins (use isActualAdmin so admin page is
+  // accessible even when the admin is in "user" view mode)
   useEffect(() => {
-    if (role.isLoaded && !role.isAdmin) {
+    if (role.isLoaded && !role.isActualAdmin) {
       router.replace("/");
     }
-  }, [role.isLoaded, role.isAdmin, router]);
+  }, [role.isLoaded, role.isActualAdmin, router]);
 
   // Load users
   const loadUsers = useCallback(async () => {
@@ -124,10 +125,10 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (role.isLoaded && role.isAdmin) {
+    if (role.isLoaded && role.isActualAdmin) {
       loadUsers();
     }
-  }, [role.isLoaded, role.isAdmin, loadUsers]);
+  }, [role.isLoaded, role.isActualAdmin, loadUsers]);
 
   // Update user metadata
   const updateUser = useCallback(
@@ -156,7 +157,7 @@ export default function AdminPage() {
   }, []);
 
   // Loading / guard state
-  if (!role.isLoaded || !role.isAdmin) {
+  if (!role.isLoaded || !role.isActualAdmin) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

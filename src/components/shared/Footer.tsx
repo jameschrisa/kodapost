@@ -24,7 +24,7 @@ export function Footer({
   onOpenHelp,
   onOpenProfile,
 }: FooterProps) {
-  const { isAdmin } = useUserRole();
+  const { isActualAdmin } = useUserRole();
 
   return (
     <footer className="border-t bg-muted/30 mt-8">
@@ -107,7 +107,7 @@ export function Footer({
                   Guide
                 </Link>
               </li>
-              {isAdmin && (
+              {isActualAdmin && (
                 <li>
                   <Link
                     href="/admin"

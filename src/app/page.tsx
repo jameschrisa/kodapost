@@ -15,6 +15,7 @@ import { Footer } from "@/components/shared/Footer";
 import { AssistantBanner } from "@/components/shared/AssistantBanner";
 import { ContentBotPanel } from "@/components/shared/ContentBotPanel";
 import { TrialBanner } from "@/components/shared/TrialBanner";
+import { AdminViewBanner } from "@/components/shared/AdminViewBanner";
 import { StepIndicator } from "@/components/builder/StepIndicator";
 import { ImageUploader } from "@/components/builder/ImageUploader";
 import { ConfigurationPanel } from "@/components/builder/ConfigurationPanel";
@@ -432,6 +433,9 @@ export default function Home() {
 
         {/* Trial status banner */}
         <TrialBanner />
+
+        {/* Admin viewing as standard user indicator */}
+        <AdminViewBanner />
 
         <AnimatePresence mode="wait" custom={direction}>
           {step === "upload" && (
