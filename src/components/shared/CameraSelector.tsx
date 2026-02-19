@@ -46,7 +46,7 @@ export function CameraSelector({ value, onChange }: CameraSelectorProps) {
     return () => el.removeEventListener("scroll", check);
   }, []);
 
-  const isNoStyle = value === 0;
+  const isNoStyle = value === 0 || value === -1;
 
   return (
     <div className="relative">

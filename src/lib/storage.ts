@@ -128,6 +128,11 @@ export function loadProject(): CarouselProject | null {
     // Version check — add migration logic here in the future
     if (!stored.version || !stored.data) return null;
 
+    // Migrate legacy cameraProfileId: -1 → 0 ("No Emulation")
+    if (stored.data.cameraProfileId === -1) {
+      stored.data.cameraProfileId = 0;
+    }
+
     return stored.data;
   } catch {
     // Corrupted data
