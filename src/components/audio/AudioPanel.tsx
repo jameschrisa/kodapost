@@ -19,7 +19,8 @@ import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useAudioFile } from "@/hooks/useAudioFile";
 import { Waveform } from "./Waveform";
 import { AudioPlayer } from "./AudioPlayer";
-import type { AudioClip } from "@/lib/types";
+import { MusicBrowser } from "./MusicBrowser";
+import type { AudioClip, MusicTrack } from "@/lib/types";
 
 type AudioInputMode = "record" | "upload" | "library";
 
@@ -144,6 +145,49 @@ export function AudioPanel({
     [audioClip, onAudioChange]
   );
 
+  // Handle music library track selection
+  const handleMusicSelect = useCallback(
+    async (track: MusicTrack) => {
+      try {
+        // Fetch the audio stream to create a local blob for the player
+        const res = await fetch(track.streamUrl);
+        if (!res.ok) throw new Error("Failed to load track");
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const clip: AudioClip = {
+          id: `audio-${Date.now()}`,
+          source: "library",
+          name: track.title,
+          duration: track.duration,
+          mimeType: blob.type || "audio/mpeg",
+          size: blob.size,
+          objectUrl,
+          attribution: {
+            trackTitle: track.title,
+            artistName: track.artist,
+            platform: track.platform,
+            trackUrl: track.platformUrl,
+            license: track.license,
+            attributionText: track.attributionText,
+          },
+          createdAt: new Date().toISOString(),
+        };
+
+        onAudioChange(clip);
+        setInputMode(null);
+        toast.success("Track added", {
+          description: `"${track.title}" by ${track.artist}`,
+        });
+      } catch {
+        toast.error("Failed to load track", {
+          description: "Please try a different track.",
+        });
+      }
+    },
+    [onAudioChange]
+  );
+
   // Remove audio
   const handleRemoveAudio = useCallback(() => {
     onAudioChange(undefined);
@@ -239,6 +283,25 @@ export function AudioPanel({
                     </div>
                   )}
 
+                  {/* Attribution info for library tracks */}
+                  {audioClip.attribution && (
+                    <div className="rounded-md bg-muted/50 p-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">
+                        Attribution
+                      </p>
+                      <p className="text-xs">
+                        &ldquo;{audioClip.attribution.trackTitle}&rdquo; by{" "}
+                        {audioClip.attribution.artistName}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {audioClip.attribution.platform === "jamendo"
+                          ? "Jamendo"
+                          : "Audius"}{" "}
+                        &middot; {audioClip.attribution.license}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Actions */}
                   <div className="flex items-center gap-2">
                     <Button
@@ -292,21 +355,13 @@ export function AudioPanel({
 
                   <button
                     type="button"
-                    onClick={() => {
-                      toast.info("Music Library", {
-                        description:
-                          "Music library integration (Jamendo, Audius) coming soon.",
-                      });
-                    }}
-                    className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 p-4 transition-all hover:border-purple-400 hover:bg-purple-500/5 opacity-60"
+                    onClick={() => setInputMode("library")}
+                    className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 p-4 transition-all hover:border-purple-400 hover:bg-purple-500/5"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 text-purple-400">
                       <Music className="h-5 w-5" />
                     </div>
                     <span className="text-xs font-medium">Music Library</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      Coming soon
-                    </span>
                   </button>
                 </div>
               )}
@@ -504,6 +559,14 @@ export function AudioPanel({
                     </p>
                   )}
                 </div>
+              )}
+
+              {/* Music Library mode */}
+              {!audioClip && inputMode === "library" && (
+                <MusicBrowser
+                  onSelect={handleMusicSelect}
+                  onCancel={() => setInputMode(null)}
+                />
               )}
             </CardContent>
           </motion.div>

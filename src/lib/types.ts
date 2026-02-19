@@ -562,6 +562,39 @@ export type NanoCastFormat = "package" | "video";
 /** Transition type for video slideshow */
 export type SlideTransition = "none" | "crossfade" | "slide";
 
+// -----------------------------------------------------------------------------
+// Music Search Types
+// -----------------------------------------------------------------------------
+
+/** Supported music search platforms */
+export type MusicPlatform = "jamendo" | "audius";
+
+/** A normalized music track from any supported platform */
+export interface MusicTrack {
+  /** Unique identifier (platform-specific) */
+  id: string;
+  /** Track title */
+  title: string;
+  /** Artist / creator name */
+  artist: string;
+  /** Duration in seconds */
+  duration: number;
+  /** Direct stream URL for playback */
+  streamUrl: string;
+  /** URL to album/track artwork */
+  artworkUrl: string;
+  /** Which platform this track comes from */
+  platform: MusicPlatform;
+  /** URL to the track on its native platform */
+  platformUrl: string;
+  /** License information (CC license URL or rights statement) */
+  license: string;
+  /** Genre tag, if available */
+  genre?: string;
+  /** Pre-formatted attribution text for captions */
+  attributionText: string;
+}
+
 /** A recorded post in the user's content history */
 export interface PostRecord {
   /** Unique identifier */
