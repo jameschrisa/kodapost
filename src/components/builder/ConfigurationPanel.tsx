@@ -287,7 +287,8 @@ export function ConfigurationPanel({
         project.keywords,
         project.storyTranscription,
         audioCtx,
-        project.captionStyle
+        project.captionStyle,
+        project.customCaptionStyle
       );
       if (result.success) {
         setCaptionText(result.data);
@@ -465,71 +466,38 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 0b. Text Overlay Toggles */}
-      <motion.div variants={staggerItemVariants}>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Type className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base">Text Overlays</CardTitle>
-            <CardHelpIcon title="Text Overlays">
-              Control which text elements appear on your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"}.
-              Headlines are the main text; subtitles are smaller supporting text below.
-              You can also toggle these per-slide in the Editorial step.
-            </CardHelpIcon>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-0">
-          {/* Headline toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">Headlines</p>
-              <p className="text-xs text-muted-foreground">
-                {showHeadline
-                  ? "AI-generated headlines on each slide"
-                  : "No headline text — images only"}
-              </p>
-            </div>
-            <Switch
-              checked={showHeadline}
-              onCheckedChange={updateShowHeadline}
-              aria-label="Toggle headline visibility"
-            />
-          </div>
-
-          {/* Subtitle toggle — only shown when headlines are on */}
-          {showHeadline && (
-            <div className="flex items-center justify-between border-t pt-3">
-              <div>
-                <p className="text-sm font-medium">Subtitles</p>
-                <p className="text-xs text-muted-foreground">
-                  {showSubtitle
-                    ? "Supporting text below each headline"
-                    : "Off — enable per-slide in Editorial"}
-                </p>
-              </div>
-              <Switch
-                checked={showSubtitle}
-                onCheckedChange={updateShowSubtitle}
-                aria-label="Toggle subtitle visibility"
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      </motion.div>
-
       {/* 1. Your Story */}
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">Your Story</CardTitle>
-            <CardHelpIcon title="Your Story">
-              Describe the moment, scene, or feeling you want to share. This drives
-              AI-generated headlines and captions for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel"}.
-              You can type or tap the mic to speak.
-            </CardHelpIcon>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base">Your Story</CardTitle>
+              <CardHelpIcon title="Your Story">
+                Describe the moment, scene, or feeling you want to share. This drives
+                AI-generated headlines and captions for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel"}.
+                You can type or tap the mic to speak.
+              </CardHelpIcon>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-7 text-xs"
+              onClick={handleGenerateCaption}
+              disabled={isGeneratingCaption || !project.theme}
+            >
+              {isGeneratingCaption ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {captionText.trim() ? "Refining..." : "Creating..."}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3 w-3" />
+                  {captionText.trim() ? "Refine caption" : "Create a caption"}
+                </>
+              )}
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -629,69 +597,103 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 2. Social Caption (Required) — auto-generates from story, editable */}
+      {/* 2. Text Overlay Toggles */}
       <motion.div variants={staggerItemVariants}>
-      <Card className={hasAttemptedGenerate && !captionText.trim() ? "border-destructive/50" : ""}>
+      <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base">Social Caption</CardTitle>
-              <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-medium text-purple-400">
-                Required
-              </span>
-              <CardHelpIcon title="Social Caption">
-                Your caption is crafted from your story and vibes above. Write your own or
-                generate one with AI — then refine it as many times as you like.
+              <Type className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Text Overlays</CardTitle>
+              <CardHelpIcon title="Text Overlays">
+                Control which text elements appear on your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"}.
+                Headlines are the main text; subtitles are smaller supporting text below.
+                You can also toggle these per-slide in the Editorial step.
               </CardHelpIcon>
             </div>
-            <div className="flex items-center gap-1.5">
-              {captionText.trim() ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 h-7 text-xs"
-                  onClick={handleGenerateCaption}
-                  disabled={isGeneratingCaption || !project.theme}
-                >
-                  {isGeneratingCaption ? (
-                    <>
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Refining...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-3 w-3" />
-                      Refine with AI
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 h-7 text-xs"
-                  onClick={handleGenerateCaption}
-                  disabled={isGeneratingCaption || !project.theme}
-                >
-                  {isGeneratingCaption ? (
-                    <>
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-3 w-3" />
-                      Generate Caption from Story
-                    </>
-                  )}
-                </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-7 text-xs"
+                onClick={() => setCsvImportOpen(true)}
+                title="Import your own headlines and subtitles from a CSV file instead of using AI-generated text."
+              >
+                <FileSpreadsheet className="h-3 w-3" />
+                Import
+              </Button>
+              <CardHelpIcon title="CSV Import">
+                Import a CSV file with your own headlines and subtitles instead of
+                AI-generated text. Your file should have columns for headline (or
+                title/primary) and optionally subtitle (or caption/secondary).
+                Each row maps to a slide.
+              </CardHelpIcon>
+              {project.csvOverrides && (
+                <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
+                  {project.csvOverrides.length} rows
+                </span>
               )}
             </div>
           </div>
         </CardHeader>
+        <CardContent className="space-y-3 pt-0">
+          {/* Headline toggle */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Headlines</p>
+              <p className="text-xs text-muted-foreground">
+                {showHeadline
+                  ? "Image headlines generated from your story"
+                  : "No headline text — images only"}
+              </p>
+            </div>
+            <Switch
+              checked={showHeadline}
+              onCheckedChange={updateShowHeadline}
+              aria-label="Toggle headline visibility"
+            />
+          </div>
+
+          {/* Subtitle toggle — only shown when headlines are on */}
+          {showHeadline && (
+            <div className="flex items-center justify-between border-t pt-3">
+              <div>
+                <p className="text-sm font-medium">Subtitles</p>
+                <p className="text-xs text-muted-foreground">
+                  {showSubtitle
+                    ? "Supporting text below each headline"
+                    : "Off — enable per-slide in Editorial"}
+                </p>
+              </div>
+              <Switch
+                checked={showSubtitle}
+                onCheckedChange={updateShowSubtitle}
+                aria-label="Toggle subtitle visibility"
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      </motion.div>
+
+      {/* 3. Social Caption (Required) — auto-generates from story, editable */}
+      <motion.div variants={staggerItemVariants}>
+      <Card className={hasAttemptedGenerate && !captionText.trim() ? "border-destructive/50" : ""}>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Social Caption</CardTitle>
+            <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-medium text-purple-400">
+              Required
+            </span>
+            <CardHelpIcon title="Social Caption">
+              Your caption is crafted from your story and vibes above. Write your own or
+              use the &ldquo;Create a caption&rdquo; button in the Story card — then refine it as many times as you like.
+            </CardHelpIcon>
+          </div>
+        </CardHeader>
         <CardContent>
           <Textarea
-            placeholder="Write your own caption, or generate one from your story &amp; vibes above..."
+            placeholder="Write your own caption, or use 'Create a caption' in the Story card above..."
             value={captionText}
             onChange={(e) => setCaptionText(e.target.value)}
             rows={3}
@@ -711,7 +713,7 @@ export function ConfigurationPanel({
             </p>
             {!captionText.trim() && project.theme.trim() && (
               <p className="text-xs text-purple-400">
-                ✨ Story ready — tap <span className="font-medium">Generate</span> above
+                ✨ Story ready — tap <span className="font-medium">Create a caption</span> above
               </p>
             )}
           </div>
@@ -721,16 +723,22 @@ export function ConfigurationPanel({
             <Label className="text-xs">Writing Style</Label>
             <div className="flex flex-wrap gap-2">
               {([
-                { value: "storyteller" as const, label: "Storyteller", emoji: "📖", description: "Narrative, emotional, personal" },
-                { value: "minimalist" as const, label: "Minimalist", emoji: "✏️", description: "Short, punchy, modern" },
-                { value: "data_driven" as const, label: "Data-Driven", emoji: "📊", description: "Stats, facts, authority" },
+                { value: "storyteller" as const, label: "Storyteller", emoji: "📖" },
+                { value: "minimalist" as const, label: "Minimalist", emoji: "✏️" },
+                { value: "data_driven" as const, label: "Data-Driven", emoji: "📊" },
+                { value: "witty" as const, label: "Witty", emoji: "😄" },
+                { value: "educational" as const, label: "Educational", emoji: "🎓" },
+                { value: "poetic" as const, label: "Poetic", emoji: "🪶" },
               ]).map(({ value, label, emoji }) => {
                 const isActive = (project.captionStyle ?? "storyteller") === value;
                 return (
                   <button
                     key={value}
                     type="button"
-                    onClick={() => updateField("captionStyle", value)}
+                    onClick={() => {
+                      updateField("captionStyle", value);
+                      updateField("customCaptionStyle", undefined);
+                    }}
                     className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                       isActive
                         ? "bg-purple-500/15 text-purple-400 border border-purple-500/40"
@@ -742,7 +750,29 @@ export function ConfigurationPanel({
                   </button>
                 );
               })}
+              {/* Custom style option */}
+              <button
+                type="button"
+                onClick={() => updateField("captionStyle", "custom")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                  project.captionStyle === "custom"
+                    ? "bg-purple-500/15 text-purple-400 border border-purple-500/40"
+                    : "bg-muted text-muted-foreground border border-transparent hover:bg-muted-foreground/10"
+                }`}
+              >
+                <span>✍️</span>
+                Custom
+              </button>
             </div>
+            {project.captionStyle === "custom" && (
+              <Input
+                placeholder="Describe your writing style (e.g., 'casual Gen-Z slang with emoji')"
+                value={project.customCaptionStyle ?? ""}
+                onChange={(e) => updateField("customCaptionStyle", e.target.value)}
+                className="h-8 text-sm mt-2"
+                maxLength={120}
+              />
+            )}
             <p className="text-xs text-muted-foreground">
               Shapes how AI generates captions and headline text.
             </p>
@@ -751,38 +781,19 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 3. Slides & Images — unified card (carousel mode only) */}
+      {/* 4. Slides & Images — unified card (carousel mode only) */}
       {(project.postMode ?? "carousel") === "carousel" && (
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-base">Slides &amp; Images</CardTitle>
-              <CardHelpIcon title="Slides & Images">
-                Set how many slides your carousel will have and see how your
-                uploaded images are distributed across them. The slide count
-                defaults to your uploaded image count — increase it to add
-                text-only slides.
-              </CardHelpIcon>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 h-7 text-xs"
-                onClick={() => setCsvImportOpen(true)}
-                title="Import a CSV with columns: headline (or title/primary) and caption (or subtitle/secondary). Tags are set separately."
-              >
-                <FileSpreadsheet className="h-3 w-3" />
-                Import CSV
-              </Button>
-              {project.csvOverrides && (
-                <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                  {project.csvOverrides.length} rows
-                </span>
-              )}
-            </div>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Slides &amp; Images</CardTitle>
+            <CardHelpIcon title="Slides & Images">
+              Set how many slides your carousel will have and see how your
+              uploaded images are distributed across them. The slide count
+              defaults to your uploaded image count — increase it to add
+              text-only slides.
+            </CardHelpIcon>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

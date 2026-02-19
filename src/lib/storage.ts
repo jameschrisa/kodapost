@@ -41,7 +41,7 @@ export function createEmptyProject(): CarouselProject {
     id: `project-${Date.now()}`,
     theme: "",
     keywords: [],
-    cameraProfileId: -1,
+    cameraProfileId: 0,
     uploadedImages: [],
     slides: [],
     ...DEFAULT_PROJECT_SETTINGS,

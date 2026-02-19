@@ -467,7 +467,9 @@ export interface CarouselProject {
   /** Social media platforms this carousel targets */
   targetPlatforms: Platform[];
   /** AI writing style for generated text overlays */
-  captionStyle?: "storyteller" | "minimalist" | "data_driven";
+  captionStyle?: "storyteller" | "minimalist" | "data_driven" | "witty" | "educational" | "poetic" | "custom";
+  /** Custom writing style text when captionStyle is "custom" */
+  customCaptionStyle?: string;
   /** Selected call-to-action for the closer slide */
   selectedCTA?: CTAPreset;
   /** Global overlay style configured before generation */

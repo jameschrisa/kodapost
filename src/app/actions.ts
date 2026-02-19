@@ -164,13 +164,20 @@ async function generateTextOverlay(
   slidePosition: number,
   totalSlides: number,
   globalStyle?: GlobalOverlayStyle,
-  captionStyle?: "storyteller" | "minimalist" | "data_driven"
+  captionStyle?: "storyteller" | "minimalist" | "data_driven" | "witty" | "educational" | "poetic" | "custom",
+  customCaptionStyle?: string
 ): Promise<TextOverlay> {
-  const styleLine = captionStyle === "minimalist"
-    ? "\n- Style: minimalist — ultra-short, modern, fewer words is better"
-    : captionStyle === "data_driven"
-      ? "\n- Style: data-driven — use numbers, stats, or facts when possible"
-      : "\n- Style: storyteller — warm, personal, narrative tone";
+  const styleLines: Record<string, string> = {
+    storyteller: "\n- Style: storyteller — warm, personal, narrative tone",
+    minimalist: "\n- Style: minimalist — ultra-short, modern, fewer words is better",
+    data_driven: "\n- Style: data-driven — use numbers, stats, or facts when possible",
+    witty: "\n- Style: witty — clever wordplay, humor, and a light entertaining tone",
+    educational: "\n- Style: educational — teach something, share tips or insights clearly",
+    poetic: "\n- Style: poetic — lyrical, evocative language that paints a picture",
+  };
+  const styleLine = captionStyle === "custom" && customCaptionStyle
+    ? `\n- Style: ${customCaptionStyle}`
+    : styleLines[captionStyle ?? "storyteller"] ?? styleLines.storyteller;
 
   const message = await getAnthropicClient().messages.create({
     model: "claude-sonnet-4-5-20250929",
@@ -317,7 +324,8 @@ export async function generateCarousel(
           slide.position,
           project.slideCount,
           project.globalOverlayStyle,
-          project.captionStyle
+          project.captionStyle,
+          project.customCaptionStyle
         );
 
         // Always preserve full AI text in aiGeneratedOverlay
@@ -418,7 +426,8 @@ export async function regenerateSlide(
       slide.position,
       project.slideCount,
       project.globalOverlayStyle,
-      project.captionStyle
+      project.captionStyle,
+      project.customCaptionStyle
     );
 
     const updatedSlide: CarouselSlide = {
@@ -470,7 +479,8 @@ export async function generateCaption(
     trackTitle?: string;
     artistName?: string;
   },
-  captionStyle?: "storyteller" | "minimalist" | "data_driven"
+  captionStyle?: "storyteller" | "minimalist" | "data_driven" | "witty" | "educational" | "poetic" | "custom",
+  customCaptionStyle?: string
 ): Promise<ActionResult<string>> {
   try {
     const hashtagsLine = keywords.length > 0
@@ -486,11 +496,17 @@ export async function generateCaption(
         ? `\nThe post includes a music track: "${audioContext.trackTitle}" by ${audioContext.artistName ?? "Unknown Artist"}`
         : "";
 
-    const styleGuide = captionStyle === "minimalist"
-      ? "\n\nWriting style: Minimalist — use short, punchy sentences. Be modern, clean, and direct. Think less is more."
-      : captionStyle === "data_driven"
-        ? "\n\nWriting style: Data-driven — incorporate stats, numbers, or facts. Sound authoritative and knowledgeable."
-        : "\n\nWriting style: Storyteller — use a warm, narrative voice. Make it personal and emotionally engaging.";
+    const styleGuides: Record<string, string> = {
+      storyteller: "\n\nWriting style: Storyteller — use a warm, narrative voice. Make it personal and emotionally engaging.",
+      minimalist: "\n\nWriting style: Minimalist — use short, punchy sentences. Be modern, clean, and direct. Think less is more.",
+      data_driven: "\n\nWriting style: Data-driven — incorporate stats, numbers, or facts. Sound authoritative and knowledgeable.",
+      witty: "\n\nWriting style: Witty — use humor, clever wordplay, and a light tone. Be entertaining and shareable.",
+      educational: "\n\nWriting style: Educational — teach something valuable. Use clear explanations, tips, or step-by-step insights.",
+      poetic: "\n\nWriting style: Poetic — use lyrical, evocative language. Paint a picture with words and create an emotional atmosphere.",
+    };
+    const styleGuide = captionStyle === "custom" && customCaptionStyle
+      ? `\n\nWriting style: ${customCaptionStyle}`
+      : styleGuides[captionStyle ?? "storyteller"] ?? styleGuides.storyteller;
 
     const message = await getAnthropicClient().messages.create({
       model: "claude-sonnet-4-5-20250929",
