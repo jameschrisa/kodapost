@@ -199,7 +199,10 @@ export function SavedDraftCard({ onResume, onDiscard }: SavedDraftCardProps) {
               <Button
                 size="sm"
                 className="h-8 gap-1.5 text-xs bg-purple-600 hover:bg-purple-500"
-                onClick={onResume}
+                onClick={() => {
+                  onResume();
+                  setDraft(null);
+                }}
               >
                 <Play className="h-3 w-3" />
                 Resume

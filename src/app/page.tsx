@@ -138,7 +138,8 @@ export default function Home() {
     if (saved) {
       setProject(saved);
       // If the saved step requires images but they were stripped from storage,
-      // reset to upload step so the user re-uploads
+      // reset to upload step so the user re-uploads.
+      // The SavedDraftCard on the upload step lets them resume from there.
       const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
       if (!hasImages && savedStep !== "upload") {
         setStep("upload");
@@ -146,24 +147,9 @@ export default function Home() {
         setStep(savedStep);
       }
 
-      // Show resume prompt if project has a name — skip splash
+      // Skip splash for returning users with a named project
       if (savedName && savedStep !== "upload") {
         setSplashDismissed(true);
-        setTimeout(() => {
-          toast.info(`Resume "${savedName}"?`, {
-            description: "You have a saved project from a previous session.",
-            duration: 8000,
-            action: {
-              label: "Start Fresh",
-              onClick: () => {
-                clearProject();
-                setProject(createEmptyProject());
-                setDirection(-1);
-                setStep("upload");
-              },
-            },
-          });
-        }, 500);
       }
     } else {
       setStep(savedStep);
@@ -335,23 +321,28 @@ export default function Home() {
     });
   }, []);
 
-  /** Resume a saved draft — re-hydrate from localStorage and jump to saved step */
+  /** Resume a saved draft — project is already hydrated, just navigate to the right step */
   const handleResumeDraft = useCallback(() => {
-    const saved = loadProject();
     const savedStep = loadStep();
-    if (saved) {
-      setProject(saved);
-      const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
-      if (!hasImages && savedStep !== "upload") {
-        navigateToStep("upload");
-        toast.info("Images need to be re-uploaded", {
-          description: "Your project settings are restored. Please re-add your photos.",
-        });
-      } else {
-        navigateToStep(savedStep);
-      }
+    const hasImages = project.uploadedImages.some((img) => img.url.length > 0);
+
+    if (!hasImages && savedStep !== "upload") {
+      // Images were stripped from storage — stay on upload but confirm settings are kept
+      toast.info("Project settings restored", {
+        description: "Re-upload your photos to continue where you left off.",
+        duration: 5000,
+      });
+    } else if (savedStep === "upload" && !hasImages) {
+      // Was on upload with no images — just confirm
+      toast.info("Project restored", {
+        description: "Upload your photos to get started.",
+        duration: 3000,
+      });
+    } else {
+      // Has images — navigate to saved step
+      navigateToStep(savedStep);
     }
-  }, [navigateToStep]);
+  }, [navigateToStep, project.uploadedImages]);
 
   const handleDiscardDraft = useCallback(() => {
     setProject(createEmptyProject());
