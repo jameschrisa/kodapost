@@ -382,6 +382,78 @@ export async function generateCarousel(
 }
 
 // -----------------------------------------------------------------------------
+// Single Slide Regeneration (Retry)
+// -----------------------------------------------------------------------------
+
+/**
+ * Regenerates a single slide that previously failed or needs refreshing.
+ * Re-uses the same project context (theme, keywords, overlay style) to
+ * produce a new text overlay for the given slide position.
+ */
+export async function regenerateSlide(
+  project: CarouselProject,
+  slideIndex: number
+): Promise<ActionResult<CarouselSlide>> {
+  try {
+    const slide = project.slides[slideIndex];
+    if (!slide) {
+      return { success: false, error: `Slide index ${slideIndex} not found` };
+    }
+
+    // Re-assign image if user_upload
+    let imageUrl = slide.imageUrl;
+    if (slide.metadata?.source === "user_upload") {
+      const refId = slide.metadata.referenceImage;
+      const uploaded = project.uploadedImages.find((img) => img.id === refId);
+      if (uploaded) {
+        imageUrl = uploaded.url;
+      }
+    }
+
+    // Regenerate text overlay
+    const overlay = await generateTextOverlay(
+      project.theme,
+      project.keywords,
+      slide.slideType,
+      slide.position,
+      project.slideCount,
+      project.globalOverlayStyle,
+      project.captionStyle
+    );
+
+    const updatedSlide: CarouselSlide = {
+      ...slide,
+      imageUrl,
+      aiGeneratedOverlay: overlay,
+      textOverlay: {
+        ...overlay,
+        content: {
+          ...overlay.content,
+          primary: project.globalOverlayStyle?.showHeadline === false ? "" : overlay.content.primary,
+          secondary: project.globalOverlayStyle?.showSubtitle === false ? undefined : overlay.content.secondary,
+        },
+      },
+      textOverlayState: {
+        slideId: slide.id,
+        enabled: true,
+        source: "ai_generated",
+        lastModified: new Date().toISOString(),
+        customizations: {
+          textEdited: false,
+          styleEdited: false,
+          positionEdited: false,
+        },
+      },
+      status: "ready",
+    };
+
+    return { success: true, data: updatedSlide };
+  } catch (error) {
+    return { success: false, error: handleAPIError(error) };
+  }
+}
+
+// -----------------------------------------------------------------------------
 // AI Caption Generation
 // -----------------------------------------------------------------------------
 

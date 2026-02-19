@@ -9,10 +9,12 @@ import {
   GripVertical,
   ImageIcon,
   Loader2,
+  RefreshCw,
   Send,
   Smartphone,
   Type,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,6 +31,7 @@ import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-
 import { DEFAULT_FILTER_CONFIG } from "@/lib/filter-presets";
 import type { CarouselProject, CarouselSlide } from "@/lib/types";
 import { KodaPostIcon } from "@/components/icons";
+import { regenerateSlide } from "@/app/actions";
 
 interface CarouselPreviewProps {
   project: CarouselProject;
@@ -115,6 +118,72 @@ export function CarouselPreview({
     [project.slides, currentPage, SLIDES_PER_PAGE]
   );
 
+  // -- Retry state --
+  const [retryingSlides, setRetryingSlides] = useState<Set<number>>(new Set());
+
+  const handleRetrySlide = useCallback(async (slideIndex: number) => {
+    setRetryingSlides((prev) => new Set(prev).add(slideIndex));
+    try {
+      const result = await regenerateSlide(project, slideIndex);
+      if (result.success) {
+        const updatedSlides = [...project.slides];
+        updatedSlides[slideIndex] = result.data;
+        onEdit({ ...project, slides: updatedSlides });
+        toast.success(`Slide ${slideIndex + 1} regenerated`);
+      } else {
+        toast.error(`Slide ${slideIndex + 1} failed again`, {
+          description: result.error,
+        });
+      }
+    } catch {
+      toast.error(`Slide ${slideIndex + 1} retry failed`);
+    } finally {
+      setRetryingSlides((prev) => {
+        const next = new Set(prev);
+        next.delete(slideIndex);
+        return next;
+      });
+    }
+  }, [project, onEdit]);
+
+  const handleRetryAllFailed = useCallback(async () => {
+    const failedIndices = project.slides
+      .map((s, i) => (s.status === "error" ? i : -1))
+      .filter((i) => i >= 0);
+    if (failedIndices.length === 0) return;
+
+    setRetryingSlides(new Set(failedIndices));
+    let successCount = 0;
+
+    for (const idx of failedIndices) {
+      try {
+        const result = await regenerateSlide(project, idx);
+        if (result.success) {
+          const updatedSlides = [...project.slides];
+          updatedSlides[idx] = result.data;
+          onEdit({ ...project, slides: updatedSlides });
+          successCount++;
+        }
+      } catch {
+        // Continue with remaining slides
+      } finally {
+        setRetryingSlides((prev) => {
+          const next = new Set(prev);
+          next.delete(idx);
+          return next;
+        });
+      }
+    }
+
+    if (successCount === failedIndices.length) {
+      toast.success("All failed slides regenerated");
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} of ${failedIndices.length} slides recovered`);
+    } else {
+      toast.error("All retries failed");
+    }
+  }, [project, onEdit]);
+
   // -- Publish dialog state --
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
 
@@ -166,11 +235,37 @@ export function CarouselPreview({
             <h2 className="text-lg font-semibold">Review</h2>
             <p className="text-sm text-muted-foreground">
               {readySlides.length} of {project.slides.length} slides ready
-              {hasErrors && " (some slides had errors)"}
+              {hasErrors && (
+                <span className="text-amber-400">
+                  {" "}({project.slides.filter(s => s.status === "error").length} failed)
+                </span>
+              )}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Retry failed slides */}
+          {hasErrors && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+              onClick={handleRetryAllFailed}
+              disabled={retryingSlides.size > 0}
+            >
+              {retryingSlides.size > 0 ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Retrying...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Retry Failed
+                </>
+              )}
+            </Button>
+          )}
           {/* Scheduled badge */}
           {project.scheduledPublishAt && (
             <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
@@ -312,9 +407,26 @@ export function CarouselPreview({
                 </div>
               )}
               {slide.status === "error" && (
-                <div className="flex h-full flex-col items-center justify-center gap-1 bg-muted px-4 text-center">
-                  <ImageIcon className="h-6 w-6 text-destructive" />
-                  <p className="text-xs text-destructive">Generation failed</p>
+                <div className="flex h-full flex-col items-center justify-center gap-1.5 bg-muted px-4 text-center">
+                  {retryingSlides.has(slide.position) ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-amber-400" />
+                  ) : (
+                    <>
+                      <ImageIcon className="h-5 w-5 text-destructive" />
+                      <p className="text-[10px] text-destructive">Failed</p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRetrySlide(slide.position);
+                        }}
+                        className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-400 hover:bg-amber-500/25 transition-colors"
+                      >
+                        <RefreshCw className="h-2.5 w-2.5" />
+                        Retry
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
               {slide.status === "pending" && (

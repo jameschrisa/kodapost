@@ -319,19 +319,63 @@ export function ConfigurationPanel({
     }
   }
 
+  // Generation progress animation
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (isGenerating) {
+      setGenerationProgress(0);
+      const totalSlides = (project.postMode ?? "carousel") === "single" ? 1 : project.slideCount;
+      const stepDuration = Math.max(2000, 8000 / totalSlides); // ~8s total spread across slides
+      let current = 0;
+      progressInterval.current = setInterval(() => {
+        current += 1;
+        if (current < totalSlides) {
+          setGenerationProgress(current);
+        } else {
+          if (progressInterval.current) clearInterval(progressInterval.current);
+        }
+      }, stepDuration);
+    } else {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+        progressInterval.current = null;
+      }
+    }
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, [isGenerating]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (isGenerating) {
     const isSingle = (project.postMode ?? "carousel") === "single";
+    const totalSlides = isSingle ? 1 : project.slideCount;
+    const progressPct = Math.min(95, ((generationProgress + 1) / totalSlides) * 90);
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-6 py-12">
         <LoadingSpinner size="lg" text={isSingle ? "Generating your post..." : "Generating your carousel..."} />
-        <div className="max-w-xs text-center">
+        <div className="max-w-xs text-center space-y-3">
           <p className="text-sm text-muted-foreground">
             AI is crafting your {isSingle ? "post" : "slides"} with the{" "}
             <span className="font-medium text-foreground">
               {project.theme || "selected"}
             </span>{" "}
-            theme. This may take a minute.
+            theme.
           </p>
+          {!isSingle && (
+            <div className="space-y-1.5">
+              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-purple-500 transition-all duration-1000 ease-out"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground tabular-nums">
+                Crafting slide {Math.min(generationProgress + 1, totalSlides)} of {totalSlides}...
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );

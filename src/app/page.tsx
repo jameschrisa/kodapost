@@ -47,6 +47,7 @@ import { SquarePenIcon } from "@/components/icons/animated/square-pen";
 import { CalendarDaysIcon } from "@/components/icons/animated/calendar-days";
 import { ContentSchedule } from "@/components/history/ContentSchedule";
 import { AudioPanel } from "@/components/audio";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { AudioClip, CarouselProject, UploadedImage } from "@/lib/types";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
@@ -346,6 +347,21 @@ export default function Home() {
       description: "All data cleared. Starting fresh as a new user.",
     });
   }, []);
+
+  // -- Keyboard shortcuts --
+  const handleSaveShortcut = useCallback(() => {
+    if (step === "configure" || step === "edit") {
+      const name = project.projectName || loadProjectName() || "Untitled Project";
+      saveProject({ ...project, projectName: name });
+      saveProjectName(name);
+      toast.success("Project saved", { duration: 2000 });
+    }
+  }, [step, project]);
+
+  useKeyboardShortcuts({
+    onSave: handleSaveShortcut,
+    onEscape: step !== "upload" ? handleBack : undefined,
+  });
 
   // Don't render until hydrated to avoid mismatch
   if (!hydrated) {

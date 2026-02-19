@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Calendar, CalendarDays, CalendarRange, Loader2 } from "lucide-react";
+import { Calendar, CalendarDays, CalendarRange, Loader2, Sparkles, SquarePen } from "lucide-react";
 import { CalendarGrid } from "./CalendarGrid";
 import { PostCard } from "./PostCard";
 import { cn } from "@/lib/utils";
@@ -115,11 +115,19 @@ export function ContentSchedule() {
           {/* Calendar — always visible */}
           <div className="rounded-xl border bg-card p-4">
             {!hasAnyPosts && (
-              <div className="mb-4 rounded-lg bg-muted/30 px-4 py-3 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No posts yet. Create a carousel and publish it to see your
-                  content here.
+              <div className="mb-4 rounded-lg border border-dashed border-purple-500/20 bg-purple-500/5 px-6 py-6 text-center space-y-3">
+                <div className="flex items-center justify-center gap-2 text-purple-400">
+                  <Sparkles className="h-5 w-5" />
+                  <h3 className="text-sm font-semibold">No posts yet</h3>
+                </div>
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                  Create your first carousel in the <span className="inline-flex items-center gap-1 font-medium text-foreground"><SquarePen className="h-3 w-3" /> Create Post</span> tab. Once you publish, your posts will appear here on the calendar.
                 </p>
+                <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground/70 pt-1">
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-500/60" /> Published</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-500/60" /> Scheduled</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-gray-500/60" /> Draft</span>
+                </div>
               </div>
             )}
             <CalendarGrid
