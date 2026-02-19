@@ -478,6 +478,8 @@ export interface CarouselProject {
   caption?: string;
   /** Audio transcription from voice recording */
   storyTranscription?: string;
+  /** Audio clip attached for nano-cast export */
+  audioClip?: AudioClip;
   /** ISO timestamp for scheduled publishing */
   scheduledPublishAt?: string;
   /** Platforms selected for scheduled publishing */
@@ -502,6 +504,63 @@ export type PostType = "single" | "carousel";
 
 /** Calendar view mode */
 export type CalendarView = "daily" | "weekly" | "monthly";
+
+// -----------------------------------------------------------------------------
+// Audio & Nano-Cast Types
+// -----------------------------------------------------------------------------
+
+/** Source of audio content */
+export type AudioSource = "recording" | "upload" | "library";
+
+/** Audio clip metadata */
+export interface AudioClip {
+  /** Unique identifier */
+  id: string;
+  /** How the audio was acquired */
+  source: AudioSource;
+  /** Display name / filename */
+  name: string;
+  /** Duration in seconds */
+  duration: number;
+  /** MIME type (audio/mp3, audio/wav, etc.) */
+  mimeType: string;
+  /** Size in bytes */
+  size: number;
+  /** Object URL for playback (blob: URL) */
+  objectUrl: string;
+  /** Optional transcription text */
+  transcription?: string;
+  /** Trim start point in seconds */
+  trimStart?: number;
+  /** Trim end point in seconds */
+  trimEnd?: number;
+  /** Music library attribution info */
+  attribution?: AudioAttribution;
+  /** ISO timestamp of creation */
+  createdAt: string;
+}
+
+/** Attribution info for music library tracks */
+export interface AudioAttribution {
+  /** Track title */
+  trackTitle: string;
+  /** Artist name */
+  artistName: string;
+  /** Source platform (jamendo, audius, ccmixter) */
+  platform: string;
+  /** URL to the original track */
+  trackUrl: string;
+  /** License type (CC-BY, CC0, etc.) */
+  license: string;
+  /** Pre-formatted attribution text for captions */
+  attributionText: string;
+}
+
+/** Nano-cast export format */
+export type NanoCastFormat = "package" | "video";
+
+/** Transition type for video slideshow */
+export type SlideTransition = "none" | "crossfade" | "slide";
 
 /** A recorded post in the user's content history */
 export interface PostRecord {

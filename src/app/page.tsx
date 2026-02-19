@@ -46,7 +46,8 @@ import { cn, computeConfigHash } from "@/lib/utils";
 import { SquarePenIcon } from "@/components/icons/animated/square-pen";
 import { CalendarDaysIcon } from "@/components/icons/animated/calendar-days";
 import { ContentSchedule } from "@/components/history/ContentSchedule";
-import type { CarouselProject, UploadedImage } from "@/lib/types";
+import { AudioPanel } from "@/components/audio";
+import type { AudioClip, CarouselProject, UploadedImage } from "@/lib/types";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
 type AppMode = "create" | "schedule";
@@ -230,6 +231,10 @@ export default function Home() {
 
   const handleProjectUpdate = useCallback((updated: CarouselProject) => {
     setProject(updated);
+  }, []);
+
+  const handleAudioChange = useCallback((clip: AudioClip | undefined) => {
+    setProject((prev) => ({ ...prev, audioClip: clip }));
   }, []);
 
   const handleGenerate = useCallback(async () => {
@@ -610,6 +615,12 @@ export default function Home() {
                     onEdit={handleProjectUpdate}
                     onPublish={handlePublish}
                     onBack={handleBack}
+                  />
+                </motion.div>
+                <motion.div variants={staggerItemVariants} className="mt-4">
+                  <AudioPanel
+                    audioClip={project.audioClip}
+                    onAudioChange={handleAudioChange}
                   />
                 </motion.div>
               </motion.div>

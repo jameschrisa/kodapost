@@ -242,7 +242,47 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         }
       }
 
-      // 3. Generate ZIP and trigger download
+      // 3. Include audio clip if present
+      if (project.audioClip?.objectUrl) {
+        try {
+          const audioRes = await fetch(project.audioClip.objectUrl);
+          const audioBlob = await audioRes.blob();
+          const audioArrayBuffer = await audioBlob.arrayBuffer();
+          const ext = project.audioClip.mimeType.includes("mp3")
+            ? "mp3"
+            : project.audioClip.mimeType.includes("wav")
+              ? "wav"
+              : project.audioClip.mimeType.includes("mp4") || project.audioClip.mimeType.includes("m4a")
+                ? "m4a"
+                : project.audioClip.mimeType.includes("ogg")
+                  ? "ogg"
+                  : "webm";
+          const audioFolder = zip.folder("audio");
+          if (audioFolder) {
+            audioFolder.file(
+              `${project.audioClip.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.${ext}`,
+              audioArrayBuffer
+            );
+            // Include attribution text if from music library
+            if (project.audioClip.attribution) {
+              audioFolder.file(
+                "attribution.txt",
+                `Track: ${project.audioClip.attribution.trackTitle}\n` +
+                  `Artist: ${project.audioClip.attribution.artistName}\n` +
+                  `Platform: ${project.audioClip.attribution.platform}\n` +
+                  `License: ${project.audioClip.attribution.license}\n` +
+                  `URL: ${project.audioClip.attribution.trackUrl}\n\n` +
+                  project.audioClip.attribution.attributionText
+              );
+            }
+          }
+        } catch {
+          // Audio fetch failed — export images without audio
+          console.warn("Failed to include audio in export");
+        }
+      }
+
+      // 4. Generate ZIP and trigger download
       const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -417,7 +457,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                   {readySlides.length * selected.size} images
                 </span>
               </p>
-              <p>Downloaded as ZIP with folders per platform.</p>
+              <p>
+                Downloaded as ZIP with folders per platform.
+                {project.audioClip && " Includes audio track."}
+              </p>
             </div>
           </CardContent>
         </Card>
