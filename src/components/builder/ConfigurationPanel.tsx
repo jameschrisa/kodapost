@@ -36,7 +36,7 @@ import { PREDEFINED_FILTERS, CAMERA_FILTER_MAP, DEFAULT_FILTER_CONFIG } from "@/
 import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-css";
 import Image from "next/image";
 import { loadFilterTemplates, saveFilterTemplates } from "@/lib/storage";
-import { computeConfigHash } from "@/lib/utils";
+import { cn, computeConfigHash } from "@/lib/utils";
 import type { CarouselProject, FilterTemplate, PredefinedFilterName, FilterConfig, PostMode } from "@/lib/types";
 
 interface ConfigurationPanelProps {
@@ -668,8 +668,16 @@ export function ConfigurationPanel({
             className="resize-none text-sm"
           />
           <div className="flex items-center justify-between mt-1.5">
-            <p className="text-xs text-muted-foreground">
-              {captionText.length} / 2200 characters
+            <p className={cn(
+              "text-xs tabular-nums",
+              captionText.length > 2200
+                ? "text-destructive font-medium"
+                : captionText.length > 1800
+                  ? "text-amber-400"
+                  : "text-muted-foreground"
+            )}>
+              {captionText.length.toLocaleString()} / 2,200
+              {captionText.length > 2200 && " (over limit)"}
             </p>
             {!captionText.trim() && project.theme.trim() && (
               <p className="text-xs text-purple-400">
