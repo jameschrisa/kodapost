@@ -5,7 +5,7 @@ import {
   Clock,
   FileText,
   AlertCircle,
-  Image,
+  Image as ImageIcon,
   Images,
   ExternalLink,
   Instagram,
@@ -152,7 +152,7 @@ export function PostCard({ post, compact = false }: PostCardProps) {
           {post.postType === "carousel" ? (
             <Images className="h-4 w-4" />
           ) : (
-            <Image className="h-4 w-4" />
+            <ImageIcon className="h-4 w-4" />
           )}
         </div>
 

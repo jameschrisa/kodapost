@@ -54,6 +54,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const maxDurationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const interimTranscriptRef = useRef<string>("");
+  const stopRecordingRef = useRef<() => void>(() => {});
 
   // Clean up object URL on unmount
   useEffect(() => {
@@ -193,7 +194,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
 
       // Auto-stop at max duration
       maxDurationTimerRef.current = setTimeout(() => {
-        stopRecordingInternal();
+        stopRecordingRef.current();
       }, MAX_DURATION_MS);
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
@@ -264,6 +265,9 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     }
     setAnalyserNode(null);
   }, []);
+
+  // Keep ref in sync so auto-stop timeout always calls latest version
+  stopRecordingRef.current = stopRecordingInternal;
 
   const stopRecording = useCallback(() => {
     if (isRecording) {

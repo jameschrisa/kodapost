@@ -53,17 +53,19 @@ function LoopingIcon({
   useEffect(() => {
     if (!isActive || !iconRef.current) return;
 
+    const icon = iconRef.current;
+
     // Play immediately on mount / becoming active
-    iconRef.current.startAnimation();
+    icon.startAnimation();
 
     // Then replay on an interval — 2.5s gives all animations time to complete
     const interval = setInterval(() => {
-      iconRef.current?.startAnimation();
+      icon.startAnimation();
     }, 2500);
 
     return () => {
       clearInterval(interval);
-      iconRef.current?.stopAnimation();
+      icon.stopAnimation();
     };
   }, [isActive]);
 

@@ -76,6 +76,7 @@ export function HeaderMenu({
               className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
             >
               {userInfo.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={userInfo.imageUrl}
                   alt=""
@@ -91,6 +92,7 @@ export function HeaderMenu({
             <DropdownMenuLabel className="font-normal">
               <div className="flex items-center gap-3">
                 {userInfo.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={userInfo.imageUrl}
                     alt=""
