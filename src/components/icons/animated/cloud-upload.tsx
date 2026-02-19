@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -25,18 +25,12 @@ const CloudUploadIcon = forwardRef<CloudUploadIconHandle, CloudUploadIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation();
     const isControlledRef = useRef(false);
-    const mountedRef = useRef(false);
-
-    useEffect(() => {
-      mountedRef.current = true;
-      return () => { mountedRef.current = false; };
-    }, []);
 
     useImperativeHandle(ref, () => {
       isControlledRef.current = true;
       return {
-        startAnimation: () => { if (mountedRef.current) controls.start("initial"); },
-        stopAnimation: () => { if (mountedRef.current) controls.start("active"); },
+        startAnimation: () => { try { controls.start("initial"); } catch { /* unmounted */ } },
+        stopAnimation: () => { try { controls.start("active"); } catch { /* unmounted */ } },
       };
     });
 

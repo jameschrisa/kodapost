@@ -68,7 +68,9 @@ function LoopingIcon({
     return () => {
       cancelAnimationFrame(frameId);
       clearInterval(interval);
-      icon.stopAnimation();
+      // Don't call stopAnimation() here — during unmount the motion elements
+      // may already be destroyed, which causes controls.start() to throw.
+      // The animation naturally stops when the component unmounts.
     };
   }, [isActive]);
 

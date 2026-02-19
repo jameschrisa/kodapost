@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -44,19 +44,13 @@ const GalleryVerticalEndIcon = forwardRef<
 >(({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
   const controls = useAnimation();
   const isControlledRef = useRef(false);
-  const mountedRef = useRef(false);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => { mountedRef.current = false; };
-  }, []);
 
   useImperativeHandle(ref, () => {
     isControlledRef.current = true;
 
     return {
-      startAnimation: () => { if (mountedRef.current) controls.start("animate"); },
-      stopAnimation: () => { if (mountedRef.current) controls.start("normal"); },
+      startAnimation: () => { try { controls.start("animate"); } catch { /* unmounted */ } },
+      stopAnimation: () => { try { controls.start("normal"); } catch { /* unmounted */ } },
     };
   });
 
