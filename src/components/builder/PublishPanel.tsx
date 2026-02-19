@@ -5,9 +5,12 @@ import {
   Check,
   CheckCircle2,
   Download,
+  ImageIcon,
   Instagram,
   Linkedin,
   Loader2,
+  Music,
+  Package,
   Plus,
   RotateCcw,
   Send,
@@ -107,6 +110,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [caption, setCaption] = useState(project.caption ?? "");
   const [isPosting, setIsPosting] = useState(false);
   const [postingPlatform, setPostingPlatform] = useState<Platform | null>(null);
+  const [exportMode, setExportMode] = useState<"images" | "nanocast">(
+    project.audioClip ? "nanocast" : "images"
+  );
+  const [includeAttribution, setIncludeAttribution] = useState(true);
 
   // Pre-select platforms from saved settings
   useEffect(() => {
@@ -179,11 +186,16 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         return;
       }
 
-      // 3. Send to publish API
+      // 3. Send to publish API (append attribution if enabled)
+      const finalCaption =
+        includeAttribution && project.audioClip?.attribution
+          ? `${caption}\n\n🎵 ${project.audioClip.attribution.attributionText}`
+          : caption;
+
       const publishRes = await fetch(`/api/publish/${platform}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slideImages, caption }),
+        body: JSON.stringify({ slideImages, caption: finalCaption }),
       });
 
       const publishData = await publishRes.json();
@@ -242,8 +254,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         }
       }
 
-      // 3. Include audio clip if present
-      if (project.audioClip?.objectUrl) {
+      // 3. Include audio clip if nano-cast mode and audio present
+      let audioFilename: string | undefined;
+      if (exportMode === "nanocast" && project.audioClip?.objectUrl) {
         try {
           const audioRes = await fetch(project.audioClip.objectUrl);
           const audioBlob = await audioRes.blob();
@@ -257,12 +270,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                 : project.audioClip.mimeType.includes("ogg")
                   ? "ogg"
                   : "webm";
+          audioFilename = `${project.audioClip.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.${ext}`;
           const audioFolder = zip.folder("audio");
           if (audioFolder) {
-            audioFolder.file(
-              `${project.audioClip.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.${ext}`,
-              audioArrayBuffer
-            );
+            audioFolder.file(audioFilename, audioArrayBuffer);
             // Include attribution text if from music library
             if (project.audioClip.attribution) {
               audioFolder.file(
@@ -282,12 +293,41 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         }
       }
 
-      // 4. Generate ZIP and trigger download
+      // 4. Include manifest.json for nano-cast packages
+      if (exportMode === "nanocast") {
+        const finalCaption =
+          includeAttribution && project.audioClip?.attribution
+            ? `${caption}\n\n🎵 ${project.audioClip.attribution.attributionText}`
+            : caption;
+
+        const manifest = {
+          version: 1,
+          projectName: project.projectName || "Untitled",
+          slideCount: readySlides.length,
+          platforms,
+          caption: finalCaption || undefined,
+          audio: project.audioClip
+            ? {
+                filename: audioFilename,
+                duration: project.audioClip.duration,
+                source: project.audioClip.source,
+                attribution: project.audioClip.attribution?.attributionText,
+              }
+            : undefined,
+          exportedAt: new Date().toISOString(),
+        };
+
+        zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+      }
+
+      // 5. Generate ZIP and trigger download
       const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `nostalgiaflow-carousel-${Date.now()}.zip`;
+      a.download = exportMode === "nanocast"
+        ? `kodapost-nanocast-${Date.now()}.zip`
+        : `kodapost-carousel-${Date.now()}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -300,9 +340,14 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         .filter(Boolean)
         .join(", ");
 
-      toast.success("Export complete", {
-        description: `${readySlides.length} slides packaged for ${platformNames}.`,
-      });
+      toast.success(
+        exportMode === "nanocast" ? "Nano-cast package ready" : "Export complete",
+        {
+          description: `${readySlides.length} slides packaged for ${platformNames}.${
+            exportMode === "nanocast" && project.audioClip ? " Includes audio." : ""
+          }`,
+        }
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Export failed. Please try again.";
@@ -444,6 +489,65 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         </div>
       </div>
 
+      {/* Export mode selector — only when audio is attached */}
+      {project.audioClip && selected.size > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Export Mode</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setExportMode("nanocast")}
+              className={cn(
+                "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
+                exportMode === "nanocast"
+                  ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
+                  : "border-muted-foreground/20 hover:border-muted-foreground/40"
+              )}
+            >
+              <Package
+                className={cn(
+                  "h-5 w-5 shrink-0",
+                  exportMode === "nanocast"
+                    ? "text-purple-400"
+                    : "text-muted-foreground"
+                )}
+              />
+              <div>
+                <p className="text-sm font-medium">Nano-Cast Package</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Images + audio + manifest
+                </p>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setExportMode("images")}
+              className={cn(
+                "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
+                exportMode === "images"
+                  ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
+                  : "border-muted-foreground/20 hover:border-muted-foreground/40"
+              )}
+            >
+              <ImageIcon
+                className={cn(
+                  "h-5 w-5 shrink-0",
+                  exportMode === "images"
+                    ? "text-purple-400"
+                    : "text-muted-foreground"
+                )}
+              />
+              <div>
+                <p className="text-sm font-medium">Images Only</p>
+                <p className="text-[11px] text-muted-foreground">
+                  No audio or manifest
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Export summary */}
       {selected.size > 0 && (
         <Card>
@@ -457,9 +561,36 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                   {readySlides.length * selected.size} images
                 </span>
               </p>
+              {project.audioClip && exportMode === "nanocast" && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Music className="h-3.5 w-3.5 text-purple-400" />
+                  <span>
+                    {project.audioClip.name} &middot;{" "}
+                    {Math.floor(project.audioClip.duration / 60)}:
+                    {String(Math.floor(project.audioClip.duration % 60)).padStart(2, "0")}
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                      project.audioClip.source === "recording"
+                        ? "bg-red-500/10 text-red-400"
+                        : project.audioClip.source === "library"
+                          ? "bg-green-500/10 text-green-400"
+                          : "bg-blue-500/10 text-blue-400"
+                    )}
+                  >
+                    {project.audioClip.source === "recording"
+                      ? "Voice"
+                      : project.audioClip.source === "library"
+                        ? "Library"
+                        : "Upload"}
+                  </span>
+                </div>
+              )}
               <p>
-                Downloaded as ZIP with folders per platform.
-                {project.audioClip && " Includes audio track."}
+                {exportMode === "nanocast" && project.audioClip
+                  ? "Nano-cast package with images, audio & manifest."
+                  : "ZIP with platform folders."}
               </p>
             </div>
           </CardContent>
@@ -480,8 +611,14 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           </>
         ) : (
           <>
-            <Download className="h-5 w-5" />
-            Download Carousel
+            {exportMode === "nanocast" && project.audioClip ? (
+              <Package className="h-5 w-5" />
+            ) : (
+              <Download className="h-5 w-5" />
+            )}
+            {exportMode === "nanocast" && project.audioClip
+              ? "Download Nano-Cast Package"
+              : "Download Carousel"}
           </>
         )}
       </Button>
@@ -514,6 +651,31 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
               {caption.length} / 2200 characters
             </p>
           </div>
+
+          {/* Attribution checkbox — shown when audio has attribution info */}
+          {project.audioClip?.attribution && (
+            <div className="space-y-2">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeAttribution}
+                  onChange={(e) => setIncludeAttribution(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-muted-foreground/30 accent-purple-500"
+                />
+                <span className="text-xs text-muted-foreground">
+                  Include music credit in caption
+                </span>
+              </label>
+              {includeAttribution && (
+                <div className="flex items-start gap-2 rounded-md bg-purple-500/5 border border-purple-500/10 px-3 py-2">
+                  <Music className="h-3.5 w-3.5 text-purple-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    🎵 {project.audioClip.attribution.attributionText}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Post buttons for each connected platform */}
           <div className="grid gap-2">

@@ -384,7 +384,12 @@ export async function generateCarousel(
 export async function generateCaption(
   theme: string,
   keywords: string[],
-  storyTranscription?: string
+  storyTranscription?: string,
+  audioContext?: {
+    source: "recording" | "upload" | "library";
+    trackTitle?: string;
+    artistName?: string;
+  }
 ): Promise<ActionResult<string>> {
   try {
     const hashtagsLine = keywords.length > 0
@@ -395,6 +400,11 @@ export async function generateCaption(
       ? `\nStory context from voice recording: "${storyTranscription}"`
       : "";
 
+    const audioLine =
+      audioContext?.source === "library" && audioContext.trackTitle
+        ? `\nThe post includes a music track: "${audioContext.trackTitle}" by ${audioContext.artistName ?? "Unknown Artist"}`
+        : "";
+
     const message = await getAnthropicClient().messages.create({
       model: "claude-sonnet-4-5-20250929",
       max_tokens: 512,
@@ -403,7 +413,7 @@ export async function generateCaption(
           role: "user",
           content: `Write a compelling social media caption for an Instagram carousel post.
 
-Theme: ${theme}${hashtagsLine}${transcriptionLine}
+Theme: ${theme}${hashtagsLine}${transcriptionLine}${audioLine}
 
 Rules:
 - Keep it engaging and authentic (2-4 sentences)
@@ -411,7 +421,7 @@ Rules:
 - End with relevant hashtags — use NO MORE than 8 hashtags total
 - Keep total length under 2200 characters
 - Do NOT use markdown formatting
-- Write ONLY the caption text, nothing else`,
+- Write ONLY the caption text, nothing else${audioLine ? "\n- If relevant, subtly reference the music vibe (don't force it)" : ""}`,
         },
       ],
     });

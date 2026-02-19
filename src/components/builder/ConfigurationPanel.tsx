@@ -264,10 +264,21 @@ export function ConfigurationPanel({
     }
     setIsGeneratingCaption(true);
     try {
+      const audioCtx = project.audioClip?.source === "library" && project.audioClip.attribution
+        ? {
+            source: project.audioClip.source as "recording" | "upload" | "library",
+            trackTitle: project.audioClip.attribution.trackTitle,
+            artistName: project.audioClip.attribution.artistName,
+          }
+        : project.audioClip?.source
+          ? { source: project.audioClip.source as "recording" | "upload" | "library" }
+          : undefined;
+
       const result = await generateCaption(
         project.theme,
         project.keywords,
-        project.storyTranscription
+        project.storyTranscription,
+        audioCtx
       );
       if (result.success) {
         setCaptionText(result.data);
