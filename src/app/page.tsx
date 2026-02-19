@@ -42,8 +42,9 @@ import {
   buttonTapScale,
   breathingVariants,
 } from "@/lib/motion";
-import { PenLine, CalendarDays } from "lucide-react";
 import { cn, computeConfigHash } from "@/lib/utils";
+import { SquarePenIcon } from "@/components/icons/animated/square-pen";
+import { CalendarDaysIcon } from "@/components/icons/animated/calendar-days";
 import { ContentSchedule } from "@/components/history/ContentSchedule";
 import type { CarouselProject, UploadedImage } from "@/lib/types";
 
@@ -433,7 +434,7 @@ export default function Home() {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <PenLine className="h-4 w-4" />
+            <SquarePenIcon size={16} />
             Create Post
             {appMode === "create" && (
               <motion.div
@@ -453,7 +454,7 @@ export default function Home() {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CalendarDays className="h-4 w-4" />
+            <CalendarDaysIcon size={16} />
             Content Calendar
             {appMode === "schedule" && (
               <motion.div
