@@ -47,6 +47,7 @@ import { SquarePenIcon } from "@/components/icons/animated/square-pen";
 import { CalendarDaysIcon } from "@/components/icons/animated/calendar-days";
 import { ContentSchedule } from "@/components/history/ContentSchedule";
 import { AudioPanel } from "@/components/audio";
+import { SavedDraftCard } from "@/components/shared/SavedDraftCard";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { AudioClip, CarouselProject, UploadedImage } from "@/lib/types";
 
@@ -334,6 +335,29 @@ export default function Home() {
     });
   }, []);
 
+  /** Resume a saved draft — re-hydrate from localStorage and jump to saved step */
+  const handleResumeDraft = useCallback(() => {
+    const saved = loadProject();
+    const savedStep = loadStep();
+    if (saved) {
+      setProject(saved);
+      const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
+      if (!hasImages && savedStep !== "upload") {
+        navigateToStep("upload");
+        toast.info("Images need to be re-uploaded", {
+          description: "Your project settings are restored. Please re-add your photos.",
+        });
+      } else {
+        navigateToStep(savedStep);
+      }
+    }
+  }, [navigateToStep]);
+
+  const handleDiscardDraft = useCallback(() => {
+    setProject(createEmptyProject());
+    toast.info("Draft discarded");
+  }, []);
+
   const handleBrandClick = useCallback(() => {
     setSplashForced(true);
     setSplashDismissed(false);
@@ -564,6 +588,12 @@ export default function Home() {
                     nostalgic carousel. The more photos you provide, the more
                     authentic your carousel will feel.
                   </p>
+                </motion.div>
+                <motion.div variants={staggerItemVariants}>
+                  <SavedDraftCard
+                    onResume={handleResumeDraft}
+                    onDiscard={handleDiscardDraft}
+                  />
                 </motion.div>
                 <motion.div variants={staggerItemVariants}>
                   <ImageUploader onComplete={handleUploadComplete} />

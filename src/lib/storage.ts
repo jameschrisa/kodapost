@@ -136,6 +136,24 @@ export function loadProject(): CarouselProject | null {
 }
 
 /**
+ * Returns the savedAt timestamp from the stored project.
+ * Returns null if no project exists.
+ */
+export function loadProjectSavedAt(): string | null {
+  if (!isLocalStorageAvailable()) return null;
+
+  try {
+    const raw = localStorage.getItem(PROJECT_KEY);
+    if (!raw) return null;
+
+    const stored = JSON.parse(raw) as StoredProject;
+    return stored.savedAt ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Removes the saved project and step from localStorage.
  */
 export function clearProject(): void {

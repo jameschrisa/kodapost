@@ -68,6 +68,14 @@ export function ConfigurationPanel({
     onUpdate({ ...project, globalOverlayStyle: { ...gos, showHeadline: value } });
   }
 
+  // Subtitle visibility — derived from globalOverlayStyle or default (OFF)
+  const showSubtitle = project.globalOverlayStyle?.showSubtitle ?? DEFAULT_GLOBAL_OVERLAY_STYLE.showSubtitle;
+
+  function updateShowSubtitle(value: boolean) {
+    const gos = project.globalOverlayStyle ?? { ...DEFAULT_GLOBAL_OVERLAY_STYLE };
+    onUpdate({ ...project, globalOverlayStyle: { ...gos, showSubtitle: value } });
+  }
+
   // Filter template state
   const [savedTemplates, setSavedTemplates] = useState<FilterTemplate[]>([]);
   const [templateName, setTemplateName] = useState("");
@@ -488,6 +496,38 @@ export function ConfigurationPanel({
         </CardContent>
       </Card>
       </motion.div>
+
+      {/* 0c. Subtitle Visibility Toggle */}
+      {showHeadline && (
+      <motion.div variants={staggerItemVariants}>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Type className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Subtitle Text</CardTitle>
+              <CardHelpIcon title="Subtitle Text">
+                Subtitles are smaller supporting text below each headline.
+                They add context but are optional. You can toggle them per-slide in the Editorial step.
+              </CardHelpIcon>
+            </div>
+            <Switch
+              checked={showSubtitle}
+              onCheckedChange={updateShowSubtitle}
+              aria-label="Toggle subtitle visibility"
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-xs text-muted-foreground">
+            {showSubtitle
+              ? "Subtitles will be generated below each headline. You can edit or hide them per-slide."
+              : "Subtitles are off. You can enable them per-slide in the Editorial step."}
+          </p>
+        </CardContent>
+      </Card>
+      </motion.div>
+      )}
 
       {/* 1. Your Story */}
       <motion.div variants={staggerItemVariants}>
