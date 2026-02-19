@@ -611,15 +611,17 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                   <span>
                     {project.audioClip.name} &middot;{" "}
                     {(() => {
+                      const clip = project.audioClip;
+                      if (!clip) return "";
                       const isTrimmed = hasTrimApplied(
-                        project.audioClip!.trimStart,
-                        project.audioClip!.trimEnd,
-                        project.audioClip!.duration
+                        clip.trimStart,
+                        clip.trimEnd,
+                        clip.duration
                       );
                       const dur = isTrimmed
-                        ? (project.audioClip!.trimEnd ?? project.audioClip!.duration) -
-                          (project.audioClip!.trimStart ?? 0)
-                        : project.audioClip!.duration;
+                        ? (clip.trimEnd ?? clip.duration) -
+                          (clip.trimStart ?? 0)
+                        : clip.duration;
                       return `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, "0")}${isTrimmed ? " (trimmed)" : ""}`;
                     })()}
                   </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface ShortcutConfig {
   /** Ctrl/Cmd + S — Save project */
@@ -21,6 +21,13 @@ interface ShortcutConfig {
  * All shortcuts are ignored when the user is focused on an input/textarea.
  */
 export function useKeyboardShortcuts(config: ShortcutConfig) {
+  const configRef = useRef(config);
+
+  // Keep the ref up to date without re-attaching the listener
+  useEffect(() => {
+    configRef.current = config;
+  });
+
   useEffect(() => {
     function isInputFocused() {
       const el = document.activeElement;
@@ -36,18 +43,19 @@ export function useKeyboardShortcuts(config: ShortcutConfig) {
 
     function handleKeyDown(e: KeyboardEvent) {
       const mod = e.metaKey || e.ctrlKey;
+      const cfg = configRef.current;
 
       // Cmd/Ctrl + S — Save
       if (mod && e.key === "s") {
         e.preventDefault();
-        config.onSave?.();
+        cfg.onSave?.();
         return;
       }
 
       // Cmd/Ctrl + Enter — Generate
       if (mod && e.key === "Enter") {
         e.preventDefault();
-        config.onGenerate?.();
+        cfg.onGenerate?.();
         return;
       }
 
@@ -56,22 +64,22 @@ export function useKeyboardShortcuts(config: ShortcutConfig) {
 
       // Arrow keys for slide navigation
       if (e.key === "ArrowLeft") {
-        config.onPreviousSlide?.();
+        cfg.onPreviousSlide?.();
         return;
       }
       if (e.key === "ArrowRight") {
-        config.onNextSlide?.();
+        cfg.onNextSlide?.();
         return;
       }
 
       // Escape — go back
       if (e.key === "Escape") {
-        config.onEscape?.();
+        cfg.onEscape?.();
         return;
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [config]);
+  }, []); // Stable — only attaches once
 }
