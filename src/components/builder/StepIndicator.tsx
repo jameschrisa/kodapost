@@ -55,8 +55,10 @@ function LoopingIcon({
 
     const icon = iconRef.current;
 
-    // Play immediately on mount / becoming active
-    icon.startAnimation();
+    // Defer initial play to next frame so framer-motion controls have mounted
+    const frameId = requestAnimationFrame(() => {
+      icon.startAnimation();
+    });
 
     // Then replay on an interval — 2.5s gives all animations time to complete
     const interval = setInterval(() => {
@@ -64,6 +66,7 @@ function LoopingIcon({
     }, 2500);
 
     return () => {
+      cancelAnimationFrame(frameId);
       clearInterval(interval);
       icon.stopAnimation();
     };
