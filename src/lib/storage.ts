@@ -69,6 +69,12 @@ function createStorableProject(project: CarouselProject): CarouselProject {
           ? ""
           : slide.imageUrl,
     })),
+    // Strip audio blob URL — it won't survive page reload.
+    // Audio metadata (source, name, duration, trim points, attribution) is preserved
+    // so the UI can show what was attached and prompt re-upload if needed.
+    audioClip: project.audioClip
+      ? { ...project.audioClip, objectUrl: "" }
+      : undefined,
   };
 }
 

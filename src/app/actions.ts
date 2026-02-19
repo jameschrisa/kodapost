@@ -163,8 +163,15 @@ async function generateTextOverlay(
   slideType: "hook" | "story" | "closer",
   slidePosition: number,
   totalSlides: number,
-  globalStyle?: GlobalOverlayStyle
+  globalStyle?: GlobalOverlayStyle,
+  captionStyle?: "storyteller" | "minimalist" | "data_driven"
 ): Promise<TextOverlay> {
+  const styleLine = captionStyle === "minimalist"
+    ? "\n- Style: minimalist — ultra-short, modern, fewer words is better"
+    : captionStyle === "data_driven"
+      ? "\n- Style: data-driven — use numbers, stats, or facts when possible"
+      : "\n- Style: storyteller — warm, personal, narrative tone";
+
   const message = await getAnthropicClient().messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 256,
@@ -185,7 +192,7 @@ Rules:
 - "secondary": A supporting line (max 15 words)
 - For hook slides: grab attention immediately
 - For story slides: continue the narrative
-- For closer slides: include a call-to-action feel
+- For closer slides: include a call-to-action feel${styleLine}
 
 Respond with ONLY valid JSON in this exact format:
 {"primary": "...", "secondary": "..."}`,
@@ -309,7 +316,8 @@ export async function generateCarousel(
           slide.slideType,
           slide.position,
           project.slideCount,
-          project.globalOverlayStyle
+          project.globalOverlayStyle,
+          project.captionStyle
         );
 
         // Always preserve full AI text in aiGeneratedOverlay
@@ -389,7 +397,8 @@ export async function generateCaption(
     source: "recording" | "upload" | "library";
     trackTitle?: string;
     artistName?: string;
-  }
+  },
+  captionStyle?: "storyteller" | "minimalist" | "data_driven"
 ): Promise<ActionResult<string>> {
   try {
     const hashtagsLine = keywords.length > 0
@@ -405,6 +414,12 @@ export async function generateCaption(
         ? `\nThe post includes a music track: "${audioContext.trackTitle}" by ${audioContext.artistName ?? "Unknown Artist"}`
         : "";
 
+    const styleGuide = captionStyle === "minimalist"
+      ? "\n\nWriting style: Minimalist — use short, punchy sentences. Be modern, clean, and direct. Think less is more."
+      : captionStyle === "data_driven"
+        ? "\n\nWriting style: Data-driven — incorporate stats, numbers, or facts. Sound authoritative and knowledgeable."
+        : "\n\nWriting style: Storyteller — use a warm, narrative voice. Make it personal and emotionally engaging.";
+
     const message = await getAnthropicClient().messages.create({
       model: "claude-sonnet-4-5-20250929",
       max_tokens: 512,
@@ -413,7 +428,7 @@ export async function generateCaption(
           role: "user",
           content: `Write a compelling social media caption for an Instagram carousel post.
 
-Theme: ${theme}${hashtagsLine}${transcriptionLine}${audioLine}
+Theme: ${theme}${hashtagsLine}${transcriptionLine}${audioLine}${styleGuide}
 
 Rules:
 - Keep it engaging and authentic (2-4 sentences)

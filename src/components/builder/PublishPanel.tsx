@@ -26,6 +26,7 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { PLATFORM_IMAGE_SPECS } from "@/lib/constants";
 import { loadSettings } from "@/lib/storage";
 import { compositeSlideImages } from "@/app/actions";
+import { trimAudioBlob, hasTrimApplied } from "@/lib/audio-utils";
 import type { CarouselProject } from "@/lib/types";
 import type { OAuthConnection } from "@/lib/types";
 
@@ -111,7 +112,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [isPosting, setIsPosting] = useState(false);
   const [postingPlatform, setPostingPlatform] = useState<Platform | null>(null);
   const [exportMode, setExportMode] = useState<"images" | "nanocast">(
-    project.audioClip ? "nanocast" : "images"
+    project.audioClip?.objectUrl ? "nanocast" : "images"
   );
   const [includeAttribution, setIncludeAttribution] = useState(true);
 
@@ -256,34 +257,55 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
       // 3. Include audio clip if nano-cast mode and audio present
       let audioFilename: string | undefined;
+      let exportedAudioDuration = project.audioClip?.duration ?? 0;
       if (exportMode === "nanocast" && project.audioClip?.objectUrl) {
         try {
-          const audioRes = await fetch(project.audioClip.objectUrl);
-          const audioBlob = await audioRes.blob();
-          const audioArrayBuffer = await audioBlob.arrayBuffer();
-          const ext = project.audioClip.mimeType.includes("mp3")
-            ? "mp3"
-            : project.audioClip.mimeType.includes("wav")
-              ? "wav"
-              : project.audioClip.mimeType.includes("mp4") || project.audioClip.mimeType.includes("m4a")
-                ? "m4a"
-                : project.audioClip.mimeType.includes("ogg")
-                  ? "ogg"
-                  : "webm";
-          audioFilename = `${project.audioClip.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.${ext}`;
+          const clip = project.audioClip;
+          const needsTrim = hasTrimApplied(clip.trimStart, clip.trimEnd, clip.duration);
+
+          let audioArrayBuffer: ArrayBuffer;
+          let ext: string;
+
+          if (needsTrim) {
+            // Trim audio using Web Audio API → outputs WAV
+            const trimmedBlob = await trimAudioBlob(
+              clip.objectUrl,
+              clip.trimStart ?? 0,
+              clip.trimEnd ?? clip.duration
+            );
+            audioArrayBuffer = await trimmedBlob.arrayBuffer();
+            ext = "wav";
+            exportedAudioDuration = (clip.trimEnd ?? clip.duration) - (clip.trimStart ?? 0);
+          } else {
+            // No trim needed — use original format
+            const audioRes = await fetch(clip.objectUrl);
+            const audioBlob = await audioRes.blob();
+            audioArrayBuffer = await audioBlob.arrayBuffer();
+            ext = clip.mimeType.includes("mp3")
+              ? "mp3"
+              : clip.mimeType.includes("wav")
+                ? "wav"
+                : clip.mimeType.includes("mp4") || clip.mimeType.includes("m4a")
+                  ? "m4a"
+                  : clip.mimeType.includes("ogg")
+                    ? "ogg"
+                    : "webm";
+          }
+
+          audioFilename = `${clip.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.${ext}`;
           const audioFolder = zip.folder("audio");
           if (audioFolder) {
             audioFolder.file(audioFilename, audioArrayBuffer);
             // Include attribution text if from music library
-            if (project.audioClip.attribution) {
+            if (clip.attribution) {
               audioFolder.file(
                 "attribution.txt",
-                `Track: ${project.audioClip.attribution.trackTitle}\n` +
-                  `Artist: ${project.audioClip.attribution.artistName}\n` +
-                  `Platform: ${project.audioClip.attribution.platform}\n` +
-                  `License: ${project.audioClip.attribution.license}\n` +
-                  `URL: ${project.audioClip.attribution.trackUrl}\n\n` +
-                  project.audioClip.attribution.attributionText
+                `Track: ${clip.attribution.trackTitle}\n` +
+                  `Artist: ${clip.attribution.artistName}\n` +
+                  `Platform: ${clip.attribution.platform}\n` +
+                  `License: ${clip.attribution.license}\n` +
+                  `URL: ${clip.attribution.trackUrl}\n\n` +
+                  clip.attribution.attributionText
               );
             }
           }
@@ -309,8 +331,13 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           audio: project.audioClip
             ? {
                 filename: audioFilename,
-                duration: project.audioClip.duration,
+                duration: exportedAudioDuration,
                 source: project.audioClip.source,
+                trimmed: hasTrimApplied(
+                  project.audioClip.trimStart,
+                  project.audioClip.trimEnd,
+                  project.audioClip.duration
+                ),
                 attribution: project.audioClip.attribution?.attributionText,
               }
             : undefined,
@@ -344,7 +371,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         exportMode === "nanocast" ? "Nano-cast package ready" : "Export complete",
         {
           description: `${readySlides.length} slides packaged for ${platformNames}.${
-            exportMode === "nanocast" && project.audioClip ? " Includes audio." : ""
+            exportMode === "nanocast" && project.audioClip?.objectUrl ? " Includes audio." : ""
           }`,
         }
       );
@@ -490,7 +517,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       </div>
 
       {/* Export mode selector — only when audio is attached */}
-      {project.audioClip && selected.size > 0 && (
+      {project.audioClip?.objectUrl && selected.size > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Export Mode</p>
           <div className="grid grid-cols-2 gap-3">
@@ -561,13 +588,23 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                   {readySlides.length * selected.size} images
                 </span>
               </p>
-              {project.audioClip && exportMode === "nanocast" && (
+              {project.audioClip?.objectUrl && exportMode === "nanocast" && (
                 <div className="flex items-center gap-2 mt-1">
                   <Music className="h-3.5 w-3.5 text-purple-400" />
                   <span>
                     {project.audioClip.name} &middot;{" "}
-                    {Math.floor(project.audioClip.duration / 60)}:
-                    {String(Math.floor(project.audioClip.duration % 60)).padStart(2, "0")}
+                    {(() => {
+                      const isTrimmed = hasTrimApplied(
+                        project.audioClip!.trimStart,
+                        project.audioClip!.trimEnd,
+                        project.audioClip!.duration
+                      );
+                      const dur = isTrimmed
+                        ? (project.audioClip!.trimEnd ?? project.audioClip!.duration) -
+                          (project.audioClip!.trimStart ?? 0)
+                        : project.audioClip!.duration;
+                      return `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, "0")}${isTrimmed ? " (trimmed)" : ""}`;
+                    })()}
                   </span>
                   <span
                     className={cn(
@@ -588,7 +625,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                 </div>
               )}
               <p>
-                {exportMode === "nanocast" && project.audioClip
+                {exportMode === "nanocast" && project.audioClip?.objectUrl
                   ? "Nano-cast package with images, audio & manifest."
                   : "ZIP with platform folders."}
               </p>
@@ -611,12 +648,12 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           </>
         ) : (
           <>
-            {exportMode === "nanocast" && project.audioClip ? (
+            {exportMode === "nanocast" && project.audioClip?.objectUrl ? (
               <Package className="h-5 w-5" />
             ) : (
               <Download className="h-5 w-5" />
             )}
-            {exportMode === "nanocast" && project.audioClip
+            {exportMode === "nanocast" && project.audioClip?.objectUrl
               ? "Download Nano-Cast Package"
               : "Download Carousel"}
           </>

@@ -278,7 +278,8 @@ export function ConfigurationPanel({
         project.theme,
         project.keywords,
         project.storyTranscription,
-        audioCtx
+        audioCtx,
+        project.captionStyle
       );
       if (result.success) {
         setCaptionText(result.data);
@@ -631,6 +632,38 @@ export function ConfigurationPanel({
                 ✨ Story ready — tap <span className="font-medium">Generate</span> above
               </p>
             )}
+          </div>
+
+          {/* Writing style selector */}
+          <div className="mt-4 space-y-2">
+            <Label className="text-xs">Writing Style</Label>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: "storyteller" as const, label: "Storyteller", emoji: "📖", description: "Narrative, emotional, personal" },
+                { value: "minimalist" as const, label: "Minimalist", emoji: "✏️", description: "Short, punchy, modern" },
+                { value: "data_driven" as const, label: "Data-Driven", emoji: "📊", description: "Stats, facts, authority" },
+              ]).map(({ value, label, emoji }) => {
+                const isActive = (project.captionStyle ?? "storyteller") === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => updateField("captionStyle", value)}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                      isActive
+                        ? "bg-purple-500/15 text-purple-400 border border-purple-500/40"
+                        : "bg-muted text-muted-foreground border border-transparent hover:bg-muted-foreground/10"
+                    }`}
+                  >
+                    <span>{emoji}</span>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Shapes how AI generates captions and headline text.
+            </p>
           </div>
         </CardContent>
       </Card>

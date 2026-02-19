@@ -91,7 +91,9 @@ export function AudioPanel({
     onAudioChange(clip);
     setInputMode(null);
     toast.success("Recording saved", {
-      description: `${formatTime(recorder.duration)} voice track added.`,
+      description: `${formatTime(recorder.duration)} voice track added.${
+        recorder.transcription ? " Transcription captured." : ""
+      }`,
     });
   }, [recorder.audioBlob, recorder.audioUrl, recorder.duration, recorder.transcription, onAudioChange]);
 
@@ -217,7 +219,11 @@ export function AudioPanel({
           </p>
           <p className="text-xs text-muted-foreground">
             {audioClip
-              ? `${audioClip.name} · ${formatTime(audioClip.duration)}`
+              ? `${audioClip.name} · ${formatTime(audioClip.duration)}${
+                  audioClip.trimStart || audioClip.trimEnd
+                    ? ` (trimmed ${formatTime(audioClip.trimStart ?? 0)}–${formatTime(audioClip.trimEnd ?? audioClip.duration)})`
+                    : ""
+                }${!audioClip.objectUrl ? " · ⚠ needs re-add" : ""}`
               : "Record voice, upload audio, or browse music library"}
           </p>
         </div>
@@ -249,27 +255,52 @@ export function AudioPanel({
               {/* If we have an audio clip, show player + controls */}
               {audioClip && (
                 <div className="space-y-3">
-                  <AudioPlayer
-                    audioUrl={audioClip.objectUrl}
-                    duration={audioClip.duration}
-                    trimStart={trimStart}
-                    trimEnd={trimEnd}
-                    onTrimChange={handleTrimChange}
-                    showTrimHandles={showTrimHandles}
-                  />
+                  {/* Audio player — only when objectUrl is available (blob URLs don't survive reload) */}
+                  {audioClip.objectUrl ? (
+                    <AudioPlayer
+                      audioUrl={audioClip.objectUrl}
+                      duration={audioClip.duration}
+                      trimStart={trimStart}
+                      trimEnd={trimEnd}
+                      onTrimChange={handleTrimChange}
+                      showTrimHandles={showTrimHandles}
+                    />
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-amber-500/30 bg-amber-500/5 p-4 text-center">
+                      <p className="text-sm text-amber-400 font-medium">
+                        Audio needs to be re-added
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Previously: {audioClip.name} ({formatTime(audioClip.duration)}).
+                        Audio data doesn&apos;t persist across page reloads.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 gap-1.5"
+                        onClick={handleRemoveAudio}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Clear &amp; Re-add
+                      </Button>
+                    </div>
+                  )}
 
                   {/* Clip info */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{formatFileSize(audioClip.size)}</span>
-                    <span>&middot;</span>
-                    <span>{audioClip.mimeType}</span>
-                    {audioClip.transcription && (
-                      <>
-                        <span>&middot;</span>
-                        <span className="text-green-400">Transcribed</span>
-                      </>
-                    )}
-                  </div>
+                  {audioClip.objectUrl && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{formatFileSize(audioClip.size)}</span>
+                      <span>&middot;</span>
+                      <span>{audioClip.mimeType}</span>
+                      {audioClip.transcription && (
+                        <>
+                          <span>&middot;</span>
+                          <span className="text-green-400">Transcribed</span>
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   {/* Transcription preview */}
                   {audioClip.transcription && (
@@ -302,29 +333,31 @@ export function AudioPanel({
                     </div>
                   )}
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={() => setShowTrimHandles((prev) => !prev)}
-                    >
-                      <Scissors className="h-3.5 w-3.5" />
-                      {showTrimHandles ? "Done Trimming" : "Trim Clip"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="gap-1.5 text-destructive hover:text-destructive"
-                      onClick={handleRemoveAudio}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Remove
-                    </Button>
-                  </div>
+                  {/* Actions — only when audio is playable */}
+                  {audioClip.objectUrl && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => setShowTrimHandles((prev) => !prev)}
+                      >
+                        <Scissors className="h-3.5 w-3.5" />
+                        {showTrimHandles ? "Done Trimming" : "Trim Clip"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 text-destructive hover:text-destructive"
+                        onClick={handleRemoveAudio}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Remove
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
