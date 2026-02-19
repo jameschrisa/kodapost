@@ -184,11 +184,26 @@ export default function Home() {
   }, [hydrated, authLoaded, isSignedIn, splashDismissed]);
 
   // Auto-save project and step on changes
+  const [lastSavedAt, setLastSavedAt] = useState<number>(0);
   useEffect(() => {
     if (!hydrated) return;
     saveProject(project);
     saveStep(step);
+    setLastSavedAt(Date.now());
   }, [project, step, hydrated]);
+
+  // Warn before closing with unsaved generation in progress
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      // Warn if the user has slides (i.e. has done meaningful work)
+      const hasWork = project.slides.length > 0 && project.slides.some(s => s.status === "ready");
+      if (hasWork) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [project.slides]);
 
   // -- Direction-aware step navigation --
 
@@ -414,9 +429,16 @@ export default function Home() {
           <div className="flex-1" />
           {/* Save — only on Configure and Editorial steps */}
           {(step === "configure" || step === "edit") && (
-            <motion.div whileTap={buttonTapScale}>
-              <SaveProjectButton project={project} />
-            </motion.div>
+            <div className="flex items-center gap-2">
+              {lastSavedAt > 0 && (
+                <span className="text-[10px] text-muted-foreground/50 hidden sm:inline">
+                  Auto-saved
+                </span>
+              )}
+              <motion.div whileTap={buttonTapScale}>
+                <SaveProjectButton project={project} />
+              </motion.div>
+            </div>
           )}
           {/* Consolidated menu: theme toggle + help/profile/settings */}
           <HeaderMenu
