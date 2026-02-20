@@ -470,34 +470,13 @@ export function ConfigurationPanel({
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
               <CardTitle className="text-base">Your Story</CardTitle>
               <CardHelpIcon title="Your Story">
                 Describe the moment, scene, or feeling you want to share. This drives
                 AI-generated headlines and captions for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel"}.
                 You can type or tap the mic to speak.
               </CardHelpIcon>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-7 text-xs"
-              onClick={handleGenerateCaption}
-              disabled={isGeneratingCaption || !project.theme}
-            >
-              {isGeneratingCaption ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  {captionText.trim() ? "Refining..." : "Creating..."}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3 w-3" />
-                  {captionText.trim() ? "Refine caption" : "Create a caption"}
-                </>
-              )}
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -592,6 +571,29 @@ export function ConfigurationPanel({
             <p className="text-xs text-muted-foreground">
               Choose the tone of your story. This shapes how AI crafts your caption and headlines.
             </p>
+          </div>
+
+          {/* Create a caption button — centered, purple */}
+          <div className="flex justify-center">
+            <Button
+              variant="default"
+              size="default"
+              className="gap-2 bg-purple-500 hover:bg-purple-600 text-white"
+              onClick={handleGenerateCaption}
+              disabled={isGeneratingCaption || !project.theme}
+            >
+              {isGeneratingCaption ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {captionText.trim() ? "Refining..." : "Creating..."}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  {captionText.trim() ? "Refine caption" : "Create a caption"}
+                </>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>
