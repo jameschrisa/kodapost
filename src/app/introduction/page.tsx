@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const sections = [
   { id: "our-philosophy", title: "Our Philosophy" },
   { id: "human-first-creativity", title: "Human-First Creativity" },
-  { id: "role-of-ai", title: "The Role of AI" },
+  { id: "role-of-ai", title: "The Role of Koda" },
   { id: "who-is-kodapost-for", title: "Who Is KodaPost For?" },
   { id: "get-started", title: "Get Started" },
 ];
@@ -31,7 +31,7 @@ export default function IntroductionPage() {
             the best content comes from real people with real stories.
           </strong>{" "}
           In a world increasingly filled with algorithmically generated images,
-          auto-written captions, and AI-produced art, we chose a different path.
+          auto-written captions, and machine-produced art, we chose a different path.
         </p>
         <p>
           We believe that photography, written storytelling, and verbal
@@ -57,12 +57,12 @@ export default function IntroductionPage() {
           that real people should continue to create art through photography,
           written expression, and verbal storytelling. The curation, the
           editorial choices, and the creative direction are yours alone.
-          Generative AI is not the artist here. You are.
+          Koda is not the artist here. You are.
         </p>
 
-        <h2 id="role-of-ai">The Role of AI</h2>
+        <h2 id="role-of-ai">The Role of Koda</h2>
         <p>
-          So where does AI fit in? AI takes a back seat. It handles the
+          So where does Koda fit in? Koda takes a back seat. It handles the
           logistics and technical work that would otherwise slow you down:
         </p>
         <ul>
@@ -88,7 +88,7 @@ export default function IntroductionPage() {
           </li>
         </ul>
         <p>
-          In every case, AI serves as your assistant, not your replacement. It
+          In every case, Koda serves as your assistant, not your replacement. It
           handles the tedious production work so you can focus on what matters:
           your creative vision.
         </p>
@@ -96,13 +96,13 @@ export default function IntroductionPage() {
         <h2 id="who-is-kodapost-for">Who Is KodaPost For?</h2>
         <p>
           KodaPost is built for people who want to express their own creativity
-          and independence without AI taking over:
+          and independence without automation taking over:
         </p>
         <ul>
           <li>
             <strong>Content Creators</strong> who want to share authentic visual
             stories with their audience, not recycled templates or
-            AI-generated stock imagery.
+            generated stock imagery.
           </li>
           <li>
             <strong>Entrepreneurs</strong> building personal brands rooted in

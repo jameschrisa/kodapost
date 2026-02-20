@@ -78,7 +78,7 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
               <li>Upload your photos (1&ndash;10 images)</li>
               <li>Pick a camera style and filter to set the mood</li>
               <li>Fine-tune grain, bloom, vignette, and color</li>
-              <li>Edit AI-generated text overlays on each slide</li>
+              <li>Edit Koda-generated text overlays on each slide</li>
               <li>Review, reorder, and export or publish</li>
             </ol>
           </div>

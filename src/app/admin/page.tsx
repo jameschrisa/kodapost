@@ -57,11 +57,11 @@ const FEATURES = [
     ],
   },
   {
-    category: "AI",
+    category: "Koda Engine",
     icon: Sparkles,
     items: [
       "Claude Vision image analysis",
-      "AI-generated captions from story + vibes",
+      "Koda-generated captions from story + vibes",
       "Text overlay generation",
       "Intent classification for assistant",
     ],

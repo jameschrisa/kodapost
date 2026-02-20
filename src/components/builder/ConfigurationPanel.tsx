@@ -404,7 +404,7 @@ export function ConfigurationPanel({
         <LoadingSpinner size="lg" text={isSingle ? "Generating your post..." : "Generating your carousel..."} />
         <div className="max-w-xs text-center space-y-3">
           <p className="text-sm text-muted-foreground">
-            AI is crafting your {isSingle ? "post" : "slides"} with the{" "}
+            Koda is crafting your {isSingle ? "post" : "slides"} with the{" "}
             <span className="font-medium text-foreground">
               {project.theme || "selected"}
             </span>{" "}
@@ -512,7 +512,7 @@ export function ConfigurationPanel({
               <CardTitle className="text-base">Your Story</CardTitle>
               <CardHelpIcon title="Your Story">
                 Describe the moment, scene, or feeling you want to share. This drives
-                AI-generated headlines and captions for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel"}.
+                Koda-generated headlines and captions for your {(project.postMode ?? "carousel") === "single" ? "post" : "carousel"}.
                 You can type or tap the mic to speak.
               </CardHelpIcon>
           </div>
@@ -607,7 +607,7 @@ export function ConfigurationPanel({
               })}
             </div>
             <p className="text-xs text-muted-foreground">
-              Choose the tone of your story. This shapes how AI crafts your caption and headlines.
+              Choose the tone of your story. This shapes how Koda crafts your caption and headlines.
             </p>
           </div>
 
@@ -655,14 +655,14 @@ export function ConfigurationPanel({
                 size="sm"
                 className="gap-1.5 h-7 text-xs"
                 onClick={() => setCsvImportOpen(true)}
-                title="Import your own headlines and subtitles from a CSV file instead of using AI-generated text."
+                title="Import your own headlines and subtitles from a CSV file instead of using Koda-generated text."
               >
                 <FileSpreadsheet className="h-3 w-3" />
                 Import
               </Button>
               <CardHelpIcon title="CSV Import">
                 Import a CSV file with your own headlines and subtitles instead of
-                AI-generated text. Your file should have columns for headline (or
+                Koda-generated text. Your file should have columns for headline (or
                 title/primary) and optionally subtitle (or caption/secondary).
                 Each row maps to a slide.
               </CardHelpIcon>
@@ -846,7 +846,7 @@ export function ConfigurationPanel({
               />
             )}
             <p className="text-xs text-muted-foreground">
-              Shapes how AI generates captions and headline text.
+              Shapes how Koda generates captions and headline text.
             </p>
           </div>
         </CardContent>

@@ -185,7 +185,7 @@ export default function GuidePage() {
               </td>
               <td>Review, edit, or write your own</td>
               <td>
-                AI generates a caption from your story, or you write it yourself
+                Koda generates a caption from your story, or you write it yourself
               </td>
             </tr>
             <tr>

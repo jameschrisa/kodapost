@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
         <p>
           When you upload photos, they are stored temporarily in your
           browser&rsquo;s local memory for carousel generation. Images are sent
-          to our AI processing pipeline solely for the purpose of creating your
+          to our Koda processing pipeline solely for the purpose of creating your
           carousel slides. We do not permanently store your uploaded images on
           our servers.
         </p>
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
         <ul>
           <li>
             <strong>Carousel Generation:</strong> Your images and configuration
-            are processed through our AI pipeline to create carousel slides with
+            are processed through our Koda pipeline to create carousel slides with
             applied filters, text overlays, and camera emulation effects.
           </li>
           <li>
@@ -90,7 +90,7 @@ export default function PrivacyPolicyPage() {
         <p>We use the following third-party services during carousel generation:</p>
         <ul>
           <li>
-            <strong>Anthropic (Claude AI):</strong> For image analysis, text
+            <strong>Anthropic (Claude):</strong> For image analysis, text
             overlay generation, and caption creation. Images are sent to
             Anthropic&rsquo;s API for processing and are subject to{" "}
             <a

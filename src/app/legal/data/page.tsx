@@ -47,7 +47,7 @@ export default function DataPolicyPage() {
         <p>
           Carousels generated using your images are also owned by you. KodaPost
           does not claim any license over the finished carousels you create,
-          whether they include AI-generated text overlays, filters, or camera
+          whether they include Koda-generated text overlays, filters, or camera
           emulation effects.
         </p>
 
@@ -60,8 +60,8 @@ export default function DataPolicyPage() {
             storage limits.
           </li>
           <li>
-            <strong>AI Processing:</strong> During carousel generation, your
-            images are sent to our AI processing pipeline (powered by Anthropic
+            <strong>Koda Processing:</strong> During carousel generation, your
+            images are sent to our Koda processing pipeline (powered by Anthropic
             Claude) for analysis, filter application, and text overlay
             generation. Images are processed in-memory and are not permanently
             stored on our servers.
@@ -83,7 +83,7 @@ export default function DataPolicyPage() {
           <li>
             <strong>No PII Extraction:</strong> We do not extract, analyze, or
             store personally identifiable information (PII) from your uploaded
-            images. Our AI processing focuses solely on visual composition,
+            images. Our Koda processing focuses solely on visual composition,
             mood, and content for carousel generation purposes.
           </li>
           <li>
@@ -169,7 +169,7 @@ export default function DataPolicyPage() {
         </p>
         <ul>
           <li>
-            <strong>AI Processing:</strong> Images are sent to Anthropic&rsquo;s
+            <strong>Koda Processing:</strong> Images are sent to Anthropic&rsquo;s
             API for carousel generation processing, governed by their data
             handling policies.
           </li>

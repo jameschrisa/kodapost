@@ -1037,15 +1037,36 @@ export default function Home() {
                 animate="visible"
               >
                 <motion.div className="mb-6" variants={staggerItemVariants}>
-                  <h2 className="text-xl font-semibold">Finalize Your Post</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Add audio, preview your slides, and prepare for publishing.
-                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-semibold">Finalize Your Post</h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Add audio, preview your slides, and prepare for publishing.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handlePublish}
+                        className="flex items-center gap-1.5 rounded-md border border-muted-foreground/20 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-purple-400 hover:text-purple-400"
+                      >
+                        Export
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handlePublish}
+                        className="flex items-center gap-1.5 rounded-md bg-purple-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-purple-600"
+                      >
+                        Publish
+                      </button>
+                    </div>
+                  </div>
                 </motion.div>
                 <motion.div variants={staggerItemVariants}>
                   <AudioPanel
                     audioClip={project.audioClip}
                     onAudioChange={handleAudioChange}
+                    slideCount={project.slides.filter(s => s.status === "ready").length}
                   />
                 </motion.div>
 

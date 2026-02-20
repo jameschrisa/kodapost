@@ -50,7 +50,7 @@ const ONBOARDING_STEPS = [
     icon: Camera,
     title: "Setup & Generate",
     description:
-      "Choose a vintage camera style, set your theme, and let AI create your slides.",
+      "Choose a vintage camera style, set your theme, and let Koda create your slides.",
     color: "text-purple-400",
     bgColor: "bg-purple-500/10",
   },

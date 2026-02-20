@@ -8,6 +8,7 @@ import {
   ChevronUp,
   HelpCircle,
   Layers,
+  Loader2,
   Mic,
   Music,
   Scissors,
@@ -30,11 +31,16 @@ import type { AudioClip, MusicTrack } from "@/lib/types";
 
 type AudioInputMode = "record" | "upload" | "library";
 
+/** Recommended seconds per slide for optimal viewing (the "Goldilocks zone") */
+const GOLDILOCKS_PER_SLIDE = 3.5;
+
 interface AudioPanelProps {
   /** Current audio clip from the project */
   audioClip?: AudioClip;
   /** Callback when audio clip is set or updated */
   onAudioChange: (clip: AudioClip | undefined) => void;
+  /** Number of ready slides — used to calculate recommended trim duration */
+  slideCount?: number;
   /** Additional CSS classes */
   className?: string;
 }
@@ -54,6 +60,7 @@ function formatFileSize(bytes: number): string {
 export function AudioPanel({
   audioClip,
   onAudioChange,
+  slideCount = 0,
   className,
 }: AudioPanelProps) {
   const [isExpanded, setIsExpanded] = useState(!!audioClip);
@@ -69,9 +76,22 @@ export function AudioPanel({
   // Staged clip — audio is prepared here before user explicitly applies it
   const [stagedClip, setStagedClip] = useState<AudioClip | null>(null);
   const [isApplied, setIsApplied] = useState(!!audioClip);
+  const [isLoadingTrack, setIsLoadingTrack] = useState(false);
 
   const recorder = useAudioRecorder();
   const fileLoader = useAudioFile();
+
+  // Calculate the recommended trim end based on slide count (Goldilocks zone)
+  const getGoldilocksTrim = useCallback(
+    (clipDuration: number): { start: number; end: number } | null => {
+      if (slideCount <= 0) return null;
+      const recommendedDuration = slideCount * GOLDILOCKS_PER_SLIDE;
+      // Only auto-trim if the track is longer than the recommended duration
+      if (clipDuration <= recommendedDuration) return null;
+      return { start: 0, end: Math.min(recommendedDuration, clipDuration) };
+    },
+    [slideCount]
+  );
 
   // Handle recording complete → create AudioClip
   const handleRecordingComplete = useCallback(() => {
@@ -87,6 +107,9 @@ export function AudioPanel({
   const handleSaveRecording = useCallback(() => {
     if (!recorder.audioBlob || !recorder.audioUrl) return;
 
+    // Auto-trim to Goldilocks zone if applicable
+    const goldilocks = getGoldilocksTrim(recorder.duration);
+
     const clip: AudioClip = {
       id: `audio-${Date.now()}`,
       source: "recording",
@@ -96,18 +119,23 @@ export function AudioPanel({
       size: recorder.audioBlob.size,
       objectUrl: recorder.audioUrl,
       transcription: recorder.transcription ?? undefined,
+      trimStart: goldilocks?.start,
+      trimEnd: goldilocks?.end,
       createdAt: new Date().toISOString(),
     };
 
     setStagedClip(clip);
     setIsApplied(false);
+    setTrimStart(goldilocks?.start ?? 0);
+    setTrimEnd(goldilocks?.end);
+    setShowTrimHandles(!!goldilocks);
     setInputMode(null);
     toast.success("Recording ready", {
       description: `${formatTime(recorder.duration)} voice track ready to apply.${
         recorder.transcription ? " Transcription captured." : ""
-      }`,
+      }${goldilocks ? ` Auto-trimmed to ${formatTime(goldilocks.end)}s for ${slideCount} slides.` : ""}`,
     });
-  }, [recorder.audioBlob, recorder.audioUrl, recorder.duration, recorder.transcription]);
+  }, [recorder.audioBlob, recorder.audioUrl, recorder.duration, recorder.transcription, getGoldilocksTrim, slideCount]);
 
   // Handle file upload
   const handleFileSelect = useCallback(
@@ -124,6 +152,9 @@ export function AudioPanel({
   const handleSaveFile = useCallback(() => {
     if (!fileLoader.audioBlob || !fileLoader.audioUrl) return;
 
+    // Auto-trim to Goldilocks zone if applicable
+    const goldilocks = getGoldilocksTrim(fileLoader.duration);
+
     const clip: AudioClip = {
       id: `audio-${Date.now()}`,
       source: "upload",
@@ -132,16 +163,23 @@ export function AudioPanel({
       mimeType: fileLoader.mimeType || "audio/mpeg",
       size: fileLoader.fileSize,
       objectUrl: fileLoader.audioUrl,
+      trimStart: goldilocks?.start,
+      trimEnd: goldilocks?.end,
       createdAt: new Date().toISOString(),
     };
 
     setStagedClip(clip);
     setIsApplied(false);
+    setTrimStart(goldilocks?.start ?? 0);
+    setTrimEnd(goldilocks?.end);
+    setShowTrimHandles(!!goldilocks);
     setInputMode(null);
     toast.success("Audio file ready", {
-      description: `${fileLoader.fileName} (${formatTime(fileLoader.duration)}) ready to apply.`,
+      description: `${fileLoader.fileName} (${formatTime(fileLoader.duration)}) ready to apply.${
+        goldilocks ? ` Auto-trimmed to ${formatTime(goldilocks.end)}s for ${slideCount} slides.` : ""
+      }`,
     });
-  }, [fileLoader]);
+  }, [fileLoader, getGoldilocksTrim, slideCount]);
 
   // Handle trim changes
   const handleTrimChange = useCallback(
@@ -180,12 +218,17 @@ export function AudioPanel({
   // Handle music library track selection — stage it
   const handleMusicSelect = useCallback(
     async (track: MusicTrack) => {
+      if (isLoadingTrack) return; // Prevent duplicate requests
+      setIsLoadingTrack(true);
       try {
         // Fetch the audio stream to create a local blob for the player
         const res = await fetch(track.streamUrl);
         if (!res.ok) throw new Error("Failed to load track");
         const blob = await res.blob();
         const objectUrl = URL.createObjectURL(blob);
+
+        // Auto-trim to Goldilocks zone if applicable
+        const goldilocks = getGoldilocksTrim(track.duration);
 
         const clip: AudioClip = {
           id: `audio-${Date.now()}`,
@@ -203,22 +246,31 @@ export function AudioPanel({
             license: track.license,
             attributionText: track.attributionText,
           },
+          trimStart: goldilocks?.start,
+          trimEnd: goldilocks?.end,
           createdAt: new Date().toISOString(),
         };
 
         setStagedClip(clip);
         setIsApplied(false);
+        setTrimStart(goldilocks?.start ?? 0);
+        setTrimEnd(goldilocks?.end);
+        setShowTrimHandles(!!goldilocks);
         setInputMode(null);
         toast.success("Track ready", {
-          description: `"${track.title}" by ${track.artist} ready to apply.`,
+          description: `"${track.title}" by ${track.artist} ready to apply.${
+            goldilocks ? ` Auto-trimmed to ${formatTime(goldilocks.end)}s for ${slideCount} slides.` : ""
+          }`,
         });
       } catch {
         toast.error("Failed to load track", {
           description: "Please try a different track.",
         });
+      } finally {
+        setIsLoadingTrack(false);
       }
     },
-    []
+    [isLoadingTrack, getGoldilocksTrim, slideCount]
   );
 
   // Apply staged clip to storyboard
@@ -536,6 +588,19 @@ export function AudioPanel({
                     </div>
                   )}
 
+                  {/* Goldilocks zone hint */}
+                  {slideCount > 0 && stagedClip.trimEnd && stagedClip.trimEnd < stagedClip.duration && (
+                    <div className="flex items-center gap-2 rounded-md bg-purple-500/10 px-3 py-2 text-xs">
+                      <span className="text-purple-400 font-medium">
+                        {GOLDILOCKS_PER_SLIDE}s &times; {slideCount} slides
+                      </span>
+                      <span className="text-muted-foreground">
+                        = {formatTime(slideCount * GOLDILOCKS_PER_SLIDE)} recommended.
+                        Drag trim handles to adjust.
+                      </span>
+                    </div>
+                  )}
+
                   {/* Apply / Trim / Change actions */}
                   <div className="flex items-center gap-2">
                     <Button
@@ -836,15 +901,32 @@ export function AudioPanel({
                       size="sm"
                       className="h-7 w-7 p-0"
                       onClick={handleBackToSelection}
+                      disabled={isLoadingTrack}
                     >
                       <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <p className="text-sm font-medium">Music Library</p>
                   </div>
-                  <MusicBrowser
-                    onSelect={handleMusicSelect}
-                    onCancel={() => setInputMode(null)}
-                  />
+
+                  {/* Loading overlay when fetching track */}
+                  {isLoadingTrack && (
+                    <div className="flex items-center gap-3 rounded-lg bg-purple-500/10 border border-purple-500/20 p-4">
+                      <Loader2 className="h-5 w-5 text-purple-400 animate-spin" />
+                      <div>
+                        <p className="text-sm font-medium text-purple-400">Loading track...</p>
+                        <p className="text-xs text-muted-foreground">
+                          Fetching audio from library. Please wait.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isLoadingTrack && (
+                    <MusicBrowser
+                      onSelect={handleMusicSelect}
+                      onCancel={() => setInputMode(null)}
+                    />
+                  )}
                 </div>
               )}
             </CardContent>

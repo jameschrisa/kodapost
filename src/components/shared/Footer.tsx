@@ -129,7 +129,7 @@ export function Footer({
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Transform your photos into stunning social media carousels with
-              vintage camera styles, film filters, and AI-generated text.
+              vintage camera styles, film filters, and Koda-generated text.
             </p>
           </div>
         </div>
