@@ -53,15 +53,13 @@ export function CameraSelector({ value, onChange }: CameraSelectorProps) {
       <div
         ref={scrollRef}
         className={cn(
-          "flex gap-3 overflow-x-auto scroll-smooth pt-2 pb-3 pr-2 snap-x snap-mandatory",
+          "flex gap-3 overflow-x-auto scroll-smooth px-1 py-1",
           "[&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-muted",
           "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full"
         )}
       >
-        {/* Left spacer — prevents ring/shadow clipping on the first card */}
-        <div className="flex-shrink-0 w-1" aria-hidden />
         {/* "No Emulation" card — use photos as-is */}
-        <div className="flex-shrink-0 w-[calc((100%-48px)/5)] min-w-[140px] snap-start">
+        <div className="flex-shrink-0 w-[calc((100%-48px)/5)] min-w-[140px]">
           <Card
             role="button"
             tabIndex={0}
@@ -113,7 +111,7 @@ export function CameraSelector({ value, onChange }: CameraSelectorProps) {
           return (
             <div
               key={camera.id}
-              className="flex-shrink-0 w-[calc((100%-48px)/5)] min-w-[140px] snap-start"
+              className="flex-shrink-0 w-[calc((100%-48px)/5)] min-w-[140px]"
             >
               <Card
                 role="button"
@@ -175,8 +173,6 @@ export function CameraSelector({ value, onChange }: CameraSelectorProps) {
             </div>
           );
         })}
-        {/* Right spacer — prevents shadow clipping on last card */}
-        <div className="flex-shrink-0 w-1" aria-hidden />
       </div>
 
       {/* Right edge gradient fade — indicates more content to scroll */}
