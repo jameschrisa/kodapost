@@ -15,7 +15,6 @@ import { SlideCountSelector } from "@/components/shared/SlideCountSelector";
 import { CameraSelector } from "@/components/shared/CameraSelector";
 import { SaveProjectButton } from "@/components/shared/SaveProjectButton";
 import { FilterSelector } from "@/components/shared/FilterSelector";
-import { ImageSourceIndicator } from "@/components/builder/ImageSourceIndicator";
 import { CSVImportDialog } from "@/components/builder/CSVImportDialog";
 import { CardHelpIcon } from "@/components/shared/CardHelpIcon";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -599,18 +598,16 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 2. Text Overlay Toggles */}
+      {/* 2. Content & Slides — tabbed: Text Overlays / Slides & Images */}
       <motion.div variants={staggerItemVariants}>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Type className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base">Text Overlays</CardTitle>
-              <CardHelpIcon title="Text Overlays">
-                Control which text elements appear on your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"}.
-                Headlines are the main text; subtitles are smaller supporting text below.
-                You can also toggle these per-slide in the Editorial step.
+              <CardTitle className="text-base">Content &amp; Slides</CardTitle>
+              <CardHelpIcon title="Content & Slides">
+                Configure text overlays for your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"} and
+                manage slide count and image distribution.
               </CardHelpIcon>
             </div>
             <div className="flex items-center gap-2">
@@ -638,42 +635,76 @@ export function ConfigurationPanel({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 pt-0">
-          {/* Headline toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">Headlines</p>
-              <p className="text-xs text-muted-foreground">
-                {showHeadline
-                  ? "Image headlines generated from your story"
-                  : "No headline text — images only"}
-              </p>
-            </div>
-            <Switch
-              checked={showHeadline}
-              onCheckedChange={updateShowHeadline}
-              aria-label="Toggle headline visibility"
-            />
-          </div>
+        <CardContent className="pt-0">
+          <Tabs defaultValue="text-overlays" className="w-full">
+            <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
+              <TabsTrigger
+                value="text-overlays"
+                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+              >
+                <Type className="h-3.5 w-3.5" />
+                Text Overlays
+              </TabsTrigger>
+              {(project.postMode ?? "carousel") === "carousel" && (
+                <TabsTrigger
+                  value="slides"
+                  className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  Slides
+                </TabsTrigger>
+              )}
+            </TabsList>
 
-          {/* Subtitle toggle — only shown when headlines are on */}
-          {showHeadline && (
-            <div className="flex items-center justify-between border-t pt-3">
-              <div>
-                <p className="text-sm font-medium">Subtitles</p>
-                <p className="text-xs text-muted-foreground">
-                  {showSubtitle
-                    ? "Supporting text below each headline"
-                    : "Off — enable per-slide in Editorial"}
-                </p>
+            {/* ── Text Overlays Tab ── */}
+            <TabsContent value="text-overlays" className="mt-4 space-y-3">
+              {/* Headline toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Headlines</p>
+                  <p className="text-xs text-muted-foreground">
+                    {showHeadline
+                      ? "Image headlines generated from your story"
+                      : "No headline text — images only"}
+                  </p>
+                </div>
+                <Switch
+                  checked={showHeadline}
+                  onCheckedChange={updateShowHeadline}
+                  aria-label="Toggle headline visibility"
+                />
               </div>
-              <Switch
-                checked={showSubtitle}
-                onCheckedChange={updateShowSubtitle}
-                aria-label="Toggle subtitle visibility"
-              />
-            </div>
-          )}
+
+              {/* Subtitle toggle — only shown when headlines are on */}
+              {showHeadline && (
+                <div className="flex items-center justify-between border-t pt-3">
+                  <div>
+                    <p className="text-sm font-medium">Subtitles</p>
+                    <p className="text-xs text-muted-foreground">
+                      {showSubtitle
+                        ? "Supporting text below each headline"
+                        : "Off — enable per-slide in Editorial"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={showSubtitle}
+                    onCheckedChange={updateShowSubtitle}
+                    aria-label="Toggle subtitle visibility"
+                  />
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ── Slides Tab (carousel only) ── */}
+            {(project.postMode ?? "carousel") === "carousel" && (
+              <TabsContent value="slides" className="mt-4 space-y-4">
+                <SlideCountSelector
+                  value={project.slideCount}
+                  onChange={(count) => updateField("slideCount", count)}
+                />
+              </TabsContent>
+            )}
+          </Tabs>
         </CardContent>
       </Card>
       </motion.div>
@@ -783,40 +814,14 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 4. Slides & Images — unified card (carousel mode only) */}
-      {(project.postMode ?? "carousel") === "carousel" && (
-      <motion.div variants={staggerItemVariants}>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">Slides &amp; Images</CardTitle>
-            <CardHelpIcon title="Slides & Images">
-              Set how many slides your carousel will have and see how your
-              uploaded images are distributed across them. The slide count
-              defaults to your uploaded image count — increase it to add
-              text-only slides.
-            </CardHelpIcon>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <SlideCountSelector
-            value={project.slideCount}
-            onChange={(count) => updateField("slideCount", count)}
-          />
-          <ImageSourceIndicator project={project} />
-        </CardContent>
-      </Card>
-      </motion.div>
-      )}
-
-      {/* 5. Image Look and Feel — tabbed: Camera / Filters / Fine-Tune */}
+      {/* 4. Stylize — tabbed: Camera / Filters / Fine-Tune */}
       <motion.div variants={staggerItemVariants}>
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base">Image Look &amp; Feel</CardTitle>
-              <CardHelpIcon title="Image Look & Feel">
+              <CardTitle className="text-base">Stylize</CardTitle>
+              <CardHelpIcon title="Stylize">
                 Shape the visual style of your images. Choose a vintage camera
                 emulation, apply retro photo filters, and fine-tune parameters
                 like grain, bloom, and vignette.

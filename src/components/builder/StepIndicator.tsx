@@ -25,7 +25,7 @@ type IconHandle =
 
 const STEPS = [
   { key: "upload", label: "Upload", AnimatedIcon: CloudUploadIcon },
-  { key: "configure", label: "Configure", AnimatedIcon: SlidersHorizontalIcon },
+  { key: "configure", label: "Setup", AnimatedIcon: SlidersHorizontalIcon },
   { key: "edit", label: "Editorial", AnimatedIcon: FeatherIcon },
   { key: "review", label: "Finalize", AnimatedIcon: ClapIcon },
   { key: "publish", label: "Publish", AnimatedIcon: GalleryVerticalEndIcon },

@@ -610,7 +610,7 @@ export default function Home() {
               >
                 <motion.div className="mb-6" variants={staggerItemVariants}>
                   <h2 className="text-xl font-semibold">
-                    {(project.postMode ?? "carousel") === "single" ? "Configure Your Post" : "Configure Your Carousel"}
+                    {(project.postMode ?? "carousel") === "single" ? "Setup Your Post" : "Setup Your Carousel"}
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Set your theme, choose a vintage camera style, and customize
