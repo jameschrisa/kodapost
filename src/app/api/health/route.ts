@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       for (let i = 0; i < 3; i++) {
         const start = Date.now();
         try {
-          const msg = await client.messages.create({
+          await client.messages.create({
             model: "claude-sonnet-4-5-20250929",
             max_tokens: 300,
             messages: [{
