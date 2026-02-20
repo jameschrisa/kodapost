@@ -241,11 +241,19 @@ export default function Home() {
   }, []);
 
   const handleGenerate = useCallback(async () => {
-    const result = await generateCarousel(project);
-
-    if (!result.success) {
+    let result: Awaited<ReturnType<typeof generateCarousel>>;
+    try {
+      result = await generateCarousel(project);
+    } catch (err) {
       toast.error("Generation failed", {
-        description: result.error,
+        description: err instanceof Error ? err.message : "An unexpected error occurred. Please try again.",
+      });
+      return;
+    }
+
+    if (!result || !result.success) {
+      toast.error("Generation failed", {
+        description: result?.error ?? "Server returned an empty response. Check your API key and try again.",
       });
       return;
     }
