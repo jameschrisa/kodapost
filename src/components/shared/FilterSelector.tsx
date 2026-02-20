@@ -45,15 +45,17 @@ export function FilterSelector({ value, onChange }: FilterSelectorProps) {
   }, []);
 
   return (
-    <div className="relative -mx-1">
+    <div className="relative">
       <div
         ref={scrollRef}
         className={cn(
-          "flex gap-3 overflow-x-auto scroll-smooth px-3 pt-2 pb-3 snap-x snap-mandatory",
+          "flex gap-3 overflow-x-auto scroll-smooth pt-2 pb-3 pr-2 snap-x snap-mandatory",
           "[&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-muted",
           "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full"
         )}
       >
+        {/* Left spacer — prevents ring/shadow clipping on the first card */}
+        <div className="flex-shrink-0 w-1" aria-hidden />
         {FILTER_NAME_ORDER.map((name) => {
           const def = PREDEFINED_FILTERS[name];
           const isSelected = name === value;
@@ -131,6 +133,8 @@ export function FilterSelector({ value, onChange }: FilterSelectorProps) {
             </div>
           );
         })}
+        {/* Right spacer — prevents shadow clipping on last card */}
+        <div className="flex-shrink-0 w-1" aria-hidden />
       </div>
 
       {/* Right edge gradient fade — indicates more content to scroll */}
