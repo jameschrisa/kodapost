@@ -8,6 +8,11 @@ const SETTINGS_KEY = `${NAMESPACE}:settings-v1`;
 const PROJECT_NAME_KEY = `${NAMESPACE}:project-name`;
 const STORAGE_VERSION = 1;
 
+// IndexedDB constants for image persistence (much larger quota than localStorage)
+const IDB_NAME = "nostalgiaflow-images";
+const IDB_VERSION = 1;
+const IDB_STORE = "images";
+
 interface StoredProject {
   version: number;
   data: CarouselProject;
@@ -349,6 +354,110 @@ export function loadFilterTemplates(): FilterTemplate[] {
 }
 
 // -----------------------------------------------------------------------------
+// IndexedDB Image Persistence
+// -----------------------------------------------------------------------------
+
+/**
+ * Opens the IndexedDB database for image storage.
+ * IndexedDB has a much larger quota than localStorage (~hundreds of MB)
+ * which allows us to persist uploaded images across page reloads.
+ */
+function openImageDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") {
+      reject(new Error("IndexedDB not available"));
+      return;
+    }
+    const request = indexedDB.open(IDB_NAME, IDB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: "id" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Saves uploaded image data (base64 URLs) to IndexedDB.
+ * Each image is stored as { id, url } keyed by the image ID.
+ */
+export async function saveImagesToIDB(
+  images: { id: string; url: string }[]
+): Promise<void> {
+  try {
+    const db = await openImageDB();
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    const store = tx.objectStore(IDB_STORE);
+
+    // Clear existing images first
+    store.clear();
+
+    // Store each image
+    for (const img of images) {
+      if (img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:"))) {
+        store.put({ id: img.id, url: img.url });
+      }
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  } catch (err) {
+    console.warn("[KodaPost] Failed to save images to IndexedDB:", err);
+  }
+}
+
+/**
+ * Loads all saved image data from IndexedDB.
+ * Returns a Map of image ID → data URL.
+ */
+export async function loadImagesFromIDB(): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  try {
+    const db = await openImageDB();
+    const tx = db.transaction(IDB_STORE, "readonly");
+    const store = tx.objectStore(IDB_STORE);
+
+    const all: { id: string; url: string }[] = await new Promise((resolve, reject) => {
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    for (const item of all) {
+      result.set(item.id, item.url);
+    }
+    db.close();
+  } catch (err) {
+    console.warn("[KodaPost] Failed to load images from IndexedDB:", err);
+  }
+  return result;
+}
+
+/**
+ * Clears all saved images from IndexedDB.
+ */
+export async function clearImagesFromIDB(): Promise<void> {
+  try {
+    const db = await openImageDB();
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).clear();
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  } catch (err) {
+    console.warn("[KodaPost] Failed to clear images from IndexedDB:", err);
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Full Reset (simulates a first-time user)
 // -----------------------------------------------------------------------------
 
@@ -378,4 +487,7 @@ export function clearAllStorage(): void {
   } catch {
     // Ignore sessionStorage failures
   }
+
+  // Clear IndexedDB images
+  clearImagesFromIDB().catch(() => {});
 }

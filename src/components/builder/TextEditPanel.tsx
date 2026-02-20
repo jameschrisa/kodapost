@@ -140,7 +140,10 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
     const overlay = selectedSlide.textOverlay;
     setEditPrimary(overlay?.content.primary ?? "");
     setEditSecondary(overlay?.content.secondary ?? "");
-    setEditSubtitleEnabled(!!overlay?.content.secondary);
+    // Respect the global showSubtitle setting — only enable per-slide subtitle
+    // if the global toggle is ON and the slide actually has subtitle text.
+    const globalSubtitleOn = project.globalOverlayStyle?.showSubtitle ?? DEFAULT_GLOBAL_OVERLAY_STYLE.showSubtitle;
+    setEditSubtitleEnabled(globalSubtitleOn && !!overlay?.content.secondary);
     setEditFontFamily(overlay?.styling.fontFamily ?? DEFAULT_OVERLAY_STYLING.fontFamily);
     setEditFontSizePrimary(overlay?.styling.fontSize.primary ?? DEFAULT_OVERLAY_STYLING.fontSize.primary);
     setEditFontSizeSecondary(overlay?.styling.fontSize.secondary ?? DEFAULT_OVERLAY_STYLING.fontSize.secondary);

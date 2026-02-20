@@ -34,6 +34,9 @@ import {
   clearAllStorage,
   saveStep,
   loadStep,
+  saveImagesToIDB,
+  loadImagesFromIDB,
+  clearImagesFromIDB,
 } from "@/lib/storage";
 import {
   stepTransitionVariants,
@@ -130,32 +133,57 @@ export default function Home() {
     router.prefetch("/sign-up");
   }, [router]);
 
-  // Hydrate from localStorage after mount
+  // Hydrate from localStorage + IndexedDB after mount
   useEffect(() => {
-    const saved = loadProject();
-    const savedStep = loadStep();
-    const savedName = loadProjectName();
-    if (saved) {
-      setProject(saved);
-      // If the saved step requires images but they were stripped from storage,
-      // reset to upload step so the user re-uploads.
-      // The SavedDraftCard on the upload step lets them resume from there.
-      const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
-      if (!hasImages && savedStep !== "upload") {
-        setStep("upload");
+    async function hydrate() {
+      const saved = loadProject();
+      const savedStep = loadStep();
+      const savedName = loadProjectName();
+
+      if (saved) {
+        // Try to restore images from IndexedDB
+        const imageMap = await loadImagesFromIDB();
+        if (imageMap.size > 0) {
+          // Restore base64 URLs to uploaded images
+          saved.uploadedImages = saved.uploadedImages.map((img) => ({
+            ...img,
+            url: imageMap.get(img.id) || img.url,
+          }));
+          // Restore image URLs on slides
+          saved.slides = saved.slides.map((slide) => {
+            if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
+              const restored = saved.uploadedImages.find(
+                (img) => img.id === slide.metadata!.referenceImage
+              );
+              if (restored?.url) {
+                return { ...slide, imageUrl: restored.url };
+              }
+            }
+            return slide;
+          });
+        }
+
+        setProject(saved);
+
+        const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
+        if (!hasImages && savedStep !== "upload") {
+          setStep("upload");
+        } else {
+          setStep(savedStep);
+        }
+
+        // Skip splash for returning users with a named project
+        if (savedName && savedStep !== "upload") {
+          setSplashDismissed(true);
+        }
       } else {
         setStep(savedStep);
       }
 
-      // Skip splash for returning users with a named project
-      if (savedName && savedStep !== "upload") {
-        setSplashDismissed(true);
-      }
-    } else {
-      setStep(savedStep);
+      setHydrated(true);
     }
 
-    setHydrated(true);
+    hydrate();
   }, []);
 
   // Auto-dismiss splash for signed-in users returning from auth (initial load only).
@@ -172,11 +200,24 @@ export default function Home() {
 
   // Auto-save project and step on changes
   const [lastSavedAt, setLastSavedAt] = useState<number>(0);
+  const prevImageCountRef = useRef(0);
   useEffect(() => {
     if (!hydrated) return;
     saveProject(project);
     saveStep(step);
     setLastSavedAt(Date.now());
+
+    // Persist images to IndexedDB when they change (async, non-blocking)
+    const currentImageCount = project.uploadedImages.filter(img => img.url.length > 0).length;
+    if (currentImageCount !== prevImageCountRef.current) {
+      prevImageCountRef.current = currentImageCount;
+      const imagesToSave = project.uploadedImages
+        .filter(img => img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:")))
+        .map(img => ({ id: img.id, url: img.url }));
+      if (imagesToSave.length > 0) {
+        saveImagesToIDB(imagesToSave).catch(() => {});
+      }
+    }
   }, [project, step, hydrated]);
 
   // Warn before closing with unsaved generation in progress
@@ -349,6 +390,7 @@ export default function Home() {
 
   const handleComplete = useCallback(() => {
     clearProject();
+    clearImagesFromIDB().catch(() => {});
     setProject(createEmptyProject());
     setDirection(-1);
     setStep("upload");
@@ -381,7 +423,10 @@ export default function Home() {
   }, [navigateToStep, project.uploadedImages]);
 
   const handleDiscardDraft = useCallback(() => {
+    clearProject();
+    clearImagesFromIDB().catch(() => {});
     setProject(createEmptyProject());
+    setStep("upload");
     toast.info("Draft discarded");
   }, []);
 
