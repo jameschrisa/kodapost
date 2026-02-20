@@ -16,6 +16,7 @@ import {
   Timer,
   Music,
   Layers,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +35,8 @@ import type { CarouselProject, VideoSettings, SlideTransition } from "@/lib/type
 interface StoryboardPreviewProps {
   project: CarouselProject;
   onVideoSettingsChange: (settings: VideoSettings) => void;
+  /** Callback to clear the audio track from the storyboard */
+  onClearAudio?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -55,6 +58,7 @@ const THUMB_HEIGHT = 120;
 export function StoryboardPreview({
   project,
   onVideoSettingsChange,
+  onClearAudio,
 }: StoryboardPreviewProps) {
   const settings = project.videoSettings ?? DEFAULT_VIDEO_SETTINGS;
   const readySlides = useMemo(
@@ -255,6 +259,7 @@ export function StoryboardPreview({
               variant="ghost"
               onClick={isPlaying ? pause : play}
               className="h-8 w-8 p-0"
+              title={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
                 <Pause className="h-4 w-4" />
@@ -267,6 +272,7 @@ export function StoryboardPreview({
               variant="ghost"
               onClick={restart}
               className="h-8 w-8 p-0"
+              title="Replay from start"
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
@@ -316,6 +322,23 @@ export function StoryboardPreview({
                 ? "Match Audio"
                 : `${settings.slideDuration}s per slide`}
             </button>
+          )}
+
+          {/* Clear audio track from storyboard */}
+          {project.audioClip?.objectUrl && onClearAudio && (
+            <>
+              <div className="h-5 w-px bg-border" />
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onClearAudio}
+                className="h-7 gap-1.5 px-2 text-xs text-destructive hover:text-destructive"
+                title="Remove audio track from storyboard"
+              >
+                <Trash2 className="h-3 w-3" />
+                Clear Track
+              </Button>
+            </>
           )}
         </div>
 

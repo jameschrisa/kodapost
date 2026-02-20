@@ -2,9 +2,12 @@
 
 import { useCallback, useRef, useState } from "react";
 import {
+  ArrowLeft,
+  Check,
   ChevronDown,
   ChevronUp,
   HelpCircle,
+  Layers,
   Mic,
   Music,
   Scissors,
@@ -63,6 +66,10 @@ export function AudioPanel({
   const [showTrimHandles, setShowTrimHandles] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Staged clip — audio is prepared here before user explicitly applies it
+  const [stagedClip, setStagedClip] = useState<AudioClip | null>(null);
+  const [isApplied, setIsApplied] = useState(!!audioClip);
+
   const recorder = useAudioRecorder();
   const fileLoader = useAudioFile();
 
@@ -76,7 +83,7 @@ export function AudioPanel({
     }, 100);
   }, [recorder]);
 
-  // Watch for recorder blob becoming available
+  // Stage a recording (don't apply to storyboard yet)
   const handleSaveRecording = useCallback(() => {
     if (!recorder.audioBlob || !recorder.audioUrl) return;
 
@@ -92,15 +99,15 @@ export function AudioPanel({
       createdAt: new Date().toISOString(),
     };
 
-    onAudioChange(clip);
-    logActivity("audio_added", `Recorded ${formatTime(recorder.duration)} voice track`);
+    setStagedClip(clip);
+    setIsApplied(false);
     setInputMode(null);
-    toast.success("Recording saved", {
-      description: `${formatTime(recorder.duration)} voice track added.${
+    toast.success("Recording ready", {
+      description: `${formatTime(recorder.duration)} voice track ready to apply.${
         recorder.transcription ? " Transcription captured." : ""
       }`,
     });
-  }, [recorder.audioBlob, recorder.audioUrl, recorder.duration, recorder.transcription, onAudioChange]);
+  }, [recorder.audioBlob, recorder.audioUrl, recorder.duration, recorder.transcription]);
 
   // Handle file upload
   const handleFileSelect = useCallback(
@@ -113,7 +120,7 @@ export function AudioPanel({
     [fileLoader]
   );
 
-  // Watch for file loader completing
+  // Stage a file upload (don't apply to storyboard yet)
   const handleSaveFile = useCallback(() => {
     if (!fileLoader.audioBlob || !fileLoader.audioUrl) return;
 
@@ -128,12 +135,13 @@ export function AudioPanel({
       createdAt: new Date().toISOString(),
     };
 
-    onAudioChange(clip);
+    setStagedClip(clip);
+    setIsApplied(false);
     setInputMode(null);
-    toast.success("Audio file loaded", {
-      description: `${fileLoader.fileName} (${formatTime(fileLoader.duration)}) added.`,
+    toast.success("Audio file ready", {
+      description: `${fileLoader.fileName} (${formatTime(fileLoader.duration)}) ready to apply.`,
     });
-  }, [fileLoader, onAudioChange]);
+  }, [fileLoader]);
 
   // Handle trim changes
   const handleTrimChange = useCallback(
@@ -152,7 +160,24 @@ export function AudioPanel({
     [audioClip, onAudioChange]
   );
 
-  // Handle music library track selection
+  // Handle trim changes on staged clip
+  const handleStagedTrimChange = useCallback(
+    (startSec: number, endSec: number) => {
+      setTrimStart(startSec);
+      setTrimEnd(endSec);
+
+      if (stagedClip) {
+        setStagedClip({
+          ...stagedClip,
+          trimStart: startSec,
+          trimEnd: endSec,
+        });
+      }
+    },
+    [stagedClip]
+  );
+
+  // Handle music library track selection — stage it
   const handleMusicSelect = useCallback(
     async (track: MusicTrack) => {
       try {
@@ -181,10 +206,11 @@ export function AudioPanel({
           createdAt: new Date().toISOString(),
         };
 
-        onAudioChange(clip);
+        setStagedClip(clip);
+        setIsApplied(false);
         setInputMode(null);
-        toast.success("Track added", {
-          description: `"${track.title}" by ${track.artist}`,
+        toast.success("Track ready", {
+          description: `"${track.title}" by ${track.artist} ready to apply.`,
         });
       } catch {
         toast.error("Failed to load track", {
@@ -192,13 +218,28 @@ export function AudioPanel({
         });
       }
     },
-    [onAudioChange]
+    []
   );
 
-  // Remove audio
+  // Apply staged clip to storyboard
+  const handleApplyToStoryboard = useCallback(() => {
+    if (!stagedClip) return;
+    onAudioChange(stagedClip);
+    logActivity("audio_added", `Applied ${stagedClip.source === "recording" ? "voice recording" : stagedClip.source === "upload" ? "uploaded audio" : `"${stagedClip.name}"`} to storyboard`);
+    setIsApplied(true);
+    setTrimStart(stagedClip.trimStart ?? 0);
+    setTrimEnd(stagedClip.trimEnd);
+    toast.success("Track applied to storyboard", {
+      description: `"${stagedClip.name}" is now synced to your slides.`,
+    });
+  }, [stagedClip, onAudioChange]);
+
+  // Remove audio (both staged and applied)
   const handleRemoveAudio = useCallback(() => {
     logActivity("audio_removed", "Removed audio clip");
     onAudioChange(undefined);
+    setStagedClip(null);
+    setIsApplied(false);
     setInputMode(null);
     setTrimStart(0);
     setTrimEnd(undefined);
@@ -207,6 +248,29 @@ export function AudioPanel({
     fileLoader.reset();
     toast.info("Audio removed");
   }, [onAudioChange, recorder, fileLoader]);
+
+  // Change track — clear current and go back to selection
+  const handleChangeTrack = useCallback(() => {
+    onAudioChange(undefined);
+    setStagedClip(null);
+    setIsApplied(false);
+    setInputMode(null);
+    setTrimStart(0);
+    setTrimEnd(undefined);
+    setShowTrimHandles(false);
+    recorder.reset();
+    fileLoader.reset();
+  }, [onAudioChange, recorder, fileLoader]);
+
+  // Go back to audio mode selection from any input mode
+  const handleBackToSelection = useCallback(() => {
+    setInputMode(null);
+    recorder.reset();
+    fileLoader.reset();
+  }, [recorder, fileLoader]);
+
+  // The "active" clip is either the applied audioClip or the staged one
+  const displayClip = audioClip || stagedClip;
 
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -221,23 +285,37 @@ export function AudioPanel({
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium">
-            {audioClip ? "Audio Track" : "Add Audio"}
+            {displayClip ? "Audio Track" : "Add Audio"}
           </p>
           <p className="text-xs text-muted-foreground">
-            {audioClip
-              ? `${audioClip.name} · ${formatTime(audioClip.duration)}${
-                  audioClip.trimStart || audioClip.trimEnd
-                    ? ` (trimmed ${formatTime(audioClip.trimStart ?? 0)}–${formatTime(audioClip.trimEnd ?? audioClip.duration)})`
+            {displayClip
+              ? `${displayClip.name} · ${formatTime(displayClip.duration)}${
+                  displayClip.trimStart || displayClip.trimEnd
+                    ? ` (trimmed ${formatTime(displayClip.trimStart ?? 0)}–${formatTime(displayClip.trimEnd ?? displayClip.duration)})`
                     : ""
-                }${!audioClip.objectUrl ? " · ⚠ needs re-add" : ""}`
-              : "Record voice, upload audio, or browse music library"}
+                }${!displayClip.objectUrl ? " · \u26A0 needs re-add" : ""}${
+                  !isApplied && stagedClip ? " · Not yet applied" : ""
+                }`
+              : "Browse music, upload audio, or record voice"}
           </p>
         </div>
-        {audioClip && (
+        {displayClip && (
+          <span className={cn(
+            "rounded-full px-2 py-0.5 text-xs",
+            isApplied
+              ? "bg-green-500/10 text-green-400"
+              : "bg-amber-500/10 text-amber-400"
+          )}>
+            {isApplied
+              ? "Applied"
+              : "Staged"}
+          </span>
+        )}
+        {displayClip && (
           <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs text-purple-400">
-            {audioClip.source === "recording"
+            {displayClip.source === "recording"
               ? "Voice"
-              : audioClip.source === "upload"
+              : displayClip.source === "upload"
                 ? "File"
                 : "Library"}
           </span>
@@ -282,9 +360,17 @@ export function AudioPanel({
             transition={{ duration: 0.2 }}
           >
             <CardContent className="space-y-4 border-t px-4 pb-4 pt-4">
-              {/* If we have an audio clip, show player + controls */}
+              {/* If we have an applied audio clip, show player + controls */}
               {audioClip && (
                 <div className="space-y-3">
+                  {/* Applied status banner */}
+                  <div className="flex items-center gap-2 rounded-md bg-green-500/10 px-3 py-2">
+                    <Check className="h-4 w-4 text-green-400" />
+                    <span className="text-xs font-medium text-green-400">
+                      Track applied to storyboard
+                    </span>
+                  </div>
+
                   {/* Audio player — only when objectUrl is available (blob URLs don't survive reload) */}
                   {audioClip.objectUrl ? (
                     <AudioPlayer
@@ -378,6 +464,16 @@ export function AudioPanel({
                       </Button>
                       <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={handleChangeTrack}
+                      >
+                        <Music className="h-3.5 w-3.5" />
+                        Change Track
+                      </Button>
+                      <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         className="gap-1.5 text-destructive hover:text-destructive"
@@ -391,18 +487,102 @@ export function AudioPanel({
                 </div>
               )}
 
+              {/* Staged clip — waiting to be applied to storyboard */}
+              {!audioClip && stagedClip && (
+                <div className="space-y-3">
+                  {/* Staged audio player */}
+                  {stagedClip.objectUrl && (
+                    <AudioPlayer
+                      audioUrl={stagedClip.objectUrl}
+                      duration={stagedClip.duration}
+                      trimStart={trimStart}
+                      trimEnd={trimEnd}
+                      onTrimChange={handleStagedTrimChange}
+                      showTrimHandles={showTrimHandles}
+                    />
+                  )}
+
+                  {/* Clip info */}
+                  {stagedClip.objectUrl && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{formatFileSize(stagedClip.size)}</span>
+                      <span>&middot;</span>
+                      <span>{stagedClip.mimeType}</span>
+                      {stagedClip.transcription && (
+                        <>
+                          <span>&middot;</span>
+                          <span className="text-green-400">Transcribed</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Attribution info for library tracks */}
+                  {stagedClip.attribution && (
+                    <div className="rounded-md bg-muted/50 p-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">
+                        Attribution
+                      </p>
+                      <p className="text-xs">
+                        &ldquo;{stagedClip.attribution.trackTitle}&rdquo; by{" "}
+                        {stagedClip.attribution.artistName}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {stagedClip.attribution.platform === "jamendo"
+                          ? "Jamendo"
+                          : "Audius"}{" "}
+                        &middot; {stagedClip.attribution.license}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Apply / Trim / Change actions */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="gap-1.5 bg-purple-500 hover:bg-purple-600"
+                      onClick={handleApplyToStoryboard}
+                    >
+                      <Layers className="h-3.5 w-3.5" />
+                      Apply to Storyboard
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => setShowTrimHandles((prev) => !prev)}
+                    >
+                      <Scissors className="h-3.5 w-3.5" />
+                      {showTrimHandles ? "Done Trimming" : "Trim Clip"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-muted-foreground"
+                      onClick={handleChangeTrack}
+                    >
+                      <Music className="h-3.5 w-3.5" />
+                      Change
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* No audio yet — show input mode selection */}
-              {!audioClip && !inputMode && (
+              {!audioClip && !stagedClip && !inputMode && (
                 <div className="grid grid-cols-3 gap-3">
                   <button
                     type="button"
-                    onClick={() => setInputMode("record")}
+                    onClick={() => setInputMode("library")}
                     className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 p-4 transition-all hover:border-purple-400 hover:bg-purple-500/5"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 text-purple-400">
-                      <Mic className="h-5 w-5" />
+                      <Music className="h-5 w-5" />
                     </div>
-                    <span className="text-xs font-medium">Record Voice</span>
+                    <span className="text-xs font-medium">Music Library</span>
                   </button>
 
                   <button
@@ -418,22 +598,33 @@ export function AudioPanel({
 
                   <button
                     type="button"
-                    onClick={() => setInputMode("library")}
+                    onClick={() => setInputMode("record")}
                     className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 p-4 transition-all hover:border-purple-400 hover:bg-purple-500/5"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 text-purple-400">
-                      <Music className="h-5 w-5" />
+                      <Mic className="h-5 w-5" />
                     </div>
-                    <span className="text-xs font-medium">Music Library</span>
+                    <span className="text-xs font-medium">Record Voice</span>
                   </button>
                 </div>
               )}
 
               {/* Record mode */}
-              {!audioClip && inputMode === "record" && (
+              {!audioClip && !stagedClip && inputMode === "record" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">Record Voice</p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={handleBackToSelection}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                      <p className="text-sm font-medium">Record Voice</p>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -531,10 +722,21 @@ export function AudioPanel({
               )}
 
               {/* Upload mode */}
-              {!audioClip && inputMode === "upload" && (
+              {!audioClip && !stagedClip && inputMode === "upload" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">Upload Audio</p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={handleBackToSelection}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                      <p className="text-sm font-medium">Upload Audio</p>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -625,11 +827,25 @@ export function AudioPanel({
               )}
 
               {/* Music Library mode */}
-              {!audioClip && inputMode === "library" && (
-                <MusicBrowser
-                  onSelect={handleMusicSelect}
-                  onCancel={() => setInputMode(null)}
-                />
+              {!audioClip && !stagedClip && inputMode === "library" && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={handleBackToSelection}
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <p className="text-sm font-medium">Music Library</p>
+                  </div>
+                  <MusicBrowser
+                    onSelect={handleMusicSelect}
+                    onCancel={() => setInputMode(null)}
+                  />
+                </div>
               )}
             </CardContent>
           </motion.div>

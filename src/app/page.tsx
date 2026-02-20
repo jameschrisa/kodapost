@@ -1091,6 +1091,7 @@ export default function Home() {
                     <StoryboardPreview
                       project={project}
                       onVideoSettingsChange={handleVideoSettingsChange}
+                      onClearAudio={() => handleAudioChange(undefined)}
                     />
                   )}
 
