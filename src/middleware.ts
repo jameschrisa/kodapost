@@ -36,6 +36,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/telegram(.*)",
   "/api/preview(.*)",
   "/api/webhooks(.*)",
+  "/api/health(.*)",
 ]);
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
