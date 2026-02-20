@@ -278,6 +278,7 @@ export function createDefaultSettings(): UserSettings {
       { platform: "youtube", username: "", active: false },
       { platform: "reddit", username: "", active: false },
       { platform: "lemon8", username: "", active: false },
+      { platform: "x", username: "", active: false },
     ],
     defaultPlatforms: ["instagram"],
   };

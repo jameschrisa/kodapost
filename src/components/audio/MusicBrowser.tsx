@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { MusicTrack } from "@/lib/types";
+import { useLoadingStore } from "@/lib/stores/loading-store";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -102,6 +103,7 @@ export function MusicBrowser({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } = useLoadingStore();
 
   // Preview state
   const [previewingId, setPreviewingId] = useState<string | null>(null);
@@ -126,6 +128,7 @@ export function MusicBrowser({
       }
 
       setIsLoading(true);
+      startGlobalLoading("music-search", "Searching music…");
       setError(null);
       setHasSearched(true);
 
@@ -154,9 +157,10 @@ export function MusicBrowser({
         setResults([]);
       } finally {
         setIsLoading(false);
+        stopGlobalLoading("music-search");
       }
     },
-    []
+    [startGlobalLoading, stopGlobalLoading]
   );
 
   // Trigger debounced search whenever inputs change

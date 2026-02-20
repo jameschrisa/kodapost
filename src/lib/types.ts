@@ -391,7 +391,7 @@ export interface ValidationResult {
 // -----------------------------------------------------------------------------
 
 /** Supported social media platforms */
-export type Platform = "instagram" | "tiktok" | "linkedin" | "youtube" | "reddit" | "lemon8";
+export type Platform = "instagram" | "tiktok" | "linkedin" | "youtube" | "reddit" | "lemon8" | "x";
 
 /** A linked social media account for export targeting */
 export interface SocialMediaAccount {

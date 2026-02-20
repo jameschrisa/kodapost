@@ -25,9 +25,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { PLATFORMS } from "@/components/builder/PublishPanel";
 import { compositeSlideImages } from "@/app/actions";
-import type { CarouselProject, OAuthConnection } from "@/lib/types";
-
-type Platform = "instagram" | "tiktok" | "linkedin" | "youtube" | "reddit" | "lemon8";
+import { useLoadingStore } from "@/lib/stores/loading-store";
+import type { CarouselProject, OAuthConnection, Platform } from "@/lib/types";
 
 interface PublishDialogProps {
   project: CarouselProject;
@@ -56,6 +55,7 @@ export function PublishDialog({
   const [scheduleTime, setScheduleTime] = useState("");
 
   const postingRef = useRef(false);
+  const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } = useLoadingStore();
 
   // Fetch OAuth connection status when dialog opens
   useEffect(() => {
@@ -105,6 +105,8 @@ export function PublishDialog({
     postingRef.current = true;
     setIsPosting(true);
     setPostingPlatform(platform);
+    const platformLabel = PLATFORMS.find((p) => p.key === platform)?.label ?? platform;
+    startGlobalLoading(`publish-${platform}`, `Publishing to ${platformLabel}…`);
 
     try {
       // 1. Composite images for this platform
@@ -153,6 +155,7 @@ export function PublishDialog({
     } finally {
       setIsPosting(false);
       setPostingPlatform(null);
+      stopGlobalLoading(`publish-${platform}`);
       postingRef.current = false;
     }
   }

@@ -32,7 +32,7 @@ import type { AudioClip, MusicTrack } from "@/lib/types";
 type AudioInputMode = "record" | "upload" | "library";
 
 /** Recommended seconds per slide for optimal viewing (the "Goldilocks zone") */
-const GOLDILOCKS_PER_SLIDE = 3.5;
+const GOLDILOCKS_PER_SLIDE = 4.5;
 
 interface AudioPanelProps {
   /** Current audio clip from the project */

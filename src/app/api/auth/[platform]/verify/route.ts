@@ -10,6 +10,7 @@ const VALID_PLATFORMS = [
   "youtube",
   "reddit",
   "lemon8",
+  "x",
 ] as const;
 
 /**
@@ -169,6 +170,15 @@ async function verifyPlatformToken(
       if (!res.ok) throw new Error("Lemon8 token invalid");
       const data = await res.json();
       return data?.data?.user?.display_name || "Connected";
+    }
+
+    case "x": {
+      const res = await fetch("https://api.twitter.com/2/users/me", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) throw new Error("X token invalid");
+      const data = await res.json();
+      return data?.data?.username || "Connected";
     }
 
     default:

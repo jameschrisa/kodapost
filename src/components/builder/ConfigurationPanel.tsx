@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { validateCarouselReadiness } from "@/lib/carousel-validator";
 import { generateCaption } from "@/app/actions";
+import { useLoadingStore } from "@/lib/stores/loading-store";
 import { DEFAULT_GLOBAL_OVERLAY_STYLE } from "@/lib/constants";
 import { PREDEFINED_FILTERS, CAMERA_FILTER_MAP, DEFAULT_FILTER_CONFIG } from "@/lib/filter-presets";
 import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-css";
@@ -173,6 +174,7 @@ export function ConfigurationPanel({
   // Caption generation state
   const [captionText, setCaptionText] = useState(project.caption ?? "");
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
+  const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } = useLoadingStore();
 
   // Sync caption text to project on changes
   useEffect(() => {
@@ -309,6 +311,7 @@ export function ConfigurationPanel({
       return;
     }
     setIsGeneratingCaption(true);
+    startGlobalLoading("caption", "Generating caption…");
     try {
       const audioCtx = project.audioClip?.source === "library" && project.audioClip.attribution
         ? {
@@ -337,6 +340,7 @@ export function ConfigurationPanel({
       }
     } finally {
       setIsGeneratingCaption(false);
+      stopGlobalLoading("caption");
     }
   }
 

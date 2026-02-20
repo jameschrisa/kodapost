@@ -16,10 +16,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -761,192 +762,204 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
 
           {/* Inline text editing controls */}
           {selectedSlide && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-[500px] mx-auto">
-              {/* Headline */}
-              <div className="space-y-1.5">
-                <Label className="text-xs">Headline</Label>
-                <Input
-                  value={editPrimary}
-                  onChange={(e) => setEditPrimary(e.target.value)}
-                  placeholder="Main headline text"
-                  className="text-sm"
-                />
-              </div>
+            <Tabs defaultValue="format" className="max-w-[500px] mx-auto">
+              <TabsList className="w-full mb-3">
+                <TabsTrigger value="format" className="flex-1">Format</TabsTrigger>
+                <TabsTrigger value="content" className="flex-1">Content</TabsTrigger>
+              </TabsList>
 
-              {/* Subtitle */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs">Subtitle</Label>
-                  <div className="flex items-center gap-1.5">
-                    <Label htmlFor="edit-sub-toggle" className="text-[10px] text-muted-foreground">
-                      {editSubtitleEnabled ? "On" : "Off"}
-                    </Label>
-                    <Switch
-                      id="edit-sub-toggle"
-                      checked={editSubtitleEnabled}
-                      onCheckedChange={setEditSubtitleEnabled}
-                    />
-                  </div>
-                </div>
-                {editSubtitleEnabled && (
-                  <Input
-                    value={editSecondary}
-                    onChange={(e) => setEditSecondary(e.target.value)}
-                    placeholder="Supporting text"
-                    className="text-sm"
-                  />
-                )}
-              </div>
-
-              {/* Font */}
-              <div className="space-y-1.5">
-                <Label className="text-xs">Font</Label>
-                <Select value={editFontFamily} onValueChange={setEditFontFamily}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__sep_sans" disabled>Sans Serif</SelectItem>
-                    {FONT_OPTIONS.filter((f) => f.category === "sans-serif").map((font) => (
-                      <SelectItem key={font.label} value={font.label}>{font.label}</SelectItem>
-                    ))}
-                    <SelectItem value="__sep_serif" disabled>Serif</SelectItem>
-                    {FONT_OPTIONS.filter((f) => f.category === "serif" || f.category === "display").map((font) => (
-                      <SelectItem key={font.label} value={font.label}>{font.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Headline Font Size */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs">Headline Size</Label>
-                  <span className="text-xs text-muted-foreground tabular-nums">{editFontSizePrimary}px</span>
-                </div>
-                <Slider
-                  min={24} max={96} step={2}
-                  value={[editFontSizePrimary]}
-                  onValueChange={([v]) => setEditFontSizePrimary(v)}
-                />
-              </div>
-
-              {/* Subtitle Font Size — only visible when subtitle is enabled */}
-              {editSubtitleEnabled && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs">Subtitle Size</Label>
-                  <span className="text-xs text-muted-foreground tabular-nums">{editFontSizeSecondary}px</span>
-                </div>
-                <Slider
-                  min={14} max={56} step={2}
-                  value={[editFontSizeSecondary]}
-                  onValueChange={([v]) => setEditFontSizeSecondary(v)}
-                />
-              </div>
-              )}
-
-              {/* Text Align + Italic + Color Scheme */}
-              <div className="flex items-center gap-1">
-                {(["left", "center", "right"] as const).map((align) => (
+              {/* Format tab: styling controls */}
+              <TabsContent value="format" className="space-y-4 mt-0">
+                {/* 1. Icon toolbar: alignment + italic + text color */}
+                <div className="flex items-center gap-1">
+                  {(["left", "center", "right"] as const).map((align) => (
+                    <button
+                      key={align}
+                      type="button"
+                      onClick={() => setEditTextAlign(align)}
+                      className={cn(
+                        "rounded-md p-1.5 transition-colors",
+                        editTextAlign === align
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      )}
+                    >
+                      {align === "left" && <AlignLeft className="h-3.5 w-3.5" />}
+                      {align === "center" && <AlignCenter className="h-3.5 w-3.5" />}
+                      {align === "right" && <AlignRight className="h-3.5 w-3.5" />}
+                    </button>
+                  ))}
+                  <div className="w-px bg-border mx-1 h-6" />
                   <button
-                    key={align}
                     type="button"
-                    onClick={() => setEditTextAlign(align)}
+                    onClick={() => setEditFontStyle(editFontStyle === "italic" ? "normal" : "italic")}
                     className={cn(
                       "rounded-md p-1.5 transition-colors",
-                      editTextAlign === align
+                      editFontStyle === "italic"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     )}
+                    title="Italic"
                   >
-                    {align === "left" && <AlignLeft className="h-3.5 w-3.5" />}
-                    {align === "center" && <AlignCenter className="h-3.5 w-3.5" />}
-                    {align === "right" && <AlignRight className="h-3.5 w-3.5" />}
+                    <Italic className="h-3.5 w-3.5" />
                   </button>
-                ))}
-                <div className="w-px bg-border mx-1 h-6" />
-                <button
-                  type="button"
-                  onClick={() => setEditFontStyle(editFontStyle === "italic" ? "normal" : "italic")}
-                  className={cn(
-                    "rounded-md p-1.5 transition-colors",
-                    editFontStyle === "italic"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                  title="Italic"
-                >
-                  <Italic className="h-3.5 w-3.5" />
-                </button>
-                <div className="w-px bg-border mx-1 h-6" />
-                {/* Text color presets + custom picker */}
-                <button
-                  type="button"
-                  onClick={() => setEditTextColor(COLOR_SCHEMES.dark.textColor)}
-                  className={cn(
-                    "rounded-md p-1.5 transition-colors",
-                    editTextColor === COLOR_SCHEMES.dark.textColor
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                  title="White text"
-                >
-                  <SunMoon className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditTextColor(COLOR_SCHEMES.light.textColor)}
-                  className={cn(
-                    "rounded-md p-1.5 transition-colors",
-                    editTextColor === COLOR_SCHEMES.light.textColor
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                  title="Dark text"
-                >
-                  <span className="h-3.5 w-3.5 flex items-center justify-center text-[10px] font-bold">A</span>
-                </button>
-                {/* Custom text color picker */}
-                <label className="relative h-7 w-7 cursor-pointer rounded-md" title="Custom text color">
-                  <input
-                    type="color"
-                    value={editTextColor}
-                    onChange={(e) => setEditTextColor(e.target.value)}
-                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  />
-                  <div
+                  <div className="w-px bg-border mx-1 h-6" />
+                  {/* Text color presets + custom picker */}
+                  <button
+                    type="button"
+                    onClick={() => setEditTextColor(COLOR_SCHEMES.dark.textColor)}
                     className={cn(
-                      "h-7 w-7 rounded-md border-2 transition-all",
-                      editTextColor !== COLOR_SCHEMES.dark.textColor && editTextColor !== COLOR_SCHEMES.light.textColor
-                        ? "border-primary ring-1 ring-primary/30"
-                        : "border-muted-foreground/30"
+                      "rounded-md p-1.5 transition-colors",
+                      editTextColor === COLOR_SCHEMES.dark.textColor
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
                     )}
-                    style={{ backgroundColor: editTextColor }}
-                  />
-                </label>
-              </div>
+                    title="White text"
+                  >
+                    <SunMoon className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditTextColor(COLOR_SCHEMES.light.textColor)}
+                    className={cn(
+                      "rounded-md p-1.5 transition-colors",
+                      editTextColor === COLOR_SCHEMES.light.textColor
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    )}
+                    title="Dark text"
+                  >
+                    <span className="h-3.5 w-3.5 flex items-center justify-center text-[10px] font-bold">A</span>
+                  </button>
+                  {/* Custom text color picker */}
+                  <label className="relative h-7 w-7 cursor-pointer rounded-md" title="Custom text color">
+                    <input
+                      type="color"
+                      value={editTextColor}
+                      onChange={(e) => setEditTextColor(e.target.value)}
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    />
+                    <div
+                      className={cn(
+                        "h-7 w-7 rounded-md border-2 transition-all",
+                        editTextColor !== COLOR_SCHEMES.dark.textColor && editTextColor !== COLOR_SCHEMES.light.textColor
+                          ? "border-primary ring-1 ring-primary/30"
+                          : "border-muted-foreground/30"
+                      )}
+                      style={{ backgroundColor: editTextColor }}
+                    />
+                  </label>
+                </div>
 
-              {/* Background Padding */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs">Background Padding</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">Horizontal</span>
-                      <span className="text-xs text-muted-foreground tabular-nums">{editBgPadX}px</span>
-                    </div>
-                    <Slider min={0} max={40} step={1} value={[editBgPadX]} onValueChange={([v]) => setEditBgPadX(v)} />
+                {/* 2. Font family */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Font</Label>
+                  <Select value={editFontFamily} onValueChange={setEditFontFamily}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__sep_sans" disabled>Sans Serif</SelectItem>
+                      {FONT_OPTIONS.filter((f) => f.category === "sans-serif").map((font) => (
+                        <SelectItem key={font.label} value={font.label}>{font.label}</SelectItem>
+                      ))}
+                      <SelectItem value="__sep_serif" disabled>Serif</SelectItem>
+                      {FONT_OPTIONS.filter((f) => f.category === "serif" || f.category === "display").map((font) => (
+                        <SelectItem key={font.label} value={font.label}>{font.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 3. Headline size */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Headline Size</Label>
+                    <span className="text-xs text-muted-foreground tabular-nums">{editFontSizePrimary}px</span>
                   </div>
-                  <div className="space-y-1">
+                  <Slider
+                    min={24} max={96} step={2}
+                    value={[editFontSizePrimary]}
+                    onValueChange={([v]) => setEditFontSizePrimary(v)}
+                  />
+                </div>
+
+                {/* 4. Subtitle size (conditional) */}
+                {editSubtitleEnabled && (
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">Vertical</span>
-                      <span className="text-xs text-muted-foreground tabular-nums">{editBgPadY}px</span>
+                      <Label className="text-xs">Subtitle Size</Label>
+                      <span className="text-xs text-muted-foreground tabular-nums">{editFontSizeSecondary}px</span>
                     </div>
-                    <Slider min={0} max={30} step={1} value={[editBgPadY]} onValueChange={([v]) => setEditBgPadY(v)} />
+                    <Slider
+                      min={14} max={56} step={2}
+                      value={[editFontSizeSecondary]}
+                      onValueChange={([v]) => setEditFontSizeSecondary(v)}
+                    />
+                  </div>
+                )}
+
+                {/* 5. Background padding */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Background Padding</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">Horizontal</span>
+                        <span className="text-xs text-muted-foreground tabular-nums">{editBgPadX}px</span>
+                      </div>
+                      <Slider min={0} max={40} step={1} value={[editBgPadX]} onValueChange={([v]) => setEditBgPadX(v)} />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground">Vertical</span>
+                        <span className="text-xs text-muted-foreground tabular-nums">{editBgPadY}px</span>
+                      </div>
+                      <Slider min={0} max={30} step={1} value={[editBgPadY]} onValueChange={([v]) => setEditBgPadY(v)} />
+                    </div>
                   </div>
                 </div>
-              </div>
+              </TabsContent>
 
-            </div>
+              {/* Content tab: text input controls */}
+              <TabsContent value="content" className="space-y-4 mt-0">
+                {/* Headline */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Headline</Label>
+                  <Textarea
+                    value={editPrimary}
+                    onChange={(e) => setEditPrimary(e.target.value)}
+                    placeholder="Main headline text"
+                    className="text-sm resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Subtitle + toggle */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Subtitle</Label>
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="edit-sub-toggle" className="text-[10px] text-muted-foreground">
+                        {editSubtitleEnabled ? "On" : "Off"}
+                      </Label>
+                      <Switch
+                        id="edit-sub-toggle"
+                        checked={editSubtitleEnabled}
+                        onCheckedChange={setEditSubtitleEnabled}
+                      />
+                    </div>
+                  </div>
+                  {editSubtitleEnabled && (
+                    <Textarea
+                      value={editSecondary}
+                      onChange={(e) => setEditSecondary(e.target.value)}
+                      placeholder="Supporting text"
+                      className="text-sm resize-none"
+                      rows={2}
+                    />
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </div>

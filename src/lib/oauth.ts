@@ -49,13 +49,29 @@ export function generateState(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
+/**
+ * Generates a PKCE code_verifier (RFC 7636).
+ */
+export function generateCodeVerifier(): string {
+  return crypto.randomBytes(32).toString("base64url");
+}
+
+/**
+ * Derives a PKCE code_challenge from the verifier using S256 method.
+ */
+export function generateCodeChallenge(verifier: string): string {
+  const hash = crypto.createHash("sha256").update(verifier).digest();
+  return Buffer.from(hash).toString("base64url");
+}
+
 // -----------------------------------------------------------------------------
 // Build Authorization URLs
 // -----------------------------------------------------------------------------
 
 export function buildAuthUrl(
   platform: OAuthPlatform,
-  state: string
+  state: string,
+  codeChallenge?: string
 ): string {
   const config = OAUTH_CONFIG[platform];
   const { clientId } = getCredentials(platform);
@@ -115,6 +131,18 @@ export function buildAuthUrl(
       params.set("state", state);
       return `${config.authUrl}?${params.toString()}`;
 
+    case "x":
+      params.set("client_id", clientId);
+      params.set("redirect_uri", redirectUri);
+      params.set("scope", config.scopes.join(" "));
+      params.set("response_type", "code");
+      params.set("state", state);
+      if (codeChallenge) {
+        params.set("code_challenge", codeChallenge);
+        params.set("code_challenge_method", "S256");
+      }
+      return `${config.authUrl}?${params.toString()}`;
+
     default:
       throw new Error(`Unsupported platform: ${platform}`);
   }
@@ -126,7 +154,8 @@ export function buildAuthUrl(
 
 export async function exchangeCode(
   platform: OAuthPlatform,
-  code: string
+  code: string,
+  codeVerifier?: string
 ): Promise<TokenResponse> {
   switch (platform) {
     case "instagram":
@@ -141,6 +170,8 @@ export async function exchangeCode(
       return exchangeRedditCode(code);
     case "lemon8":
       return exchangeLemon8Code(code);
+    case "x":
+      return exchangeXCode(code, codeVerifier || "");
     default:
       throw new Error(`Unsupported platform: ${platform}`);
   }
@@ -506,6 +537,65 @@ async function exchangeLemon8Code(code: string): Promise<TokenResponse> {
   };
 }
 
+// -- X (Twitter) --
+
+async function exchangeXCode(code: string, codeVerifier: string): Promise<TokenResponse> {
+  const config = OAUTH_CONFIG.x;
+  const { clientId, clientSecret } = getCredentials("x");
+  const redirectUri = getCallbackUrl("x");
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+  const res = await fetch(config.tokenUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${basicAuth}`,
+    },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`X token exchange failed: ${err}`);
+  }
+
+  const data = await res.json();
+
+  if (!data.access_token) {
+    throw new Error("X did not return an access token");
+  }
+
+  // Get user info
+  let platformUserId = "";
+  let platformUsername = "";
+  try {
+    const userRes = await fetch("https://api.twitter.com/2/users/me", {
+      headers: { Authorization: `Bearer ${data.access_token}` },
+    });
+    if (userRes.ok) {
+      const userData = await userRes.json();
+      platformUserId = userData.data?.id || "";
+      platformUsername = userData.data?.username || "";
+    }
+  } catch {
+    // Non-critical
+  }
+
+  return {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    expiresIn: data.expires_in || 7200,
+    platformUserId,
+    platformUsername,
+    platformDisplayName: platformUsername,
+  };
+}
+
 // -----------------------------------------------------------------------------
 // Token Refresh
 // -----------------------------------------------------------------------------
@@ -636,6 +726,29 @@ export async function refreshToken(
         accessToken: tokenInfo.access_token,
         refreshToken: tokenInfo.refresh_token,
         expiresIn: tokenInfo.expires_in || 86400,
+      };
+    }
+
+    case "x": {
+      const { clientId: xClientId, clientSecret: xClientSecret } = getCredentials("x");
+      const xBasicAuth = Buffer.from(`${xClientId}:${xClientSecret}`).toString("base64");
+      const res = await fetch(OAUTH_CONFIG.x.tokenUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${xBasicAuth}`,
+        },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: currentRefreshToken,
+        }),
+      });
+      if (!res.ok) throw new Error("X token refresh failed");
+      const data = await res.json();
+      return {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresIn: data.expires_in || 7200,
       };
     }
 

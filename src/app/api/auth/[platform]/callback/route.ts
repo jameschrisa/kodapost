@@ -51,9 +51,16 @@ export async function GET(
   // Clear state cookie
   cookieStore.delete(`nf_oauth_state_${platform}`);
 
+  // For X/Twitter PKCE — retrieve and clear the stored code_verifier
+  let codeVerifier: string | undefined;
+  if (platform === "x") {
+    codeVerifier = cookieStore.get("nf_pkce_verifier_x")?.value;
+    cookieStore.delete("nf_pkce_verifier_x");
+  }
+
   try {
     // Exchange authorization code for tokens
-    const tokenResponse = await exchangeCode(platform as OAuthPlatform, code);
+    const tokenResponse = await exchangeCode(platform as OAuthPlatform, code, codeVerifier);
     const tokenData = tokenResponseToData(tokenResponse);
 
     // Store encrypted token in httpOnly cookie

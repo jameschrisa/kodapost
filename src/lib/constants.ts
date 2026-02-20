@@ -41,6 +41,12 @@ export const PLATFORM_LIMITS = {
     hashtag_recommended: 8,
     first_line_preview: 140,
   },
+  x: {
+    caption_max: 280,
+    hashtag_max: 5,
+    hashtag_recommended: 3,
+    first_line_preview: 280,
+  },
 } as const;
 
 // -----------------------------------------------------------------------------
@@ -90,6 +96,13 @@ export const PLATFORM_IMAGE_SPECS = {
     format: "JPEG",
     quality: 90,
   },
+  x_post: {
+    width: 1080,
+    height: 1350,
+    aspectRatio: "4:5",
+    format: "JPEG",
+    quality: 90,
+  },
 } as const;
 
 // -----------------------------------------------------------------------------
@@ -126,6 +139,11 @@ export const PLATFORM_PREVIEW_CONFIG = {
     label: "Lemon8",
     ratio: "3:4",
     aspectClass: "aspect-[3/4]",
+  },
+  x: {
+    label: "X",
+    ratio: "4:5",
+    aspectClass: "aspect-[4/5]",
   },
 } as const;
 
@@ -249,6 +267,12 @@ export const OAUTH_CONFIG = {
     tokenUrl: "https://open.lemon8-app.com/oauth/access_token",
     scopes: ["content.publish"],
     envKeys: { id: "LEMON8_CLIENT_KEY", secret: "LEMON8_CLIENT_SECRET" },
+  },
+  x: {
+    authUrl: "https://twitter.com/i/oauth2/authorize",
+    tokenUrl: "https://api.twitter.com/2/oauth2/token",
+    scopes: ["tweet.write", "tweet.read", "users.read", "offline.access"],
+    envKeys: { id: "X_CLIENT_ID", secret: "X_CLIENT_SECRET" },
   },
 } as const;
 

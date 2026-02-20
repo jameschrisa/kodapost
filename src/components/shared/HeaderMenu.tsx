@@ -195,7 +195,7 @@ export function HeaderMenu({
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenSettings}>
             <Settings className="h-4 w-4" />
-            Settings
+            Social Media Settings
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenAdvancedSettings}>
             <Activity className="h-4 w-4" />

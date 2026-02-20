@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Youtube,
   Zap,
-  X,
+  X as XClose,
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -51,8 +51,7 @@ import type {
 // Platform groups
 // ---------------------------------------------------------------------------
 
-const PRIMARY_PLATFORMS: Platform[] = ["instagram", "tiktok", "linkedin"];
-const MORE_PLATFORMS: Platform[] = ["youtube", "reddit", "lemon8"];
+const PLATFORMS: Platform[] = ["tiktok", "instagram", "youtube", "x", "linkedin"];
 
 // ---------------------------------------------------------------------------
 // Platform metadata
@@ -105,6 +104,15 @@ const PLATFORM_META: Record<
     icon: (
       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+      </svg>
+    ),
+    placeholder: "@yourhandle",
+  },
+  x: {
+    label: "X",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
       </svg>
     ),
     placeholder: "@yourhandle",
@@ -248,7 +256,7 @@ function PlatformCard({
                           exit="exit"
                           className="text-destructive"
                         >
-                          <X className="h-3 w-3" />
+                          <XClose className="h-3 w-3" />
                         </motion.span>
                       ) : (
                         <motion.span
@@ -507,11 +515,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             <TabsTrigger value="general" className="flex-1">
               General
             </TabsTrigger>
-            <TabsTrigger value="primary" className="flex-1">
-              Primary
-            </TabsTrigger>
-            <TabsTrigger value="more" className="flex-1">
-              More Platforms
+            <TabsTrigger value="accounts" className="flex-1">
+              Accounts
             </TabsTrigger>
           </TabsList>
 
@@ -551,12 +556,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="primary" className="mt-4">
-            {renderPlatforms(PRIMARY_PLATFORMS)}
-          </TabsContent>
-
-          <TabsContent value="more" className="mt-4">
-            {renderPlatforms(MORE_PLATFORMS)}
+          <TabsContent value="accounts" className="mt-4">
+            {renderPlatforms(PLATFORMS)}
           </TabsContent>
         </Tabs>
 

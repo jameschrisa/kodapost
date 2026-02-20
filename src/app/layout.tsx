@@ -17,6 +17,7 @@ import {
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { ApiProgressBar } from "@/components/shared/ApiProgressBar";
 import "./globals.css";
 
 const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -123,6 +124,7 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
           <body className={bodyClasses}>
             <ThemeProvider>
+              <ApiProgressBar />
               {children}
               <Toaster />
             </ThemeProvider>

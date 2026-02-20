@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { OAUTH_CONFIG, type OAuthPlatform } from "@/lib/constants";
-import { buildAuthUrl, generateState } from "@/lib/oauth";
+import { buildAuthUrl, generateState, generateCodeVerifier, generateCodeChallenge } from "@/lib/oauth";
 
 const VALID_PLATFORMS = Object.keys(OAUTH_CONFIG);
 
@@ -29,8 +29,22 @@ export async function GET(
       path: "/",
     });
 
+    // X/Twitter uses PKCE — generate code_verifier and store separately
+    let codeChallenge: string | undefined;
+    if (platform === "x") {
+      const codeVerifier = generateCodeVerifier();
+      codeChallenge = generateCodeChallenge(codeVerifier);
+      cookieStore.set("nf_pkce_verifier_x", codeVerifier, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 600,
+        path: "/",
+      });
+    }
+
     // Build platform-specific OAuth URL and redirect
-    const url = buildAuthUrl(platform as OAuthPlatform, state);
+    const url = buildAuthUrl(platform as OAuthPlatform, state, codeChallenge);
     return NextResponse.redirect(url);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Authorization failed";

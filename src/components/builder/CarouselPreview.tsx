@@ -11,12 +11,12 @@ import {
   Loader2,
   RefreshCw,
   Send,
-  Smartphone,
   Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { SlideTextOverlay } from "@/components/builder/SlideTextOverlay";
 import { MobilePhoneFrame } from "@/components/builder/MobilePhoneFrame";
@@ -57,6 +57,7 @@ export function CarouselPreview({
     (project.targetPlatforms[0] as PreviewPlatform) || "instagram"
   );
   const [previewMode, setPreviewMode] = useState<"platform" | "letterbox" | "mobile">("platform");
+  const [previewTab, setPreviewTab] = useState<"platform" | "device">("platform");
 
   // -- Mobile preview state --
   const [mobileAspectRatio, setMobileAspectRatio] = useState<MobileAspectRatio>("19.5:9");
@@ -111,6 +112,15 @@ export function CarouselPreview({
   useEffect(() => {
     setCurrentPage(0);
   }, [previewMode]);
+
+  // Sync previewTab → previewMode
+  useEffect(() => {
+    if (previewTab === "device") {
+      setPreviewMode("mobile");
+    } else {
+      setPreviewMode("platform");
+    }
+  }, [previewTab]);
 
   const totalPages = Math.ceil(project.slides.length / SLIDES_PER_PAGE);
   const paginatedSlides = useMemo(
@@ -284,116 +294,89 @@ export function CarouselPreview({
         </div>
       </div>
 
-      {/* Platform preview selector */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-medium text-muted-foreground">Preview as:</span>
-        <div className="flex gap-1 flex-wrap">
-          {/* Individual platform buttons (excluding reddit, lemon8 — consolidated below) */}
-          {(["instagram", "tiktok", "linkedin"] as PreviewPlatform[]).map((platform) => {
-            const config = PLATFORM_PREVIEW_CONFIG[platform];
-            return (
-              <button
-                key={platform}
-                type="button"
-                onClick={() => {
-                  setPreviewPlatform(platform);
-                  setPreviewMode("platform");
-                }}
-                className={cn(
-                  "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                  previewMode === "platform" && previewPlatform === platform
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                )}
-              >
-                {config.label}
-                <span className="ml-1 opacity-60">{config.ratio}</span>
-              </button>
-            );
-          })}
-          {/* Consolidated 1:1 Square — uses YouTube config (1:1) */}
-          <button
-            type="button"
-            onClick={() => {
-              setPreviewPlatform("youtube");
-              setPreviewMode("platform");
-            }}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              previewMode === "platform" && (previewPlatform === "youtube" || previewPlatform === "reddit")
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            )}
-          >
-            Square
-            <span className="ml-1 opacity-60">1:1</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setPreviewMode(previewMode === "letterbox" ? "platform" : "letterbox")}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              previewMode === "letterbox"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            )}
-          >
-            Letterbox
-            <span className="ml-1 opacity-60">{LETTERBOX_PREVIEW_CONFIG.ratio}</span>
-          </button>
+      {/* Platform Preview / Device Preview tabs */}
+      <Tabs value={previewTab} onValueChange={(v) => setPreviewTab(v as "platform" | "device")}>
+        <TabsList>
+          <TabsTrigger value="platform">Platform Preview</TabsTrigger>
+          <TabsTrigger value="device">Device Preview</TabsTrigger>
+        </TabsList>
 
-          {/* Divider */}
-          <div className="mx-1 h-5 w-px bg-border" />
-
-          {/* Mobile device preview */}
-          <button
-            type="button"
-            onClick={() => setPreviewMode(previewMode === "mobile" ? "platform" : "mobile")}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors inline-flex items-center gap-1.5",
-              previewMode === "mobile"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            )}
-          >
-            <Smartphone className="h-3.5 w-3.5" />
-            Mobile
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile preview sub-controls */}
-      {previewMode === "mobile" && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground">Screen:</span>
-            <div className="flex gap-1">
-              {(Object.keys(MOBILE_ASPECT_RATIOS) as MobileAspectRatio[]).map((ratio) => {
-                const config = MOBILE_ASPECT_RATIOS[ratio];
-                return (
-                  <button
-                    key={ratio}
-                    type="button"
-                    onClick={() => setMobileAspectRatio(ratio)}
-                    className={cn(
-                      "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                      mobileAspectRatio === ratio
-                        ? "bg-secondary text-secondary-foreground ring-1 ring-primary/30"
-                        : "bg-muted/60 text-muted-foreground hover:bg-muted"
-                    )}
-                    title={config.description}
-                  >
-                    {ratio}
-                  </button>
-                );
-              })}
-            </div>
-            <span className="text-[10px] text-muted-foreground/70">
-              {MOBILE_ASPECT_RATIOS[mobileAspectRatio].description}
-            </span>
+        <TabsContent value="platform" className="mt-3">
+          <div className="flex gap-1 flex-wrap">
+            {(["tiktok", "instagram", "youtube", "x"] as PreviewPlatform[]).map((platform) => {
+              const config = PLATFORM_PREVIEW_CONFIG[platform];
+              return (
+                <button
+                  key={platform}
+                  type="button"
+                  onClick={() => {
+                    setPreviewPlatform(platform);
+                    setPreviewMode("platform");
+                  }}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    previewMode === "platform" && previewPlatform === platform
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}
+                >
+                  {config.label}
+                  <span className="ml-1 opacity-60">{config.ratio}</span>
+                </button>
+              );
+            })}
+            {/* Generic 1:1 Square — maps to YouTube config */}
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewPlatform("youtube");
+                setPreviewMode("platform");
+              }}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                previewMode === "platform" && previewPlatform === "youtube"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              Square
+              <span className="ml-1 opacity-60">1:1</span>
+            </button>
           </div>
-        </div>
-      )}
+        </TabsContent>
+
+        <TabsContent value="device" className="mt-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">Screen:</span>
+              <div className="flex gap-1">
+                {(Object.keys(MOBILE_ASPECT_RATIOS) as MobileAspectRatio[]).map((ratio) => {
+                  const config = MOBILE_ASPECT_RATIOS[ratio];
+                  return (
+                    <button
+                      key={ratio}
+                      type="button"
+                      onClick={() => setMobileAspectRatio(ratio)}
+                      className={cn(
+                        "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                        mobileAspectRatio === ratio
+                          ? "bg-secondary text-secondary-foreground ring-1 ring-primary/30"
+                          : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                      )}
+                      title={config.description}
+                    >
+                      {ratio}
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="text-[10px] text-muted-foreground/70">
+                {MOBILE_ASPECT_RATIOS[mobileAspectRatio].description}
+              </span>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Slide grid — read-only with drag-to-reorder */}
       <div className={cn("grid gap-4", gridColsClass)}>
