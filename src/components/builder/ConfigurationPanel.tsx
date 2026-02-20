@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowRight, FileSpreadsheet, Image as ImageIcon, ImagePlus, Layers, Loader2, Mic, MicOff, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Type, Wand2, X } from "lucide-react";
+import { AlertCircle, ArrowRight, Camera, FileSpreadsheet, Image as ImageIcon, ImagePlus, Layers, Loader2, Mic, MicOff, Palette, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Type, Wand2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { staggerContainerVariants, staggerItemVariants, buttonTapScale } from "@/lib/motion";
@@ -21,6 +21,7 @@ import { CardHelpIcon } from "@/components/shared/CardHelpIcon";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +58,6 @@ export function ConfigurationPanel({
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasAttemptedGenerate, setHasAttemptedGenerate] = useState(false);
   const [csvImportOpen, setCsvImportOpen] = useState(false);
-  const [filterTuneOpen, setFilterTuneOpen] = useState(false);
   const [carouselWarningOpen, setCarouselWarningOpen] = useState(false);
 
   // Headline visibility — derived from globalOverlayStyle or default
@@ -807,62 +807,17 @@ export function ConfigurationPanel({
       </motion.div>
       )}
 
-      {/* 5. Camera Style */}
+      {/* 5. Image Look and Feel — tabbed: Camera / Filters / Fine-Tune */}
       <motion.div variants={staggerItemVariants}>
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">Vintage Digital Camera Emulations</CardTitle>
-            <CardHelpIcon title="Camera Emulation">
-              Select a vintage camera style to apply to your images. Each
-              camera has a unique visual aesthetic &mdash; from Polaroid warmth
-              to disposable camera grain.
-            </CardHelpIcon>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <CameraSelector
-            value={project.cameraProfileId}
-            onChange={(id) => {
-              if (id === 0) {
-                // "No Emulation" — reset to defaults (no filter, all params zero)
-                onUpdate({
-                  ...project,
-                  cameraProfileId: 0,
-                  filterConfig: { ...DEFAULT_FILTER_CONFIG },
-                });
-              } else {
-                const mapping = CAMERA_FILTER_MAP[id];
-                if (mapping) {
-                  onUpdate({
-                    ...project,
-                    cameraProfileId: id,
-                    filterConfig: {
-                      predefinedFilter: mapping.filter,
-                      customParams: { ...mapping.customParams },
-                    },
-                  });
-                } else {
-                  updateField("cameraProfileId", id);
-                }
-              }
-            }}
-          />
-        </CardContent>
-      </Card>
-      </motion.div>
-
-      {/* 6. Photo Filters */}
-      <motion.div variants={staggerItemVariants}>
-      <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base">Retro Photo Filters</CardTitle>
-              <CardHelpIcon title="Image Filters">
-                Apply Instagram-style filters and fine-tune film
-                characteristics like grain, bloom, shadow fade, color
-                temperature, and vignetting.
+              <CardTitle className="text-base">Image Look &amp; Feel</CardTitle>
+              <CardHelpIcon title="Image Look & Feel">
+                Shape the visual style of your images. Choose a vintage camera
+                emulation, apply retro photo filters, and fine-tune parameters
+                like grain, bloom, and vignette.
               </CardHelpIcon>
             </div>
             <Button
@@ -877,30 +832,69 @@ export function ConfigurationPanel({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Predefined filter cards */}
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Predefined Filters</Label>
-            <FilterSelector
-              value={filterConfig.predefinedFilter}
-              onChange={handleFilterSelect}
-            />
-          </div>
+        <CardContent className="pt-0">
+          <Tabs defaultValue="camera" className="w-full">
+            <TabsList className="w-full grid grid-cols-3">
+              <TabsTrigger value="camera" className="gap-1.5 text-xs">
+                <Camera className="h-3.5 w-3.5" />
+                Camera
+              </TabsTrigger>
+              <TabsTrigger value="filters" className="gap-1.5 text-xs">
+                <Palette className="h-3.5 w-3.5" />
+                Filters
+              </TabsTrigger>
+              <TabsTrigger value="fine-tune" className="gap-1.5 text-xs">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Fine-Tune
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Fine-tune toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2"
-            onClick={() => setFilterTuneOpen((v) => !v)}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            {filterTuneOpen ? "Hide Fine-Tune" : "Fine-Tune Adjustments"}
-          </Button>
+            {/* ── Camera Tab ── */}
+            <TabsContent value="camera" className="mt-3">
+              <CameraSelector
+                value={project.cameraProfileId}
+                onChange={(id) => {
+                  if (id === 0) {
+                    onUpdate({
+                      ...project,
+                      cameraProfileId: 0,
+                      filterConfig: { ...DEFAULT_FILTER_CONFIG },
+                    });
+                  } else {
+                    const mapping = CAMERA_FILTER_MAP[id];
+                    if (mapping) {
+                      onUpdate({
+                        ...project,
+                        cameraProfileId: id,
+                        filterConfig: {
+                          predefinedFilter: mapping.filter,
+                          customParams: { ...mapping.customParams },
+                        },
+                      });
+                    } else {
+                      updateField("cameraProfileId", id);
+                    }
+                  }
+                }}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Select a vintage camera style to apply to your images.
+              </p>
+            </TabsContent>
 
-          {/* Custom parameter sliders with live preview */}
-          {filterTuneOpen && (
-            <div className="space-y-5 pt-2">
+            {/* ── Filters Tab ── */}
+            <TabsContent value="filters" className="mt-3">
+              <FilterSelector
+                value={filterConfig.predefinedFilter}
+                onChange={handleFilterSelect}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Apply Instagram-style retro photo filters on top of camera emulation.
+              </p>
+            </TabsContent>
+
+            {/* ── Fine-Tune Tab ── */}
+            <TabsContent value="fine-tune" className="mt-3 space-y-5">
               {/* Live filter preview on sample image */}
               <div className="mx-auto max-w-sm overflow-hidden rounded-lg border">
                 <div className="relative aspect-[3/2] w-full bg-black">
@@ -912,7 +906,6 @@ export function ConfigurationPanel({
                     className="object-cover"
                     style={{ filter: filterStyles.imageFilter }}
                   />
-                  {/* Filter gradient overlay */}
                   {filterStyles.overlayGradient && (
                     <div
                       className="absolute inset-0 pointer-events-none"
@@ -922,14 +915,12 @@ export function ConfigurationPanel({
                       }}
                     />
                   )}
-                  {/* Vignette overlay */}
                   {filterStyles.vignetteGradient && (
                     <div
                       className="absolute inset-0 pointer-events-none"
                       style={{ background: filterStyles.vignetteGradient }}
                     />
                   )}
-                  {/* Grain overlay */}
                   {filterStyles.grainOpacity > 0 && (
                     <div
                       className="absolute inset-0 pointer-events-none"
@@ -1142,8 +1133,8 @@ export function ConfigurationPanel({
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
       </motion.div>
