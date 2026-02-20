@@ -492,6 +492,8 @@ export interface CarouselProject {
   lastGeneratedConfigHash?: string;
   /** User-assigned project name */
   projectName?: string;
+  /** Video generation settings for reel export */
+  videoSettings?: VideoSettings;
 }
 
 // -----------------------------------------------------------------------------
@@ -563,6 +565,22 @@ export type NanoCastFormat = "package" | "video";
 
 /** Transition type for video slideshow */
 export type SlideTransition = "none" | "crossfade" | "slide";
+
+/** Video generation settings for reel export */
+export interface VideoSettings {
+  /** Transition effect between slides */
+  transition: SlideTransition;
+  /** Transition duration in seconds */
+  transitionDuration: number;
+  /** Duration per slide in seconds */
+  slideDuration: number;
+  /** Auto-fit to audio length or use custom slide duration */
+  timingMode: "match-audio" | "custom";
+  /** Frames per second */
+  fps: number;
+  /** Video quality preset (maps to CRF values) */
+  quality: "standard" | "high";
+}
 
 // -----------------------------------------------------------------------------
 // Music Search Types

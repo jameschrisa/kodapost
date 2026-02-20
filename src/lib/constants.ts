@@ -1,4 +1,4 @@
-import type { CarouselProject, GlobalOverlayStyle } from "./types";
+import type { CarouselProject, GlobalOverlayStyle, VideoSettings } from "./types";
 
 // -----------------------------------------------------------------------------
 // Platform Caption Limits
@@ -391,3 +391,16 @@ export function getFontFamilyWithFallback(fontName: string): string {
 export type PlatformKey = keyof typeof PLATFORM_LIMITS;
 export type ImageSpecKey = keyof typeof PLATFORM_IMAGE_SPECS;
 export type AnalogMode = keyof typeof ANALOG_MODE_CONFIG;
+
+// -----------------------------------------------------------------------------
+// Video Generation Defaults
+// -----------------------------------------------------------------------------
+
+export const DEFAULT_VIDEO_SETTINGS: VideoSettings = {
+  transition: "crossfade",
+  transitionDuration: 0.5,
+  slideDuration: 3,
+  timingMode: "match-audio",
+  fps: 30,
+  quality: "standard",
+};

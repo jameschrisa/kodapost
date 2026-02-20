@@ -20,6 +20,7 @@ import { StepIndicator } from "@/components/builder/StepIndicator";
 import { ImageUploader } from "@/components/builder/ImageUploader";
 import { ConfigurationPanel } from "@/components/builder/ConfigurationPanel";
 import { CarouselPreview } from "@/components/builder/CarouselPreview";
+import { StoryboardPreview } from "@/components/builder/StoryboardPreview";
 import { TextEditPanel } from "@/components/builder/TextEditPanel";
 import { PublishPanel } from "@/components/builder/PublishPanel";
 import { generateCarousel } from "@/app/actions";
@@ -52,7 +53,7 @@ import { ContentSchedule } from "@/components/history/ContentSchedule";
 import { AudioPanel } from "@/components/audio";
 import { SavedDraftCard } from "@/components/shared/SavedDraftCard";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import type { AudioClip, CarouselProject, UploadedImage } from "@/lib/types";
+import type { AudioClip, CarouselProject, UploadedImage, VideoSettings } from "@/lib/types";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
 type AppMode = "create" | "schedule";
@@ -125,6 +126,7 @@ export default function Home() {
   const [splashForced, setSplashForced] = useState(false);
   const [contentBotOpen, setContentBotOpen] = useState(false);
   const [appMode, setAppMode] = useState<AppMode>("create");
+  const [reviewView, setReviewView] = useState<"grid" | "timeline">("grid");
 
   // Prefetch key routes so navigation feels instant
   useEffect(() => {
@@ -280,6 +282,17 @@ export default function Home() {
   const handleAudioChange = useCallback((clip: AudioClip | undefined) => {
     setProject((prev) => ({ ...prev, audioClip: clip }));
   }, []);
+
+  const handleVideoSettingsChange = useCallback((vs: VideoSettings) => {
+    setProject((prev) => ({ ...prev, videoSettings: vs }));
+  }, []);
+
+  // Auto-switch to timeline view when audio is added in Finalize step
+  useEffect(() => {
+    if (project.audioClip?.objectUrl) {
+      setReviewView("timeline");
+    }
+  }, [project.audioClip?.objectUrl]);
 
   const handleGenerate = useCallback(async () => {
     // Strip base64 image data before sending to server action to avoid
@@ -755,13 +768,71 @@ export default function Home() {
                     onAudioChange={handleAudioChange}
                   />
                 </motion.div>
+
+                {/* View toggle: Grid / Timeline */}
                 <motion.div variants={staggerItemVariants} className="mt-4">
-                  <CarouselPreview
-                    project={project}
-                    onEdit={handleProjectUpdate}
-                    onPublish={handlePublish}
-                    onBack={handleBack}
-                  />
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setReviewView("grid")}
+                        className={cn(
+                          "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                          reviewView === "grid"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Grid
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setReviewView("timeline")}
+                        className={cn(
+                          "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                          reviewView === "timeline"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Timeline
+                      </button>
+                    </div>
+                  </div>
+
+                  {reviewView === "grid" ? (
+                    <CarouselPreview
+                      project={project}
+                      onEdit={handleProjectUpdate}
+                      onPublish={handlePublish}
+                      onBack={handleBack}
+                    />
+                  ) : (
+                    <StoryboardPreview
+                      project={project}
+                      onVideoSettingsChange={handleVideoSettingsChange}
+                    />
+                  )}
+
+                  {/* Navigation buttons for timeline view */}
+                  {reviewView === "timeline" && (
+                    <div className="flex justify-between mt-4">
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        &larr; Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handlePublish}
+                        className="rounded-md bg-purple-500 px-4 py-2 text-sm font-medium text-white hover:bg-purple-600 transition-colors"
+                      >
+                        Continue to Publish &rarr;
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               </motion.div>
             </motion.div>

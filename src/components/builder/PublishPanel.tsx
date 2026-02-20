@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Check,
   CheckCircle2,
   ClipboardCopy,
   Download,
+  Film,
   ImageIcon,
   Instagram,
   Linkedin,
   Loader2,
   Music,
   Package,
+  Play,
   Plus,
   RotateCcw,
   Send,
@@ -28,6 +30,8 @@ import { PLATFORM_IMAGE_SPECS } from "@/lib/constants";
 import { loadSettings } from "@/lib/storage";
 import { compositeSlideImages } from "@/app/actions";
 import { trimAudioBlob, hasTrimApplied } from "@/lib/audio-utils";
+import { useVideoGenerator } from "@/hooks/useVideoGenerator";
+import { DEFAULT_VIDEO_SETTINGS } from "@/lib/constants";
 import type { CarouselProject } from "@/lib/types";
 import type { OAuthConnection } from "@/lib/types";
 
@@ -112,10 +116,22 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [caption, setCaption] = useState(project.caption ?? "");
   const [isPosting, setIsPosting] = useState(false);
   const [postingPlatform, setPostingPlatform] = useState<Platform | null>(null);
-  const [exportMode, setExportMode] = useState<"images" | "nanocast">(
-    project.audioClip?.objectUrl ? "nanocast" : "images"
+  const [exportMode, setExportMode] = useState<"images" | "nanocast" | "video">(
+    project.audioClip?.objectUrl ? "video" : "images"
   );
   const [includeAttribution, setIncludeAttribution] = useState(true);
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Video generator hook
+  const {
+    generateVideo,
+    progress: videoProgress,
+    stageLabel: videoStageLabel,
+    cancel: cancelVideo,
+    isGenerating: isVideoGenerating,
+  } = useVideoGenerator();
 
   // Pre-select platforms from saved settings
   useEffect(() => {
@@ -385,6 +401,59 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     }
   }
 
+  // Video generation handler
+  const handleGenerateVideo = useCallback(async () => {
+    if (selected.size === 0 || isVideoGenerating) return;
+
+    // Use the first selected platform for video dimensions
+    const platform = Array.from(selected)[0];
+
+    const blob = await generateVideo({
+      project,
+      platform,
+      settings: project.videoSettings ?? DEFAULT_VIDEO_SETTINGS,
+    });
+
+    if (blob) {
+      // Revoke previous URL if any
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      const url = URL.createObjectURL(blob);
+      setVideoBlob(blob);
+      setVideoUrl(url);
+      setIsComplete(true);
+
+      toast.success("Video reel generated!", {
+        description: `${readySlides.length}-slide reel ready for ${
+          PLATFORMS.find((p) => p.key === platform)?.label ?? platform
+        }.`,
+      });
+    } else {
+      toast.error("Video generation failed", {
+        description: "Please try again or use image export.",
+      });
+    }
+  }, [selected, isVideoGenerating, generateVideo, project, readySlides.length, videoUrl]);
+
+  // Download generated video
+  const handleDownloadVideo = useCallback(() => {
+    if (!videoBlob || !videoUrl) return;
+    const a = document.createElement("a");
+    a.href = videoUrl;
+    const platform = Array.from(selected)[0] ?? "reel";
+    a.download = `kodapost-${platform}-reel-${Date.now()}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast.success("Video downloaded!");
+  }, [videoBlob, videoUrl, selected]);
+
+  // Clean up video URL on unmount
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
+
   // -- Exporting state --
   if (isExporting) {
     return (
@@ -533,36 +602,68 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         </div>
       </div>
 
-      {/* Export mode selector — only when audio is attached */}
-      {project.audioClip?.objectUrl && selected.size > 0 && (
+      {/* Export mode selector */}
+      {selected.size > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Export Mode</p>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setExportMode("nanocast")}
-              className={cn(
-                "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
-                exportMode === "nanocast"
-                  ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
-                  : "border-muted-foreground/20 hover:border-muted-foreground/40"
-              )}
-            >
-              <Package
+          <div className={cn("grid gap-3", project.audioClip?.objectUrl ? "grid-cols-3" : "grid-cols-2")}>
+            {/* Video Reel — primary when audio present */}
+            {project.audioClip?.objectUrl && (
+              <button
+                type="button"
+                onClick={() => setExportMode("video")}
                 className={cn(
-                  "h-5 w-5 shrink-0",
-                  exportMode === "nanocast"
-                    ? "text-purple-400"
-                    : "text-muted-foreground"
+                  "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
+                  exportMode === "video"
+                    ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
+                    : "border-muted-foreground/20 hover:border-muted-foreground/40"
                 )}
-              />
-              <div>
-                <p className="text-sm font-medium">Nano-Cast Package</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Images + audio + manifest
-                </p>
-              </div>
-            </button>
+              >
+                <Film
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    exportMode === "video"
+                      ? "text-purple-400"
+                      : "text-muted-foreground"
+                  )}
+                />
+                <div>
+                  <p className="text-sm font-medium">Video Reel</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    MP4 with slides + audio
+                  </p>
+                </div>
+              </button>
+            )}
+            {/* Export Package */}
+            {project.audioClip?.objectUrl && (
+              <button
+                type="button"
+                onClick={() => setExportMode("nanocast")}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
+                  exportMode === "nanocast"
+                    ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
+                    : "border-muted-foreground/20 hover:border-muted-foreground/40"
+                )}
+              >
+                <Package
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    exportMode === "nanocast"
+                      ? "text-purple-400"
+                      : "text-muted-foreground"
+                  )}
+                />
+                <div>
+                  <p className="text-sm font-medium">Export Package</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Images + audio + manifest
+                  </p>
+                </div>
+              </button>
+            )}
+            {/* Images Only */}
             <button
               type="button"
               onClick={() => setExportMode("images")}
@@ -584,7 +685,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
               <div>
                 <p className="text-sm font-medium">Images Only</p>
                 <p className="text-[11px] text-muted-foreground">
-                  No audio or manifest
+                  ZIP with platform images
                 </p>
               </div>
             </button>
@@ -605,7 +706,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                   {readySlides.length * selected.size} images
                 </span>
               </p>
-              {project.audioClip?.objectUrl && exportMode === "nanocast" && (
+              {project.audioClip?.objectUrl && (exportMode === "nanocast" || exportMode === "video") && (
                 <div className="flex items-center gap-2 mt-1">
                   <Music className="h-3.5 w-3.5 text-purple-400" />
                   <span>
@@ -644,40 +745,124 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                 </div>
               )}
               <p>
-                {exportMode === "nanocast" && project.audioClip?.objectUrl
-                  ? "Nano-cast package with images, audio & manifest."
-                  : "ZIP with platform folders."}
+                {exportMode === "video"
+                  ? "MP4 video reel with transitions and audio."
+                  : exportMode === "nanocast" && project.audioClip?.objectUrl
+                    ? "Nano-cast package with images, audio & manifest."
+                    : "ZIP with platform folders."}
               </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Download button */}
-      <Button
-        size="lg"
-        className="w-full gap-2 text-base"
-        disabled={selected.size === 0 || isExporting}
-        onClick={handleExport}
-      >
-        {isExporting ? (
-          <>
-            <Download className="h-5 w-5 animate-bounce" />
-            Preparing Export...
-          </>
-        ) : (
-          <>
-            {exportMode === "nanocast" && project.audioClip?.objectUrl ? (
-              <Package className="h-5 w-5" />
-            ) : (
-              <Download className="h-5 w-5" />
-            )}
-            {exportMode === "nanocast" && project.audioClip?.objectUrl
-              ? "Download Nano-Cast Package"
-              : "Download Carousel"}
-          </>
-        )}
-      </Button>
+      {/* Video generation UI */}
+      {exportMode === "video" && (
+        <div className="space-y-3">
+          {/* Progress bar during generation */}
+          {isVideoGenerating && (
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{videoStageLabel}</span>
+                  <span className="text-xs text-muted-foreground">{videoProgress}%</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-purple-500 transition-all duration-300"
+                    style={{ width: `${videoProgress}%` }}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={cancelVideo}
+                  className="w-full text-xs"
+                >
+                  Cancel
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Video preview after generation */}
+          {videoUrl && !isVideoGenerating && (
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Film className="h-4 w-4 text-purple-400" />
+                  Video Preview
+                </p>
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  controls
+                  className="w-full rounded-lg border"
+                  style={{ maxHeight: 400 }}
+                />
+                <Button
+                  size="lg"
+                  className="w-full gap-2 text-base bg-purple-500 hover:bg-purple-600"
+                  onClick={handleDownloadVideo}
+                >
+                  <Download className="h-5 w-5" />
+                  Download Video Reel
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Generate button (when no video yet or to regenerate) */}
+          {!isVideoGenerating && (
+            <Button
+              size="lg"
+              className="w-full gap-2 text-base bg-purple-500 hover:bg-purple-600"
+              disabled={selected.size === 0}
+              onClick={handleGenerateVideo}
+            >
+              {videoUrl ? (
+                <>
+                  <RotateCcw className="h-5 w-5" />
+                  Regenerate Video
+                </>
+              ) : (
+                <>
+                  <Play className="h-5 w-5" />
+                  Generate Video Reel
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Download button (for non-video modes) */}
+      {exportMode !== "video" && (
+        <Button
+          size="lg"
+          className="w-full gap-2 text-base"
+          disabled={selected.size === 0 || isExporting}
+          onClick={handleExport}
+        >
+          {isExporting ? (
+            <>
+              <Download className="h-5 w-5 animate-bounce" />
+              Preparing Export...
+            </>
+          ) : (
+            <>
+              {exportMode === "nanocast" && project.audioClip?.objectUrl ? (
+                <Package className="h-5 w-5" />
+              ) : (
+                <Download className="h-5 w-5" />
+              )}
+              {exportMode === "nanocast" && project.audioClip?.objectUrl
+                ? "Download Export Package"
+                : "Download Carousel"}
+            </>
+          )}
+        </Button>
+      )}
 
       {/* Copy caption to clipboard — useful for manual posting */}
       {project.caption && (
