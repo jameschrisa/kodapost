@@ -76,7 +76,7 @@ export function SavedDraftCard({ onResume, onDiscard }: SavedDraftCardProps) {
       name,
       step,
       savedAt,
-      slideCount: project.slides.length,
+      slideCount: project.slides.filter((s) => s.status === "ready").length,
       imageCount: project.uploadedImages.length,
     });
   }, []);

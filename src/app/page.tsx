@@ -416,24 +416,41 @@ export default function Home() {
   const handleResumeDraft = useCallback(() => {
     const savedStep = loadStep();
     const hasImages = project.uploadedImages.some((img) => img.url.length > 0);
+    const hasSlides = project.slides.some((s) => s.status === "ready");
 
-    if (!hasImages && savedStep !== "upload") {
-      // Images were stripped from storage — stay on upload but confirm settings are kept
+    // Determine the best step to resume from.
+    // If the saved step is "upload" but the project already has images/slides,
+    // jump to the most advanced meaningful step instead of staying on upload.
+    let targetStep = savedStep;
+
+    if (hasImages || hasSlides) {
+      if (savedStep === "upload") {
+        // Project has content — find the best step to resume at
+        if (hasSlides) {
+          targetStep = "edit"; // Has generated slides → go to Editorial
+        } else if (hasImages) {
+          targetStep = "configure"; // Has images but no slides → go to Setup
+        }
+      }
+      navigateToStep(targetStep);
+      toast.success("Project restored", {
+        description: `Resuming at ${targetStep === "configure" ? "Setup" : targetStep === "edit" ? "Editorial" : targetStep === "review" ? "Finalize" : targetStep === "publish" ? "Publish" : "Upload"}.`,
+        duration: 3000,
+      });
+    } else if (!hasImages && savedStep !== "upload") {
+      // Images were stripped and IDB restore failed — stay on upload
       toast.info("Project settings restored", {
         description: "Re-upload your photos to continue where you left off.",
         duration: 5000,
       });
-    } else if (savedStep === "upload" && !hasImages) {
-      // Was on upload with no images — just confirm
+    } else {
+      // On upload with no images — just confirm
       toast.info("Project restored", {
         description: "Upload your photos to get started.",
         duration: 3000,
       });
-    } else {
-      // Has images — navigate to saved step
-      navigateToStep(savedStep);
     }
-  }, [navigateToStep, project.uploadedImages]);
+  }, [navigateToStep, project.uploadedImages, project.slides]);
 
   const handleDiscardDraft = useCallback(() => {
     clearProject();
