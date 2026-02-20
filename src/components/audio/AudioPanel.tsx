@@ -22,6 +22,7 @@ import { Waveform } from "./Waveform";
 import { AudioPlayer } from "./AudioPlayer";
 import { MusicBrowser } from "./MusicBrowser";
 import { AudioHelpDialog } from "./AudioHelpDialog";
+import { logActivity } from "@/lib/activity-log";
 import type { AudioClip, MusicTrack } from "@/lib/types";
 
 type AudioInputMode = "record" | "upload" | "library";
@@ -92,6 +93,7 @@ export function AudioPanel({
     };
 
     onAudioChange(clip);
+    logActivity("audio_added", `Recorded ${formatTime(recorder.duration)} voice track`);
     setInputMode(null);
     toast.success("Recording saved", {
       description: `${formatTime(recorder.duration)} voice track added.${
@@ -195,6 +197,7 @@ export function AudioPanel({
 
   // Remove audio
   const handleRemoveAudio = useCallback(() => {
+    logActivity("audio_removed", "Removed audio clip");
     onAudioChange(undefined);
     setInputMode(null);
     setTrimStart(0);

@@ -8,6 +8,7 @@ import { useSignOut } from "@/components/shared/ClerkComponents";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import {
+  Activity,
   Bot,
   Eye,
   EyeOff,
@@ -36,6 +37,7 @@ interface HeaderMenuProps {
   onOpenHelp: () => void;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
+  onOpenAdvancedSettings: () => void;
   onOpenContentBot: () => void;
   onResetApp: () => void;
 }
@@ -44,6 +46,7 @@ export function HeaderMenu({
   onOpenHelp,
   onOpenProfile,
   onOpenSettings,
+  onOpenAdvancedSettings,
   onOpenContentBot,
   onResetApp,
 }: HeaderMenuProps) {
@@ -193,6 +196,10 @@ export function HeaderMenu({
           <DropdownMenuItem onClick={onOpenSettings}>
             <Settings className="h-4 w-4" />
             Settings
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onOpenAdvancedSettings}>
+            <Activity className="h-4 w-4" />
+            Advanced Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onResetApp}>

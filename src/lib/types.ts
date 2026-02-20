@@ -615,6 +615,93 @@ export interface MusicTrack {
   attributionText: string;
 }
 
+// -----------------------------------------------------------------------------
+// Billing & Subscription Types (for future Stripe integration)
+// -----------------------------------------------------------------------------
+
+/** Subscription lifecycle status (mirrors Stripe subscription statuses) */
+export type SubscriptionStatus = "active" | "past_due" | "canceled" | "trialing";
+
+/** Extended Clerk publicMetadata shape for billing */
+export interface ClerkBillingMetadata {
+  /** User's plan tier */
+  plan?: "trial" | "starter" | "standard" | "pro";
+  /** Stripe subscription ID */
+  subscriptionId?: string;
+  /** Stripe customer ID */
+  stripeCustomerId?: string;
+  /** Current subscription status */
+  subscriptionStatus?: SubscriptionStatus;
+  /** ISO timestamp of when the subscription period ends */
+  currentPeriodEnd?: string;
+}
+
+// -----------------------------------------------------------------------------
+// Draft Management Types
+// -----------------------------------------------------------------------------
+
+/** Lightweight metadata for a draft (used in list views without loading full project) */
+export interface DraftMetadata {
+  /** Unique draft identifier */
+  id: string;
+  /** User-assigned project name */
+  name: string;
+  /** Current workflow step */
+  step: string;
+  /** ISO timestamp of draft creation */
+  createdAt: string;
+  /** ISO timestamp of last update */
+  updatedAt: string;
+  /** ISO timestamp when this draft expires (null = never) */
+  expiresAt: string | null;
+  /** Number of ready slides */
+  slideCount: number;
+  /** Number of uploaded images */
+  imageCount: number;
+  /** Selected theme name */
+  theme: string;
+}
+
+// -----------------------------------------------------------------------------
+// Activity Log Types
+// -----------------------------------------------------------------------------
+
+/** Actions tracked in the activity log */
+export type ActivityAction =
+  | "draft_created"
+  | "draft_resumed"
+  | "draft_discarded"
+  | "draft_switched"
+  | "carousel_generated"
+  | "post_exported"
+  | "video_exported"
+  | "audio_added"
+  | "audio_removed"
+  | "settings_saved"
+  | "project_reset"
+  | "images_uploaded"
+  | "publish_completed";
+
+/** A single entry in the user's activity log */
+export interface ActivityLogEntry {
+  /** Unique entry identifier */
+  id: string;
+  /** ISO timestamp of when the action occurred */
+  timestamp: string;
+  /** The action that was performed */
+  action: ActivityAction;
+  /** Human-readable description of the action */
+  details: string;
+  /** Associated draft ID, if applicable */
+  draftId?: string;
+  /** Associated draft name, if applicable */
+  draftName?: string;
+}
+
+// -----------------------------------------------------------------------------
+// Post History Types
+// -----------------------------------------------------------------------------
+
 /** A recorded post in the user's content history */
 export interface PostRecord {
   /** Unique identifier */

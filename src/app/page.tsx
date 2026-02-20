@@ -38,6 +38,8 @@ import {
   saveImagesToIDB,
   loadImagesFromIDB,
   clearImagesFromIDB,
+  migrateLegacyProject,
+  isMigrationComplete,
 } from "@/lib/storage";
 import {
   stepTransitionVariants,
@@ -52,8 +54,23 @@ import { CalendarDaysIcon } from "@/components/icons/animated/calendar-days";
 import { ContentSchedule } from "@/components/history/ContentSchedule";
 import { AudioPanel } from "@/components/audio";
 import { SavedDraftCard } from "@/components/shared/SavedDraftCard";
+import { DraftListPanel } from "@/components/shared/DraftListPanel";
+import { AdvancedSettingsDialog } from "@/components/shared/AdvancedSettingsDialog";
+import { EmptyStateGuide, hasSeenGuide, markGuideSeen } from "@/components/shared/EmptyStateGuide";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import type { AudioClip, CarouselProject, UploadedImage, VideoSettings } from "@/lib/types";
+import { useUserPlan } from "@/hooks/useUserPlan";
+import { logActivity } from "@/lib/activity-log";
+import {
+  listDraftMetadata,
+  saveDraft,
+  saveDraftImages,
+  deleteDraft,
+  pruneExpiredDrafts,
+  loadDraftImages,
+  loadDraft,
+} from "@/lib/draft-storage";
+import { createNewDraft, switchDraft } from "@/lib/draft-manager";
+import type { AudioClip, CarouselProject, DraftMetadata, UploadedImage, VideoSettings } from "@/lib/types";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
 type AppMode = "create" | "schedule";
@@ -127,6 +144,15 @@ export default function Home() {
   const [contentBotOpen, setContentBotOpen] = useState(false);
   const [appMode, setAppMode] = useState<AppMode>("create");
   const [reviewView, setReviewView] = useState<"grid" | "timeline">("grid");
+  const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false);
+
+  // Multi-draft state
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const [draftList, setDraftList] = useState<DraftMetadata[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Plan-aware limits
+  const userPlan = useUserPlan();
 
   // Prefetch key routes so navigation feels instant
   useEffect(() => {
@@ -136,56 +162,119 @@ export default function Home() {
   }, [router]);
 
   // Hydrate from localStorage + IndexedDB after mount
+  // Includes legacy migration to multi-draft system
   useEffect(() => {
     async function hydrate() {
-      const saved = loadProject();
-      const savedStep = loadStep();
-      const savedName = loadProjectName();
+      // Step 1: Run legacy migration if needed
+      if (!isMigrationComplete()) {
+        const migratedId = await migrateLegacyProject(userPlan.tier);
+        if (migratedId) {
+          setActiveDraftId(migratedId);
+        }
+      }
 
-      if (saved) {
-        // Try to restore images from IndexedDB
-        const imageMap = await loadImagesFromIDB();
-        if (imageMap.size > 0) {
-          // Restore base64 URLs to uploaded images
-          saved.uploadedImages = saved.uploadedImages.map((img) => ({
-            ...img,
-            url: imageMap.get(img.id) || img.url,
-          }));
-          // Restore image URLs on slides
-          saved.slides = saved.slides.map((slide) => {
-            if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
-              const restored = saved.uploadedImages.find(
-                (img) => img.id === slide.metadata!.referenceImage
-              );
-              if (restored?.url) {
-                return { ...slide, imageUrl: restored.url };
+      // Step 2: Prune expired drafts
+      const pruned = await pruneExpiredDrafts();
+      if (pruned.length > 0) {
+        toast.info(`${pruned.length} expired draft${pruned.length > 1 ? "s" : ""} removed`);
+      }
+
+      // Step 3: List all drafts
+      const drafts = await listDraftMetadata();
+      setDraftList(drafts);
+
+      // Step 4: Determine onboarding state
+      if (drafts.length === 0 && !hasSeenGuide()) {
+        setShowOnboarding(true);
+      }
+
+      // Step 5: Load most recent draft or fall back to legacy localStorage
+      if (drafts.length > 0) {
+        const mostRecent = drafts[0]; // sorted by updatedAt desc
+        const loaded = await loadDraft(mostRecent.id);
+        if (loaded) {
+          // Restore images from per-draft IDB
+          const imageMap = await loadDraftImages(mostRecent.id);
+          if (imageMap.size > 0) {
+            loaded.project.uploadedImages = loaded.project.uploadedImages.map((img) => ({
+              ...img,
+              url: imageMap.get(img.id) || img.url,
+            }));
+            loaded.project.slides = loaded.project.slides.map((slide) => {
+              if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
+                const restored = loaded.project.uploadedImages.find(
+                  (img) => img.id === slide.metadata!.referenceImage
+                );
+                if (restored?.url) {
+                  return { ...slide, imageUrl: restored.url };
+                }
               }
-            }
-            return slide;
-          });
-        }
+              return slide;
+            });
+          }
 
-        setProject(saved);
+          setProject(loaded.project);
+          setActiveDraftId(mostRecent.id);
 
-        const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
-        if (!hasImages && savedStep !== "upload") {
-          setStep("upload");
-        } else {
-          setStep(savedStep);
-        }
+          const hasImages = loaded.project.uploadedImages.some((img) => img.url.length > 0);
+          const stepToUse = (hasImages || loaded.project.slides.length > 0)
+            ? loaded.step as Step
+            : "upload";
+          setStep(stepToUse);
 
-        // Skip splash for returning users with a named project
-        if (savedName && savedStep !== "upload") {
-          setSplashDismissed(true);
+          // Skip splash for returning users
+          if (loaded.name && stepToUse !== "upload") {
+            setSplashDismissed(true);
+          }
         }
       } else {
-        setStep(savedStep);
+        // Fall back to legacy localStorage hydration
+        const saved = loadProject();
+        const savedStep = loadStep();
+        const savedName = loadProjectName();
+
+        if (saved) {
+          const imageMap = await loadImagesFromIDB();
+          if (imageMap.size > 0) {
+            saved.uploadedImages = saved.uploadedImages.map((img) => ({
+              ...img,
+              url: imageMap.get(img.id) || img.url,
+            }));
+            saved.slides = saved.slides.map((slide) => {
+              if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
+                const restored = saved.uploadedImages.find(
+                  (img) => img.id === slide.metadata!.referenceImage
+                );
+                if (restored?.url) {
+                  return { ...slide, imageUrl: restored.url };
+                }
+              }
+              return slide;
+            });
+          }
+
+          setProject(saved);
+
+          const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
+          if (!hasImages && savedStep !== "upload") {
+            setStep("upload");
+          } else {
+            setStep(savedStep);
+          }
+
+          if (savedName && savedStep !== "upload") {
+            setSplashDismissed(true);
+          }
+        } else {
+          setStep(loadStep());
+        }
       }
 
       setHydrated(true);
     }
 
     hydrate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-dismiss splash for signed-in users returning from auth (initial load only).
@@ -200,11 +289,14 @@ export default function Home() {
     }
   }, [hydrated, authLoaded, isSignedIn, splashDismissed]);
 
-  // Auto-save project and step on changes
+  // Auto-save project and step on changes (legacy + multi-draft)
   const [lastSavedAt, setLastSavedAt] = useState<number>(0);
   const prevImageCountRef = useRef(0);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!hydrated) return;
+
+    // Legacy localStorage save (fast, synchronous)
     saveProject(project);
     saveStep(step);
     setLastSavedAt(Date.now());
@@ -220,7 +312,24 @@ export default function Home() {
         saveImagesToIDB(imagesToSave).catch(() => {});
       }
     }
-  }, [project, step, hydrated]);
+
+    // Multi-draft auto-save (debounced 500ms for IndexedDB writes)
+    if (activeDraftId) {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = setTimeout(() => {
+        const name = project.projectName || loadProjectName() || "Untitled Project";
+        saveDraft(activeDraftId, project, step, name).catch(() => {});
+
+        // Save images to per-draft storage
+        const imgs = project.uploadedImages
+          .filter(img => img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:")))
+          .map(img => ({ id: img.id, url: img.url }));
+        if (imgs.length > 0) {
+          saveDraftImages(activeDraftId, imgs).catch(() => {});
+        }
+      }, 500);
+    }
+  }, [project, step, hydrated, activeDraftId]);
 
   // Warn before closing with unsaved generation in progress
   useEffect(() => {
@@ -257,12 +366,18 @@ export default function Home() {
       setProject((prev) => ({
         ...prev,
         uploadedImages: images,
-        // Auto-set post mode based on image count
         postMode: isSingle ? "single" : prev.postMode,
-        // Default slide count to number of uploaded images (clamped 2-12), user can override
         slideCount: isSingle ? 1 : Math.max(2, Math.min(12, images.length)),
       }));
+
+      // Mark onboarding as seen after first upload
+      if (showOnboarding) {
+        markGuideSeen();
+        setShowOnboarding(false);
+      }
+
       navigateToStep("configure");
+      logActivity("images_uploaded", `Uploaded ${images.length} image${images.length !== 1 ? "s" : ""}`, activeDraftId ?? undefined);
       toast.success(
         isSingle ? "Photo uploaded" : "Photos uploaded",
         {
@@ -272,7 +387,7 @@ export default function Home() {
         }
       );
     },
-    [navigateToStep]
+    [navigateToStep, activeDraftId, showOnboarding]
   );
 
   const handleProjectUpdate = useCallback((updated: CarouselProject) => {
@@ -347,6 +462,7 @@ export default function Home() {
     const hash = computeConfigHash(project);
     setProject({ ...data, lastGeneratedConfigHash: hash });
     navigateToStep("edit");
+    logActivity("carousel_generated", `Generated ${readySlides} slides`, activeDraftId ?? undefined);
 
     if (errorSlides > 0) {
       toast.warning("Partially generated", {
@@ -360,7 +476,7 @@ export default function Home() {
           : `${readySlides} slides created successfully.`,
       });
     }
-  }, [project, navigateToStep]);
+  }, [project, navigateToStep, activeDraftId]);
 
   const handleEditComplete = useCallback(() => {
     // Auto-save before entering Review
@@ -404,13 +520,17 @@ export default function Home() {
   const handleComplete = useCallback(() => {
     clearProject();
     clearImagesFromIDB().catch(() => {});
+    logActivity("project_reset", "Started new project", activeDraftId ?? undefined);
     setProject(createEmptyProject());
+    setActiveDraftId(null);
     setDirection(-1);
     setStep("upload");
+    // Refresh draft list
+    listDraftMetadata().then(setDraftList).catch(() => {});
     toast.success("New project started", {
       description: "Your previous carousel has been cleared.",
     });
-  }, []);
+  }, [activeDraftId]);
 
   /** Resume a saved draft — project is already hydrated, just navigate to the right step */
   const handleResumeDraft = useCallback(() => {
@@ -418,47 +538,50 @@ export default function Home() {
     const hasImages = project.uploadedImages.some((img) => img.url.length > 0);
     const hasSlides = project.slides.some((s) => s.status === "ready");
 
-    // Determine the best step to resume from.
-    // If the saved step is "upload" but the project already has images/slides,
-    // jump to the most advanced meaningful step instead of staying on upload.
     let targetStep = savedStep;
 
     if (hasImages || hasSlides) {
       if (savedStep === "upload") {
-        // Project has content — find the best step to resume at
         if (hasSlides) {
-          targetStep = "edit"; // Has generated slides → go to Editorial
+          targetStep = "edit";
         } else if (hasImages) {
-          targetStep = "configure"; // Has images but no slides → go to Setup
+          targetStep = "configure";
         }
       }
       navigateToStep(targetStep);
+      logActivity("draft_resumed", `Resumed at ${targetStep}`, activeDraftId ?? undefined);
       toast.success("Project restored", {
         description: `Resuming at ${targetStep === "configure" ? "Setup" : targetStep === "edit" ? "Editorial" : targetStep === "review" ? "Finalize" : targetStep === "publish" ? "Publish" : "Upload"}.`,
         duration: 3000,
       });
     } else if (!hasImages && savedStep !== "upload") {
-      // Images were stripped and IDB restore failed — stay on upload
       toast.info("Project settings restored", {
         description: "Re-upload your photos to continue where you left off.",
         duration: 5000,
       });
     } else {
-      // On upload with no images — just confirm
       toast.info("Project restored", {
         description: "Upload your photos to get started.",
         duration: 3000,
       });
     }
-  }, [navigateToStep, project.uploadedImages, project.slides]);
+  }, [navigateToStep, project.uploadedImages, project.slides, activeDraftId]);
 
   const handleDiscardDraft = useCallback(() => {
     clearProject();
     clearImagesFromIDB().catch(() => {});
+    logActivity("draft_discarded", "Discarded draft", activeDraftId ?? undefined);
+    // Also delete from multi-draft storage
+    if (activeDraftId) {
+      deleteDraft(activeDraftId).catch(() => {});
+    }
     setProject(createEmptyProject());
+    setActiveDraftId(null);
     setStep("upload");
+    // Refresh draft list
+    listDraftMetadata().then(setDraftList).catch(() => {});
     toast.info("Draft discarded");
-  }, []);
+  }, [activeDraftId]);
 
   const handleBrandClick = useCallback(() => {
     setSplashForced(true);
@@ -478,8 +601,11 @@ export default function Home() {
   );
 
   const handleResetApp = useCallback(() => {
+    logActivity("project_reset", "Full app reset — all data cleared");
     clearAllStorage();
     setProject(createEmptyProject());
+    setActiveDraftId(null);
+    setDraftList([]);
     setDirection(-1);
     setStep("upload");
     setSplashForced(true);
@@ -488,6 +614,115 @@ export default function Home() {
       description: "All data cleared. Starting fresh as a new user.",
     });
   }, []);
+
+  // -- Multi-draft handlers --
+
+  const handleNewDraft = useCallback(async () => {
+    const result = await createNewDraft(userPlan.tier);
+    if (!result.success) {
+      if (result.error === "limit_reached") {
+        toast.error("Draft limit reached", {
+          description: `Your ${userPlan.config.displayName} plan allows ${userPlan.draftLimit} draft${userPlan.draftLimit !== 1 ? "s" : ""}. Delete an existing draft or upgrade.`,
+        });
+      } else {
+        toast.error("Failed to create draft");
+      }
+      return;
+    }
+
+    // Save current draft before switching
+    if (activeDraftId) {
+      const name = project.projectName || loadProjectName() || "Untitled Project";
+      await saveDraft(activeDraftId, project, step, name).catch(() => {});
+    }
+
+    const newProject = createEmptyProject();
+    setProject(newProject);
+    setActiveDraftId(result.draftId!);
+    setStep("upload");
+    setDirection(-1);
+    logActivity("draft_created", "Created new draft", result.draftId);
+
+    // Refresh draft list
+    const drafts = await listDraftMetadata();
+    setDraftList(drafts);
+
+    toast.success("New draft created", {
+      description: "Start uploading photos for your new project.",
+    });
+  }, [userPlan.tier, userPlan.config.displayName, userPlan.draftLimit, activeDraftId, project, step]);
+
+  const handleSwitchDraft = useCallback(async (targetDraftId: string) => {
+    if (targetDraftId === activeDraftId) return;
+
+    const name = project.projectName || loadProjectName() || "Untitled Project";
+    const result = await switchDraft(
+      activeDraftId,
+      project,
+      step,
+      name,
+      targetDraftId
+    );
+
+    if (!result.success) {
+      toast.error("Failed to load draft");
+      return;
+    }
+
+    setProject(result.project!);
+    setActiveDraftId(targetDraftId);
+    const targetStep = result.step as Step;
+    setStep(targetStep);
+    logActivity("draft_switched", `Switched to "${result.name}"`, targetDraftId, result.name);
+
+    // Refresh draft list
+    const drafts = await listDraftMetadata();
+    setDraftList(drafts);
+
+    toast.success("Draft loaded", {
+      description: `Switched to "${result.name}".`,
+      duration: 3000,
+    });
+  }, [activeDraftId, project, step]);
+
+  const handleDeleteDraft = useCallback(async (draftId: string) => {
+    const draftMeta = draftList.find((d) => d.id === draftId);
+    await deleteDraft(draftId);
+    logActivity("draft_discarded", `Deleted "${draftMeta?.name || "Untitled"}"`, draftId, draftMeta?.name);
+
+    if (draftId === activeDraftId) {
+      // Deleted the active draft — load another or start fresh
+      setActiveDraftId(null);
+      setProject(createEmptyProject());
+      setStep("upload");
+    }
+
+    const drafts = await listDraftMetadata();
+    setDraftList(drafts);
+
+    toast.info("Draft deleted", {
+      description: `"${draftMeta?.name || "Untitled"}" has been removed.`,
+    });
+  }, [activeDraftId, draftList]);
+
+  const handleRenameDraft = useCallback(async (draftId: string, newName: string) => {
+    // Update local state immediately
+    setDraftList((prev) =>
+      prev.map((d) => (d.id === draftId ? { ...d, name: newName } : d))
+    );
+
+    // Persist to IndexedDB
+    const loaded = await loadDraft(draftId);
+    if (loaded) {
+      await saveDraft(draftId, loaded.project, loaded.step, newName);
+    }
+
+    // Also update legacy name if this is the active draft
+    if (draftId === activeDraftId) {
+      saveProjectName(newName);
+      setProject((prev) => ({ ...prev, projectName: newName }));
+    }
+  }, [activeDraftId]);
 
   // -- Keyboard shortcuts --
   const handleSaveShortcut = useCallback(() => {
@@ -571,6 +806,7 @@ export default function Home() {
             onOpenHelp={() => setHelpOpen(true)}
             onOpenProfile={() => setProfileOpen(true)}
             onOpenSettings={() => setSettingsOpen(true)}
+            onOpenAdvancedSettings={() => setAdvancedSettingsOpen(true)}
             onOpenContentBot={() => setContentBotOpen(true)}
             onResetApp={handleResetApp}
           />
@@ -589,6 +825,7 @@ export default function Home() {
       <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <ContentBotPanel open={contentBotOpen} onOpenChange={setContentBotOpen} />
+      <AdvancedSettingsDialog open={advancedSettingsOpen} onOpenChange={setAdvancedSettingsOpen} />
 
       {/* App mode tabs — Create Post / Content Calendar */}
       <div className="border-b">
@@ -691,12 +928,38 @@ export default function Home() {
                     authentic your carousel will feel.
                   </p>
                 </motion.div>
-                <motion.div variants={staggerItemVariants}>
-                  <SavedDraftCard
-                    onResume={handleResumeDraft}
-                    onDiscard={handleDiscardDraft}
-                  />
-                </motion.div>
+                {/* Onboarding guide for first-time users */}
+                {showOnboarding && draftList.length === 0 && (
+                  <motion.div variants={staggerItemVariants}>
+                    <EmptyStateGuide />
+                  </motion.div>
+                )}
+
+                {/* Multi-draft list (when user has drafts) */}
+                {draftList.length > 0 && (
+                  <motion.div variants={staggerItemVariants}>
+                    <DraftListPanel
+                      drafts={draftList}
+                      activeDraftId={activeDraftId}
+                      draftLimit={userPlan.draftLimit}
+                      planName={userPlan.config.displayName}
+                      onResume={handleSwitchDraft}
+                      onDelete={handleDeleteDraft}
+                      onNewDraft={handleNewDraft}
+                      onRename={handleRenameDraft}
+                    />
+                  </motion.div>
+                )}
+
+                {/* Legacy single-draft card (fallback for un-migrated state) */}
+                {draftList.length === 0 && !showOnboarding && (
+                  <motion.div variants={staggerItemVariants}>
+                    <SavedDraftCard
+                      onResume={handleResumeDraft}
+                      onDiscard={handleDiscardDraft}
+                    />
+                  </motion.div>
+                )}
                 <motion.div variants={staggerItemVariants}>
                   <ImageUploader onComplete={handleUploadComplete} />
                 </motion.div>

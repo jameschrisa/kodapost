@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { isClerkEnabled } from "@/hooks/useClerkAuth";
 
-export type UserPlan = "trial" | "registered";
+export type UserPlan = "trial" | "registered" | "starter" | "standard" | "pro";
 export type AdminViewMode = "admin" | "user";
 
 export interface UserRole {

@@ -32,6 +32,7 @@ import { compositeSlideImages } from "@/app/actions";
 import { trimAudioBlob, hasTrimApplied } from "@/lib/audio-utils";
 import { useVideoGenerator } from "@/hooks/useVideoGenerator";
 import { DEFAULT_VIDEO_SETTINGS } from "@/lib/constants";
+import { logActivity } from "@/lib/activity-log";
 import type { CarouselProject } from "@/lib/types";
 import type { OAuthConnection } from "@/lib/types";
 
@@ -384,6 +385,8 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         .filter(Boolean)
         .join(", ");
 
+      logActivity("post_exported", `Exported ${readySlides.length} slides for ${platformNames}`);
+
       toast.success(
         exportMode === "nanocast" ? "Nano-cast package ready" : "Export complete",
         {
@@ -445,6 +448,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     a.click();
     document.body.removeChild(a);
     toast.success("Video downloaded!");
+    logActivity("video_exported", `Exported video reel for ${platform}`);
   }, [videoBlob, videoUrl, selected]);
 
   // Clean up video URL on unmount

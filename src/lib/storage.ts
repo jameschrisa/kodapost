@@ -1,5 +1,8 @@
 import type { CarouselProject, FilterTemplate, UserSettings } from "./types";
 import { DEFAULT_PROJECT_SETTINGS } from "./constants";
+import { saveDraft, saveDraftImages } from "./draft-storage";
+import { calculateDraftExpiration } from "./plans";
+import type { PlanTier } from "./plans";
 
 const NAMESPACE = "nostalgiaflow";
 const PROJECT_KEY = `${NAMESPACE}:project`;
@@ -458,6 +461,77 @@ export async function clearImagesFromIDB(): Promise<void> {
 }
 
 // -----------------------------------------------------------------------------
+// Legacy → Multi-Draft Migration
+// -----------------------------------------------------------------------------
+
+const MIGRATION_FLAG = "kodapost:migrated-to-multi-draft";
+
+/**
+ * Migrates a single-project from localStorage/IndexedDB to the new
+ * multi-draft IndexedDB system. Runs once on first load after upgrade.
+ * Returns the new draft ID if migration happened, null otherwise.
+ */
+export async function migrateLegacyProject(
+  planTier: PlanTier = "trial"
+): Promise<string | null> {
+  // Skip if already migrated
+  if (localStorage.getItem(MIGRATION_FLAG)) return null;
+
+  const project = loadProject();
+  if (!project) {
+    // No legacy project — mark as migrated and return
+    localStorage.setItem(MIGRATION_FLAG, "1");
+    return null;
+  }
+
+  // Check if there's any meaningful content to migrate
+  const hasImages = project.uploadedImages.some((img) => img.url.length > 0);
+  const hasSlides = project.slides.length > 0;
+  if (!hasImages && !hasSlides) {
+    localStorage.setItem(MIGRATION_FLAG, "1");
+    return null;
+  }
+
+  const draftId = `draft-${Date.now()}-migrated`;
+  const step = loadStep();
+  const name = loadProjectName() || "Migrated Project";
+  const expiresAt = calculateDraftExpiration(planTier);
+
+  try {
+    // Save to new multi-draft system
+    await saveDraft(draftId, project, step, name, expiresAt);
+
+    // Also migrate images from the legacy IDB to draft-specific storage
+    const imageMap = await loadImagesFromIDB();
+    if (imageMap.size > 0) {
+      const images = Array.from(imageMap.entries()).map(([id, url]) => ({
+        id,
+        url,
+      }));
+      await saveDraftImages(draftId, images);
+    }
+
+    // Mark as migrated — don't clear legacy data yet (safety net)
+    localStorage.setItem(MIGRATION_FLAG, "1");
+    return draftId;
+  } catch (err) {
+    console.warn("[KodaPost] Legacy migration failed:", err);
+    return null;
+  }
+}
+
+/**
+ * Returns true if the legacy → multi-draft migration has already happened.
+ */
+export function isMigrationComplete(): boolean {
+  try {
+    return !!localStorage.getItem(MIGRATION_FLAG);
+  } catch {
+    return false;
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Full Reset (simulates a first-time user)
 // -----------------------------------------------------------------------------
 
@@ -488,6 +562,9 @@ export function clearAllStorage(): void {
     // Ignore sessionStorage failures
   }
 
-  // Clear IndexedDB images
+  // Clear IndexedDB images (legacy)
   clearImagesFromIDB().catch(() => {});
+
+  // Clear multi-draft IndexedDB
+  import("./draft-storage").then((m) => m.clearDraftDB()).catch(() => {});
 }
