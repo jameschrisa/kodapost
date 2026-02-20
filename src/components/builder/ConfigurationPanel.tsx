@@ -833,24 +833,33 @@ export function ConfigurationPanel({
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <Tabs defaultValue="camera" className="w-full">
-            <TabsList className="w-full grid grid-cols-3">
-              <TabsTrigger value="camera" className="gap-1.5 text-xs">
+          <Tabs defaultValue="emulation" className="w-full">
+            <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
+              <TabsTrigger
+                value="emulation"
+                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+              >
                 <Camera className="h-3.5 w-3.5" />
-                Camera
+                Emulation
               </TabsTrigger>
-              <TabsTrigger value="filters" className="gap-1.5 text-xs">
+              <TabsTrigger
+                value="filters"
+                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+              >
                 <Palette className="h-3.5 w-3.5" />
                 Filters
               </TabsTrigger>
-              <TabsTrigger value="fine-tune" className="gap-1.5 text-xs">
+              <TabsTrigger
+                value="fine-tune"
+                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+              >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Fine-Tune
               </TabsTrigger>
             </TabsList>
 
-            {/* ── Camera Tab ── */}
-            <TabsContent value="camera" className="mt-3">
+            {/* ── Emulation Tab ── */}
+            <TabsContent value="emulation" className="mt-4">
               <CameraSelector
                 value={project.cameraProfileId}
                 onChange={(id) => {
@@ -883,7 +892,7 @@ export function ConfigurationPanel({
             </TabsContent>
 
             {/* ── Filters Tab ── */}
-            <TabsContent value="filters" className="mt-3">
+            <TabsContent value="filters" className="mt-4">
               <FilterSelector
                 value={filterConfig.predefinedFilter}
                 onChange={handleFilterSelect}
@@ -894,7 +903,7 @@ export function ConfigurationPanel({
             </TabsContent>
 
             {/* ── Fine-Tune Tab ── */}
-            <TabsContent value="fine-tune" className="mt-3 space-y-5">
+            <TabsContent value="fine-tune" className="mt-4 space-y-5">
               {/* Live filter preview on sample image */}
               <div className="mx-auto max-w-sm overflow-hidden rounded-lg border">
                 <div className="relative aspect-[3/2] w-full bg-black">
