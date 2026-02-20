@@ -262,6 +262,7 @@ Respond with ONLY valid JSON in this exact format:
 export async function generateCarousel(
   project: CarouselProject
 ): Promise<ActionResult<CarouselProject>> {
+  console.log("[generateCarousel] Starting generation for", project.slideCount, "slides");
   try {
     // 1. Calculate image source strategy
     const strategy = calculateImageSourceStrategy(
@@ -383,8 +384,10 @@ export async function generateCarousel(
       };
     }
 
+    console.log("[generateCarousel] Success — returning", result.slides.length, "slides");
     return { success: true, data: result };
   } catch (error) {
+    console.error("[generateCarousel] Error:", error);
     return { success: false, error: handleAPIError(error) };
   }
 }
