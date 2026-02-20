@@ -199,7 +199,13 @@ export function ConfigurationPanel({
 
 
   // ── Audio Recording ──
-  function startRecording() {
+  // We request getUserMedia first to ensure the browser grants mic permission
+  // before starting Web Speech API. SpeechRecognition has its own internal
+  // mic access that can fail silently on localhost — warming up with getUserMedia
+  // ensures the permission prompt fires and the mic stream is available.
+  const micStreamRef = useRef<MediaStream | null>(null);
+
+  async function startRecording() {
     // Web Speech API — not all browsers support this
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = typeof window !== "undefined" ? (window as any) : null;
@@ -212,6 +218,30 @@ export function ConfigurationPanel({
       return;
     }
 
+    // Step 1: Request mic permission via getUserMedia first
+    // This triggers the proper browser permission prompt and warms up the mic
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+    } catch (err) {
+      const domErr = err instanceof DOMException ? err : null;
+      if (domErr?.name === "NotAllowedError") {
+        toast.error("Microphone access denied", {
+          description: "Please allow microphone access in your browser settings.",
+        });
+      } else if (domErr?.name === "NotFoundError") {
+        toast.error("No microphone found", {
+          description: "Please connect a microphone and try again.",
+        });
+      } else {
+        toast.error("Microphone error", {
+          description: "Failed to access microphone. Please try again.",
+        });
+      }
+      return;
+    }
+
+    // Step 2: Start Web Speech API recognition (uses the now-granted mic permission)
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -239,10 +269,16 @@ export function ConfigurationPanel({
         });
       }
       setIsRecording(false);
+      // Release the mic stream on error
+      micStreamRef.current?.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
     };
 
     recognition.onend = () => {
       setIsRecording(false);
+      // Release the mic stream when recognition ends
+      micStreamRef.current?.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
     };
 
     recognition.start();
@@ -252,6 +288,9 @@ export function ConfigurationPanel({
 
   function stopRecording() {
     recognitionRef.current?.stop();
+    // Release the mic stream
+    micStreamRef.current?.getTracks().forEach((t) => t.stop());
+    micStreamRef.current = null;
     setIsRecording(false);
     if (transcription) {
       // Save transcription and copy it into the story field
