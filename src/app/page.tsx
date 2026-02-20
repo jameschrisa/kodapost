@@ -241,9 +241,20 @@ export default function Home() {
   }, []);
 
   const handleGenerate = useCallback(async () => {
+    // Strip base64 image data before sending to server action to avoid
+    // exceeding Vercel's request/response size limits. The server only
+    // needs image metadata (id, filename, dimensions) — not the pixels.
+    const lightProject: CarouselProject = {
+      ...project,
+      uploadedImages: project.uploadedImages.map(img => ({
+        ...img,
+        url: "", // Strip base64 — restored client-side after response
+      })),
+    };
+
     let result: Awaited<ReturnType<typeof generateCarousel>>;
     try {
-      result = await generateCarousel(project);
+      result = await generateCarousel(lightProject);
     } catch (err) {
       toast.error("Generation failed", {
         description: err instanceof Error ? err.message : "An unexpected error occurred. Please try again.",
