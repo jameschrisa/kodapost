@@ -371,9 +371,24 @@ export async function generateCarousel(
       }
     }
 
+    // Strip base64 image data from the response to avoid exceeding
+    // Vercel's serverless response size limit (~6MB). The client merges
+    // the original images back from its local state after receiving this.
+    const strippedImages = project.uploadedImages.map(img => ({
+      ...img,
+      url: "", // Stripped — client will restore from local state
+    }));
+
+    // Also strip imageUrl from slides (these contain base64 data copies)
+    const strippedSlides = slides.map(slide => ({
+      ...slide,
+      imageUrl: slide.imageUrl?.startsWith("data:") ? "" : slide.imageUrl,
+    }));
+
     const result: CarouselProject = {
       ...project,
-      slides,
+      uploadedImages: strippedImages,
+      slides: strippedSlides,
       imageSourceStrategy: strategy,
     };
 

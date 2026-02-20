@@ -259,6 +259,23 @@ export default function Home() {
     }
 
     const data = result.data;
+
+    // Restore original uploadedImages (server strips base64 data to stay
+    // within Vercel's response size limit — client already has them).
+    data.uploadedImages = project.uploadedImages;
+
+    // Restore image URLs on slides that reference uploaded images
+    for (const slide of data.slides) {
+      if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
+        const uploaded = project.uploadedImages.find(
+          (img) => img.id === slide.metadata!.referenceImage
+        );
+        if (uploaded) {
+          slide.imageUrl = uploaded.url;
+        }
+      }
+    }
+
     const errorSlides = data.slides.filter((s) => s.status === "error").length;
     const readySlides = data.slides.filter((s) => s.status === "ready").length;
 
