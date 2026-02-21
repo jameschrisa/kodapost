@@ -41,6 +41,7 @@ function getPlatformIcon(platform?: string) {
     case "linkedin":
       return <Linkedin className="h-3.5 w-3.5" />;
     case "youtube":
+    case "youtube_shorts":
       return <Youtube className="h-3.5 w-3.5" />;
     case "reddit":
       return <RedditIcon />;
@@ -55,7 +56,9 @@ function getPlatformLabel(platform?: string): string {
     tiktok: "TikTok",
     linkedin: "LinkedIn",
     youtube: "YouTube",
+    youtube_shorts: "YouTube Shorts",
     reddit: "Reddit",
+    x: "X/Twitter",
   };
   return platform ? labels[platform] ?? platform : "";
 }

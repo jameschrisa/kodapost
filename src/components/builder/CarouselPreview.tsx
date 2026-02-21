@@ -303,7 +303,7 @@ export function CarouselPreview({
 
         <TabsContent value="platform" className="mt-3">
           <div className="flex gap-1 flex-wrap">
-            {(["tiktok", "instagram", "youtube", "x"] as PreviewPlatform[]).map((platform) => {
+            {(["tiktok", "youtube_shorts", "instagram", "x", "linkedin"] as PreviewPlatform[]).map((platform) => {
               const config = PLATFORM_PREVIEW_CONFIG[platform];
               return (
                 <button
@@ -325,7 +325,7 @@ export function CarouselPreview({
                 </button>
               );
             })}
-            {/* Generic 1:1 Square — maps to YouTube config */}
+            {/* YouTube Community 1:1 square */}
             <button
               type="button"
               onClick={() => {
@@ -339,7 +339,7 @@ export function CarouselPreview({
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
-              Square
+              YouTube
               <span className="ml-1 opacity-60">1:1</span>
             </button>
           </div>

@@ -276,6 +276,7 @@ export function createDefaultSettings(): UserSettings {
       { platform: "tiktok", username: "", active: false },
       { platform: "linkedin", username: "", active: false },
       { platform: "youtube", username: "", active: false },
+      { platform: "youtube_shorts", username: "", active: false },
       { platform: "reddit", username: "", active: false },
       { platform: "x", username: "", active: false },
     ],

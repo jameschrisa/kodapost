@@ -61,6 +61,7 @@ const VALID_PLATFORMS: Platform[] = [
   "tiktok",
   "linkedin",
   "youtube",
+  "youtube_shorts",
   "reddit",
 ];
 

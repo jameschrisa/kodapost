@@ -29,6 +29,12 @@ export const PLATFORM_LIMITS = {
     hashtag_recommended: 5,
     first_line_preview: 100,
   },
+  youtube_shorts: {
+    caption_max: 2200,
+    hashtag_max: 30,
+    hashtag_recommended: 5,
+    first_line_preview: 150,
+  },
   reddit: {
     caption_max: 300,
     hashtag_max: 0,
@@ -129,16 +135,39 @@ export const PLATFORM_RULES = {
     hashtagOptimal: { min: 3, max: 5 },
     requirements: [
       "Community posts support a single image only — no carousels",
-      "Max dimensions: 1080×1080 px (1:1 square recommended)",
+      "Recommended: 1080×1080 px square (1:1 aspect ratio)",
       "Supported aspect ratios: 2:5 to 5:2",
       "Supported formats: JPEG, PNG, WebP, non-animated GIF",
     ],
     bestPractices: [
       "Community posts keep subscribers engaged between video uploads",
       "Ask a question — comment engagement boosts post reach",
-      "Square 1:1 format displays cleanly in all feed contexts",
+      "Square 1:1 format displays cleanly in all mobile feed contexts",
       "Use 3–5 relevant hashtags for YouTube search discoverability",
       "Post at the same time you'd normally publish a video for best reach",
+    ],
+  },
+  youtube_shorts: {
+    maxCarouselImages: 1,
+    minCarouselImages: 1,
+    supportsCarousel: false,
+    carouselType: "single_image" as const,
+    captionMax: 2200,
+    captionFirstLinePreview: 150,
+    hashtagMax: 30,
+    hashtagOptimal: { min: 3, max: 5 },
+    requirements: [
+      "Shorts are vertical-first: 1080×1920 px (9:16 aspect ratio required)",
+      "Content must be 60 seconds or under to qualify as a Short",
+      "Single image Shorts use a still frame at full 9:16 resolution",
+      "Supported formats: JPEG, PNG (for static image Shorts)",
+    ],
+    bestPractices: [
+      "9:16 vertical fills the entire mobile screen — no letterboxing",
+      "Shorts surface in YouTube's dedicated Shorts feed for massive reach",
+      "Hook viewers in the first 2 seconds — attention span is very short",
+      "Text overlays are critical — Shorts auto-play without sound",
+      "Use 3–5 niche hashtags including #Shorts to enter the Shorts algorithm",
     ],
   },
   x: {
@@ -202,6 +231,13 @@ export const PLATFORM_IMAGE_SPECS = {
     format: "JPEG",
     quality: 90,
   },
+  youtube_shorts: {
+    width: 1080,
+    height: 1920,
+    aspectRatio: "9:16",
+    format: "JPEG",
+    quality: 90,
+  },
   reddit_gallery: {
     width: 1200,
     height: 1200,
@@ -243,13 +279,18 @@ export const PLATFORM_PREVIEW_CONFIG = {
     ratio: "1:1",
     aspectClass: "aspect-[1/1]",
   },
+  youtube_shorts: {
+    label: "YouTube Shorts",
+    ratio: "9:16",
+    aspectClass: "aspect-[9/16]",
+  },
   reddit: {
     label: "Reddit",
     ratio: "1:1",
     aspectClass: "aspect-[1/1]",
   },
   x: {
-    label: "X",
+    label: "X/Twitter",
     ratio: "4:5",
     aspectClass: "aspect-[4/5]",
   },
@@ -359,6 +400,12 @@ export const OAUTH_CONFIG = {
     envKeys: { id: "LINKEDIN_CLIENT_ID", secret: "LINKEDIN_CLIENT_SECRET" },
   },
   youtube: {
+    authUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenUrl: "https://oauth2.googleapis.com/token",
+    scopes: ["https://www.googleapis.com/auth/youtube.upload"],
+    envKeys: { id: "YOUTUBE_CLIENT_ID", secret: "YOUTUBE_CLIENT_SECRET" },
+  },
+  youtube_shorts: {
     authUrl: "https://accounts.google.com/o/oauth2/v2/auth",
     tokenUrl: "https://oauth2.googleapis.com/token",
     scopes: ["https://www.googleapis.com/auth/youtube.upload"],

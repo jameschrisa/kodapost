@@ -583,6 +583,7 @@ const PLATFORM_SPEC_MAP: Record<string, keyof typeof PLATFORM_IMAGE_SPECS> = {
   tiktok: "tiktok",
   linkedin: "linkedin_pdf",
   youtube: "youtube_community",
+  youtube_shorts: "youtube_shorts",
   reddit: "reddit_gallery",
 };
 

@@ -8,6 +8,7 @@ const VALID_PLATFORMS = [
   "tiktok",
   "linkedin",
   "youtube",
+  "youtube_shorts",
   "reddit",
   "x",
 ] as const;
@@ -134,7 +135,8 @@ async function verifyPlatformToken(
       return data.name || "Connected";
     }
 
-    case "youtube": {
+    case "youtube":
+    case "youtube_shorts": {
       const res = await fetch(
         "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true",
         {

@@ -16,7 +16,7 @@ import { getDb } from "@/lib/db/client";
 import { posts } from "@/lib/db/schema";
 import type { OAuthPlatform } from "@/lib/constants";
 
-const VALID_PLATFORMS = ["instagram", "tiktok", "linkedin", "youtube", "reddit", "x"] as const;
+const VALID_PLATFORMS = ["instagram", "tiktok", "linkedin", "youtube", "youtube_shorts", "reddit", "x"] as const;
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function getAppUrl(): string {
@@ -255,7 +255,8 @@ export async function POST(
         });
       }
 
-      case "youtube": {
+      case "youtube":
+      case "youtube_shorts": {
         const ytResult = await publishToYouTube(
           imageBuffers,
           caption,
