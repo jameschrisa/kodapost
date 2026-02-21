@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  AlertTriangle,
   Check,
   CheckCircle2,
   ClipboardCopy,
   Download,
   Film,
   ImageIcon,
+  Info,
   Instagram,
   Linkedin,
   Loader2,
@@ -26,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import { PLATFORM_IMAGE_SPECS } from "@/lib/constants";
+import { PLATFORM_IMAGE_SPECS, PLATFORM_RULES, type PlatformRulesKey } from "@/lib/constants";
 import { loadSettings } from "@/lib/storage";
 import { compositeSlideImages } from "@/app/actions";
 import { trimAudioBlob, hasTrimApplied } from "@/lib/audio-utils";
@@ -597,6 +599,85 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           })}
         </div>
       </div>
+
+      {/* Platform intelligence: rules and warnings */}
+      {selected.size > 0 && (() => {
+        const selectedRules = Array.from(selected)
+          .filter((p): p is PlatformRulesKey => p in PLATFORM_RULES)
+          .map((p) => ({ platform: p, rules: PLATFORM_RULES[p] }));
+
+        if (selectedRules.length === 0) return null;
+
+        // Collect warnings (constraints that affect this specific project)
+        const warnings: string[] = [];
+        for (const { platform, rules } of selectedRules) {
+          if (!rules.supportsCarousel && readySlides.length > 1) {
+            warnings.push(
+              `${platform === "youtube" ? "YouTube" : platform.charAt(0).toUpperCase() + platform.slice(1)} community posts are single-image only — only your first slide will be used.`
+            );
+          } else if (rules.maxCarouselImages < readySlides.length) {
+            warnings.push(
+              `${platform === "x" ? "X" : platform.charAt(0).toUpperCase() + platform.slice(1)} supports max ${rules.maxCarouselImages} images — only the first ${rules.maxCarouselImages} slides will be exported.`
+            );
+          }
+        }
+
+        return (
+          <div className="space-y-3">
+            {/* Warnings */}
+            {warnings.length > 0 && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-amber-500">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  Platform Constraints
+                </div>
+                {warnings.map((w, i) => (
+                  <p key={i} className="text-xs text-amber-500/90 pl-5">{w}</p>
+                ))}
+              </div>
+            )}
+
+            {/* Per-platform rules panel */}
+            {selectedRules.map(({ platform, rules }) => (
+              <div key={platform} className="rounded-md border border-border bg-muted/30 p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground/80">
+                  {PLATFORM_RULES[platform] && (
+                    <>
+                      {platform === "instagram" && "Instagram"}
+                      {platform === "tiktok" && "TikTok"}
+                      {platform === "linkedin" && "LinkedIn"}
+                      {platform === "youtube" && "YouTube"}
+                      {platform === "x" && "X (Twitter)"}
+                    </>
+                  )}{" "}
+                  — {rules.carouselType === "native_swipe" && "Swipeable carousel"}
+                  {rules.carouselType === "photo_mode" && "Photo Mode carousel"}
+                  {rules.carouselType === "pdf_document" && "PDF document carousel"}
+                  {rules.carouselType === "single_image" && "Single image only"}
+                  {rules.carouselType === "multi_image_grid" && "Multi-image grid (max 4)"}
+                </p>
+                <div className="grid gap-1 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Requirements</p>
+                    {rules.requirements.map((r, i) => (
+                      <p key={i} className="text-[11px] text-muted-foreground leading-snug">· {r}</p>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Best Practices</p>
+                    {rules.bestPractices.map((r, i) => (
+                      <p key={i} className="text-[11px] text-muted-foreground leading-snug flex gap-1">
+                        <Info className="h-3 w-3 shrink-0 mt-0.5 text-primary/60" />
+                        {r}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Export mode selector */}
       {selected.size > 0 && (

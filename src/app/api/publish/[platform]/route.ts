@@ -7,7 +7,6 @@ import { publishToTikTok } from "@/lib/publishers/tiktok";
 import { publishToLinkedIn } from "@/lib/publishers/linkedin";
 import { publishToYouTube } from "@/lib/publishers/youtube";
 import { publishToReddit } from "@/lib/publishers/reddit";
-import { publishToLemon8 } from "@/lib/publishers/lemon8";
 import { publishToX } from "@/lib/publishers/x";
 import {
   saveTemporaryImages,
@@ -17,7 +16,7 @@ import { getDb } from "@/lib/db/client";
 import { posts } from "@/lib/db/schema";
 import type { OAuthPlatform } from "@/lib/constants";
 
-const VALID_PLATFORMS = ["instagram", "tiktok", "linkedin", "youtube", "reddit", "lemon8", "x"] as const;
+const VALID_PLATFORMS = ["instagram", "tiktok", "linkedin", "youtube", "reddit", "x"] as const;
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function getAppUrl(): string {
@@ -301,29 +300,6 @@ export async function POST(
           success: redditResult.success,
           postUrl: redditResult.postUrl,
           error: redditResult.error,
-        });
-      }
-
-      case "lemon8": {
-        const lemon8Result = await publishToLemon8(
-          imageBuffers,
-          caption,
-          tokenData.accessToken
-        );
-
-        if (lemon8Result.success) {
-          await recordPublishedPost({
-            platform,
-            caption,
-            slideCount,
-            postUrl: lemon8Result.postUrl,
-          });
-        }
-
-        return NextResponse.json({
-          success: lemon8Result.success,
-          postUrl: lemon8Result.postUrl,
-          error: lemon8Result.error,
         });
       }
 

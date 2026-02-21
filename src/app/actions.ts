@@ -584,7 +584,6 @@ const PLATFORM_SPEC_MAP: Record<string, keyof typeof PLATFORM_IMAGE_SPECS> = {
   linkedin: "linkedin_pdf",
   youtube: "youtube_community",
   reddit: "reddit_gallery",
-  lemon8: "lemon8_post",
 };
 
 /**

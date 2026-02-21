@@ -9,7 +9,6 @@ const VALID_PLATFORMS = [
   "linkedin",
   "youtube",
   "reddit",
-  "lemon8",
   "x",
 ] as const;
 
@@ -158,18 +157,6 @@ async function verifyPlatformToken(
       if (!res.ok) throw new Error("Reddit token invalid");
       const data = await res.json();
       return data.name || "Connected";
-    }
-
-    case "lemon8": {
-      const res = await fetch(
-        "https://open.lemon8-app.com/v2/user/info/?fields=display_name",
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      if (!res.ok) throw new Error("Lemon8 token invalid");
-      const data = await res.json();
-      return data?.data?.user?.display_name || "Connected";
     }
 
     case "x": {

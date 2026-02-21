@@ -123,14 +123,6 @@ export function buildAuthUrl(
       params.set("duration", "permanent");
       return `${config.authUrl}?${params.toString()}`;
 
-    case "lemon8":
-      params.set("client_key", clientId);
-      params.set("redirect_uri", redirectUri);
-      params.set("scope", config.scopes.join(","));
-      params.set("response_type", "code");
-      params.set("state", state);
-      return `${config.authUrl}?${params.toString()}`;
-
     case "x":
       params.set("client_id", clientId);
       params.set("redirect_uri", redirectUri);
@@ -168,8 +160,6 @@ export async function exchangeCode(
       return exchangeYouTubeCode(code);
     case "reddit":
       return exchangeRedditCode(code);
-    case "lemon8":
-      return exchangeLemon8Code(code);
     case "x":
       return exchangeXCode(code, codeVerifier || "");
     default:
@@ -496,46 +486,6 @@ async function exchangeRedditCode(code: string): Promise<TokenResponse> {
   };
 }
 
-// -- Lemon8 --
-
-async function exchangeLemon8Code(code: string): Promise<TokenResponse> {
-  const config = OAUTH_CONFIG.lemon8;
-  const { clientId, clientSecret } = getCredentials("lemon8");
-  const redirectUri = getCallbackUrl("lemon8");
-
-  const res = await fetch(config.tokenUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_key: clientId,
-      client_secret: clientSecret,
-      code,
-      grant_type: "authorization_code",
-      redirect_uri: redirectUri,
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Lemon8 token exchange failed: ${err}`);
-  }
-
-  const data = await res.json();
-  const tokenInfo = data.data || data;
-
-  if (!tokenInfo.access_token) {
-    throw new Error("Lemon8 did not return an access token");
-  }
-
-  return {
-    accessToken: tokenInfo.access_token,
-    refreshToken: tokenInfo.refresh_token,
-    expiresIn: tokenInfo.expires_in || 86400,
-    platformUserId: tokenInfo.open_id || "",
-    platformUsername: tokenInfo.username || "",
-    platformDisplayName: tokenInfo.display_name || tokenInfo.username || "",
-  };
-}
 
 // -- X (Twitter) --
 
@@ -704,28 +654,6 @@ export async function refreshToken(
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
         expiresIn: data.expires_in || 3600,
-      };
-    }
-
-    case "lemon8": {
-      const { clientId: l8ClientId, clientSecret: l8ClientSecret } = getCredentials("lemon8");
-      const res = await fetch(OAUTH_CONFIG.lemon8.tokenUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          client_key: l8ClientId,
-          client_secret: l8ClientSecret,
-          grant_type: "refresh_token",
-          refresh_token: currentRefreshToken,
-        }),
-      });
-      if (!res.ok) throw new Error("Lemon8 token refresh failed");
-      const data = await res.json();
-      const tokenInfo = data.data || data;
-      return {
-        accessToken: tokenInfo.access_token,
-        refreshToken: tokenInfo.refresh_token,
-        expiresIn: tokenInfo.expires_in || 86400,
       };
     }
 

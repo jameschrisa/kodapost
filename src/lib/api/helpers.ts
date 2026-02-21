@@ -62,7 +62,6 @@ const VALID_PLATFORMS: Platform[] = [
   "linkedin",
   "youtube",
   "reddit",
-  "lemon8",
 ];
 
 const VALID_FILTERS: PredefinedFilterName[] = [

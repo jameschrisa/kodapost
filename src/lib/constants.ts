@@ -8,7 +8,7 @@ export const PLATFORM_LIMITS = {
   instagram: {
     caption_max: 2200,
     hashtag_max: 30,
-    hashtag_recommended: 10,
+    hashtag_recommended: 5,
     first_line_preview: 125,
   },
   tiktok: {
@@ -35,19 +35,139 @@ export const PLATFORM_LIMITS = {
     hashtag_recommended: 0,
     first_line_preview: 300,
   },
-  lemon8: {
-    caption_max: 2200,
-    hashtag_max: 30,
-    hashtag_recommended: 8,
-    first_line_preview: 140,
-  },
   x: {
     caption_max: 280,
     hashtag_max: 5,
-    hashtag_recommended: 3,
+    hashtag_recommended: 2,
     first_line_preview: 280,
   },
 } as const;
+
+// -----------------------------------------------------------------------------
+// Platform Rules & Best Practices
+// Source: Official platform docs + industry benchmarks (2025–2026)
+// -----------------------------------------------------------------------------
+
+export const PLATFORM_RULES = {
+  instagram: {
+    maxCarouselImages: 20,
+    minCarouselImages: 2,
+    supportsCarousel: true,
+    carouselType: "native_swipe" as const,
+    captionMax: 2200,
+    captionFirstLinePreview: 125,
+    hashtagMax: 30,
+    hashtagOptimal: { min: 3, max: 5 },
+    requirements: [
+      "All carousel images must share the same aspect ratio",
+      "First image aspect ratio sets the template for all slides",
+      "Portrait 4:5 maximizes feed real estate",
+      "Max 30 MB per image (JPEG, PNG, WebP)",
+    ],
+    bestPractices: [
+      "Hook viewers in the first slide — it's the only one shown in feed",
+      "End with a CTA slide to drive follows, saves, or link clicks",
+      "Use 3–5 targeted hashtags (Instagram's own recommendation)",
+      "Keep the first 125 characters caption-worthy — that's all that shows",
+      "Carousels are reshown to non-swipers — optimise for both audiences",
+    ],
+  },
+  tiktok: {
+    maxCarouselImages: 35,
+    minCarouselImages: 2,
+    supportsCarousel: true,
+    carouselType: "photo_mode" as const,
+    captionMax: 2200,
+    captionFirstLinePreview: 150,
+    hashtagMax: 100,
+    hashtagOptimal: { min: 3, max: 5 },
+    requirements: [
+      "Photo Mode supports 2–35 images per carousel",
+      "Supported ratios: 9:16 (recommended), 4:5, 1:1",
+      "All images should use the same aspect ratio",
+      "Total carousel upload limit: 500 MB (JPEG, PNG)",
+    ],
+    bestPractices: [
+      "Use 9:16 vertical for full-screen immersive viewing",
+      "Optimal length is 5–10 slides — attention drops past 10",
+      "Add text overlays: many TikTok users scroll with sound off",
+      "TikTok rewards saves and shares — make content save-worthy",
+      "Use 3–5 niche hashtags; avoid banned or oversaturated tags",
+    ],
+  },
+  linkedin: {
+    maxCarouselImages: 300,
+    minCarouselImages: 2,
+    supportsCarousel: true,
+    carouselType: "pdf_document" as const,
+    captionMax: 3000,
+    captionFirstLinePreview: 140,
+    hashtagMax: 3,
+    hashtagOptimal: { min: 1, max: 3 },
+    requirements: [
+      "Carousels are uploaded as PDF documents (max 100 MB)",
+      "Supports PDF, PPTX, DOCX formats",
+      "Maximum 300 pages; recommend 5–20 slides",
+      "Minimum 24pt headers, 18pt body text for mobile readability",
+    ],
+    bestPractices: [
+      "LinkedIn PDFs get ~3× more reach than static image posts",
+      "Title slide is the thumbnail — make it compelling and clear",
+      "5–6 slides is the engagement sweet spot for professional content",
+      "Max 3 hashtags — LinkedIn's algorithm penalises over-tagging",
+      "Post Tue–Thu between 8–10am or 12–2pm in your audience's timezone",
+    ],
+  },
+  youtube: {
+    maxCarouselImages: 1,
+    minCarouselImages: 1,
+    supportsCarousel: false,
+    carouselType: "single_image" as const,
+    captionMax: 5000,
+    captionFirstLinePreview: 100,
+    hashtagMax: 15,
+    hashtagOptimal: { min: 3, max: 5 },
+    requirements: [
+      "Community posts support a single image only — no carousels",
+      "Max dimensions: 1080×1080 px (1:1 square recommended)",
+      "Supported aspect ratios: 2:5 to 5:2",
+      "Supported formats: JPEG, PNG, WebP, non-animated GIF",
+    ],
+    bestPractices: [
+      "Community posts keep subscribers engaged between video uploads",
+      "Ask a question — comment engagement boosts post reach",
+      "Square 1:1 format displays cleanly in all feed contexts",
+      "Use 3–5 relevant hashtags for YouTube search discoverability",
+      "Post at the same time you'd normally publish a video for best reach",
+    ],
+  },
+  x: {
+    maxCarouselImages: 4,
+    minCarouselImages: 1,
+    supportsCarousel: false,
+    carouselType: "multi_image_grid" as const,
+    captionMax: 280,
+    captionFirstLinePreview: 280,
+    hashtagMax: 5,
+    hashtagOptimal: { min: 1, max: 2 },
+    requirements: [
+      "Maximum 4 images per post — no swipeable carousel",
+      "Images display in auto-arranged grid (2-up, 3-up, or 2×2)",
+      "Supported aspect ratios: 2:1 to 1:2 (4:5 portrait works well)",
+      "Max 5 MB per image (JPEG, PNG, WebP, GIF)",
+      "Free accounts: 280-character limit; X Premium: 4,000 characters",
+    ],
+    bestPractices: [
+      "4:5 portrait takes maximum vertical feed space — more attention",
+      "Posts under 100 characters get ~17% higher engagement",
+      "1–2 hashtags max — engagement drops sharply beyond 2 tags",
+      "X does not swipe carousels — all images show in a grid simultaneously",
+      "Alt text on all images improves reach and accessibility ranking",
+    ],
+  },
+} as const;
+
+export type PlatformRulesKey = keyof typeof PLATFORM_RULES;
 
 // -----------------------------------------------------------------------------
 // Platform Image Specifications
@@ -59,7 +179,7 @@ export const PLATFORM_IMAGE_SPECS = {
     height: 1350,
     aspectRatio: "4:5",
     format: "JPEG",
-    quality: 85,
+    quality: 90,
   },
   tiktok: {
     width: 1080,
@@ -76,11 +196,11 @@ export const PLATFORM_IMAGE_SPECS = {
     quality: 95,
   },
   youtube_community: {
-    width: 1000,
-    height: 1000,
+    width: 1080,
+    height: 1080,
     aspectRatio: "1:1",
     format: "JPEG",
-    quality: 85,
+    quality: 90,
   },
   reddit_gallery: {
     width: 1200,
@@ -88,13 +208,6 @@ export const PLATFORM_IMAGE_SPECS = {
     aspectRatio: "1:1",
     format: "PNG",
     quality: 95,
-  },
-  lemon8_post: {
-    width: 1080,
-    height: 1440,
-    aspectRatio: "3:4",
-    format: "JPEG",
-    quality: 90,
   },
   x_post: {
     width: 1080,
@@ -134,11 +247,6 @@ export const PLATFORM_PREVIEW_CONFIG = {
     label: "Reddit",
     ratio: "1:1",
     aspectClass: "aspect-[1/1]",
-  },
-  lemon8: {
-    label: "Lemon8",
-    ratio: "3:4",
-    aspectClass: "aspect-[3/4]",
   },
   x: {
     label: "X",
@@ -261,12 +369,6 @@ export const OAUTH_CONFIG = {
     tokenUrl: "https://www.reddit.com/api/v1/access_token",
     scopes: ["submit", "identity"],
     envKeys: { id: "REDDIT_CLIENT_ID", secret: "REDDIT_CLIENT_SECRET" },
-  },
-  lemon8: {
-    authUrl: "https://open.lemon8-app.com/oauth/authorize",
-    tokenUrl: "https://open.lemon8-app.com/oauth/access_token",
-    scopes: ["content.publish"],
-    envKeys: { id: "LEMON8_CLIENT_KEY", secret: "LEMON8_CLIENT_SECRET" },
   },
   x: {
     authUrl: "https://twitter.com/i/oauth2/authorize",
