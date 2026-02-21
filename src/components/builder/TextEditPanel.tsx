@@ -94,6 +94,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   const [styleRefreshKey, setStyleRefreshKey] = useState(0);
 
   // -- Per-slide editing state --
+  const [editTextEnabled, setEditTextEnabled] = useState(true);
   const [editPrimary, setEditPrimary] = useState("");
   const [editFontFamily, setEditFontFamily] = useState(DEFAULT_OVERLAY_STYLING.fontFamily);
   const [editFontSizePrimary, setEditFontSizePrimary] = useState(DEFAULT_OVERLAY_STYLING.fontSize.primary);
@@ -136,6 +137,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   useEffect(() => {
     if (!selectedSlide) return;
     const overlay = selectedSlide.textOverlay;
+    setEditTextEnabled(selectedSlide.textOverlayState?.enabled !== false);
     setEditPrimary(overlay?.content.primary ?? "");
     setEditFontFamily(overlay?.styling.fontFamily ?? DEFAULT_OVERLAY_STYLING.fontFamily);
     setEditFontSizePrimary(overlay?.styling.fontSize.primary ?? DEFAULT_OVERLAY_STYLING.fontSize.primary);
@@ -186,7 +188,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
     if (!selectedSlide || !liveOverlay) return;
 
     // Serialize to detect real changes vs no-ops
-    const key = JSON.stringify(liveOverlay.content) + JSON.stringify(liveOverlay.styling);
+    const key = JSON.stringify(liveOverlay.content) + JSON.stringify(liveOverlay.styling) + String(editTextEnabled);
     if (key === lastSavedRef.current) return;
 
     clearTimeout(saveTimeoutRef.current);
@@ -199,7 +201,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
           textOverlay: liveOverlay,
           textOverlayState: {
             slideId: s.id,
-            enabled: true,
+            enabled: editTextEnabled,
             source: "user_override" as const,
             lastModified: new Date().toISOString(),
             customizations: {
@@ -214,7 +216,17 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
     }, 300);
 
     return () => clearTimeout(saveTimeoutRef.current);
-  }, [liveOverlay, selectedSlide, project, onEdit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [liveOverlay, selectedSlide, project, onEdit, editTextEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Per-slide text visibility toggle ──
+  function toggleEditText(enabled: boolean) {
+    setEditTextEnabled(enabled);
+    if (!enabled) {
+      setEditPrimary("");
+    } else {
+      setEditPrimary(selectedSlide?.aiGeneratedOverlay?.content.primary ?? "");
+    }
+  }
 
   // ── Drag-to-position using freePosition percentages ──
 
@@ -879,15 +891,26 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
 
               {/* Content tab: text input controls */}
               <TabsContent value="content" className="space-y-4 mt-0">
+                {/* Show/hide text toggle for this slide */}
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium">Show text on this slide</Label>
+                  <Switch
+                    checked={editTextEnabled}
+                    onCheckedChange={toggleEditText}
+                    aria-label="Toggle text visibility for this slide"
+                  />
+                </div>
+
                 {/* Headline */}
                 <div className="space-y-1.5">
                   <Label className="text-xs">Headline</Label>
                   <Textarea
                     value={editPrimary}
                     onChange={(e) => setEditPrimary(e.target.value)}
-                    placeholder="Main headline text"
-                    className="text-sm resize-none"
+                    placeholder={editTextEnabled ? "Main headline text" : "Text hidden for this slide"}
+                    className={cn("text-sm resize-none", !editTextEnabled && "opacity-40")}
                     rows={3}
+                    disabled={!editTextEnabled}
                   />
                 </div>
 

@@ -153,6 +153,15 @@ For suggestedUseCase:
 // -----------------------------------------------------------------------------
 
 /**
+ * Resolves the headline mode from GlobalOverlayStyle with backward-compat fallback.
+ * Existing projects that only have showHeadline (bool) are mapped to "all" or "none".
+ */
+function resolveHeadlineMode(gos?: GlobalOverlayStyle): "all" | "first_only" | "none" {
+  if (gos?.headlineMode) return gos.headlineMode;
+  return gos?.showHeadline === false ? "none" : "all";
+}
+
+/**
  * Generates a text overlay for a single slide using Claude.
  * Returns a TextOverlay with AI-written primary/secondary text
  * and default styling.
@@ -295,6 +304,9 @@ export async function generateCarousel(
     let errorCount = 0;
     let firstError = "";
 
+    // Resolve headline mode once for the entire run
+    const headlineMode = resolveHeadlineMode(project.globalOverlayStyle);
+
     // 3. Process each slide: assign images and generate overlays
     for (const slide of slides) {
       try {
@@ -328,12 +340,15 @@ export async function generateCarousel(
 
         // Always preserve full AI text in aiGeneratedOverlay
         slide.aiGeneratedOverlay = overlay;
-        // Apply visibility flags from global style
+        // Apply headline mode visibility per slide
+        const showOnThisSlide =
+          headlineMode === "all" ||
+          (headlineMode === "first_only" && slide.position === 0);
         slide.textOverlay = {
           ...overlay,
           content: {
             ...overlay.content,
-            primary: project.globalOverlayStyle?.showHeadline === false ? "" : overlay.content.primary,
+            primary: showOnThisSlide ? overlay.content.primary : "",
             secondary: undefined,
           },
         };

@@ -170,6 +170,8 @@ export interface GlobalOverlayStyle {
   showHeadline: boolean;
   /** Whether to show the subtitle text (default: false) */
   showSubtitle: boolean;
+  /** Controls which slides receive generated headlines */
+  headlineMode?: "all" | "first_only" | "none";
   /** Default freeform position to apply to generated slides */
   freePosition?: { x: number; y: number };
   /** Text alignment within the overlay block */

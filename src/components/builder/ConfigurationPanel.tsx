@@ -18,7 +18,6 @@ import { FilterSelector } from "@/components/shared/FilterSelector";
 import { CSVImportDialog } from "@/components/builder/CSVImportDialog";
 import { CardHelpIcon } from "@/components/shared/CardHelpIcon";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -60,12 +59,17 @@ export function ConfigurationPanel({
   const [csvImportOpen, setCsvImportOpen] = useState(false);
   const [carouselWarningOpen, setCarouselWarningOpen] = useState(false);
 
-  // Headline visibility — derived from globalOverlayStyle or default
-  const showHeadline = project.globalOverlayStyle?.showHeadline ?? DEFAULT_GLOBAL_OVERLAY_STYLE.showHeadline;
+  // Headline mode — 3-way selector with backward-compat fallback from showHeadline boolean
+  const headlineMode: "all" | "first_only" | "none" =
+    project.globalOverlayStyle?.headlineMode ??
+    (project.globalOverlayStyle?.showHeadline === false ? "none" : "all");
 
-  function updateShowHeadline(value: boolean) {
+  function updateHeadlineMode(mode: "all" | "first_only" | "none") {
     const gos = project.globalOverlayStyle ?? { ...DEFAULT_GLOBAL_OVERLAY_STYLE };
-    onUpdate({ ...project, globalOverlayStyle: { ...gos, showHeadline: value } });
+    onUpdate({
+      ...project,
+      globalOverlayStyle: { ...gos, headlineMode: mode, showHeadline: mode !== "none" },
+    });
   }
 
   // Filter template state
@@ -477,8 +481,8 @@ export function ConfigurationPanel({
                       updateField("slideCount", 5);
                     }
                     // Auto-enable headline for carousel mode
-                    if (mode === "carousel") {
-                      updateShowHeadline(true);
+                    if (mode === "carousel" && headlineMode === "none") {
+                      updateHeadlineMode("all");
                     }
                   }}
                   className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-all ${
@@ -692,21 +696,35 @@ export function ConfigurationPanel({
 
             {/* ── Text Overlays Tab ── */}
             <TabsContent value="text-overlays" className="mt-4 space-y-3">
-              {/* Headline toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Headlines</p>
-                  <p className="text-xs text-muted-foreground">
-                    {showHeadline
-                      ? "Image headlines generated from your story"
-                      : "No headline text — images only"}
-                  </p>
+              {/* Headline mode selector */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Headlines</p>
+                <div className="flex gap-1">
+                  {([
+                    { value: "all", label: "All slides" },
+                    { value: "first_only", label: "First slide only" },
+                    { value: "none", label: "Off" },
+                  ] as const).map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateHeadlineMode(value)}
+                      className={cn(
+                        "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                        headlineMode === value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
-                <Switch
-                  checked={showHeadline}
-                  onCheckedChange={updateShowHeadline}
-                  aria-label="Toggle headline visibility"
-                />
+                <p className="text-xs text-muted-foreground">
+                  {headlineMode === "all" && "Headlines generated on every slide"}
+                  {headlineMode === "first_only" && "Title card on slide 1 — photos only after"}
+                  {headlineMode === "none" && "No headline text — images only"}
+                </p>
               </div>
 
             </TabsContent>
@@ -1289,7 +1307,7 @@ export function ConfigurationPanel({
                   updateField("slideCount", 5);
                 }
                 // Force headline on since carousel with few images needs text
-                updateShowHeadline(true);
+                if (headlineMode === "none") updateHeadlineMode("all");
                 toast.info("Switched to Carousel mode", {
                   description: "Headlines are enabled. Slides without images will need headline text.",
                 });

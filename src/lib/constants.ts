@@ -345,6 +345,7 @@ export const DEFAULT_GLOBAL_OVERLAY_STYLE: GlobalOverlayStyle = {
   padding: { top: 40, right: 40, bottom: 40, left: 40 },
   showHeadline: true,
   showSubtitle: false,
+  headlineMode: "all" as const,
   freePosition: { x: 50, y: 85 },
   textAlign: "center",
   fontStyle: "normal",
