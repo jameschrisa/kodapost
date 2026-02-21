@@ -5,12 +5,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Download,
   GripVertical,
   ImageIcon,
   Loader2,
   RefreshCw,
-  Send,
   Type,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,7 +24,6 @@ import {
   MOBILE_ASPECT_RATIOS,
 } from "@/lib/constants";
 import type { PreviewPlatform, MobileAspectRatio } from "@/lib/constants";
-import { PublishDialog } from "@/components/builder/PublishDialog";
 import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-css";
 import { DEFAULT_FILTER_CONFIG } from "@/lib/filter-presets";
 import type { CarouselProject, CarouselSlide } from "@/lib/types";
@@ -36,7 +33,6 @@ import { regenerateSlide } from "@/app/actions";
 interface CarouselPreviewProps {
   project: CarouselProject;
   onEdit: (project: CarouselProject) => void;
-  onPublish: () => void;
   onBack?: () => void;
 }
 
@@ -49,7 +45,6 @@ const SLIDE_TYPE_LABELS: Record<CarouselSlide["slideType"], string> = {
 export function CarouselPreview({
   project,
   onEdit,
-  onPublish,
   onBack,
 }: CarouselPreviewProps) {
   // -- Platform preview --
@@ -194,9 +189,6 @@ export function CarouselPreview({
     }
   }, [project, onEdit]);
 
-  // -- Publish dialog state --
-  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
-
   // -- Drag to reorder --
   const dragItem = useRef<number | null>(null);
   const dragOver = useRef<number | null>(null);
@@ -283,14 +275,6 @@ export function CarouselPreview({
               Scheduled {new Date(project.scheduledPublishAt).toLocaleDateString()}
             </div>
           )}
-          <Button variant="outline" onClick={onPublish} className="gap-2" disabled={readySlides.length === 0}>
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-          <Button onClick={() => setPublishDialogOpen(true)} className="gap-2" disabled={readySlides.length === 0}>
-            <Send className="h-4 w-4" />
-            Publish
-          </Button>
         </div>
       </div>
 
@@ -571,13 +555,6 @@ export function CarouselPreview({
         </div>
       )}
 
-      {/* Publish dialog */}
-      <PublishDialog
-        project={project}
-        onProjectUpdate={onEdit}
-        open={publishDialogOpen}
-        onOpenChange={setPublishDialogOpen}
-      />
     </div>
   );
 }

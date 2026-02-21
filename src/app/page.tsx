@@ -2,6 +2,8 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Download, Send } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { useClerkAuth } from "@/hooks/useClerkAuth";
 import { AnimatePresence, motion } from "framer-motion";
@@ -1045,20 +1047,23 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
+                      <Button
+                        variant="outline"
                         onClick={handlePublish}
-                        className="flex items-center gap-1.5 rounded-md border border-muted-foreground/20 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-purple-400 hover:text-purple-400"
+                        className="gap-2"
+                        disabled={!project.slides.some(s => s.status === "ready")}
                       >
+                        <Download className="h-4 w-4" />
                         Export
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
                         onClick={handlePublish}
-                        className="flex items-center gap-1.5 rounded-md bg-purple-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-purple-600"
+                        className="gap-2"
+                        disabled={!project.slides.some(s => s.status === "ready")}
                       >
+                        <Send className="h-4 w-4" />
                         Publish
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </motion.div>
@@ -1105,7 +1110,6 @@ export default function Home() {
                     <CarouselPreview
                       project={project}
                       onEdit={handleProjectUpdate}
-                      onPublish={handlePublish}
                       onBack={handleBack}
                     />
                   ) : (

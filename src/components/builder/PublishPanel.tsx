@@ -173,7 +173,11 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     });
   }
 
-  const connectedPlatforms = connections.filter((c) => c.connected);
+  // Only show "Post Directly" buttons for platforms that are both connected
+  // AND checked in the platform selection grid above.
+  const connectedPlatforms = connections.filter(
+    (c) => c.connected && selected.has(c.platform as Platform)
+  );
 
   // Ref guard to prevent double-click race condition
   const postingRef = useRef(false);
@@ -978,7 +982,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           <div>
             <h3 className="text-sm font-semibold">Post Directly</h3>
             <p className="text-xs text-muted-foreground">
-              Publish your carousel directly to connected platforms.
+              Publish directly to the connected platforms you&apos;ve selected above.
             </p>
           </div>
 
