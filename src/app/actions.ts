@@ -196,13 +196,12 @@ Slide role: ${slideType}
 
 Rules:
 - "primary": A punchy headline (max 8 words)
-- "secondary": A supporting line (max 15 words)
 - For hook slides: grab attention immediately
 - For story slides: continue the narrative
 - For closer slides: include a call-to-action feel${styleLine}
 
 Respond with ONLY valid JSON in this exact format:
-{"primary": "...", "secondary": "..."}`,
+{"primary": "..."}`,
           },
         ],
       },
@@ -210,21 +209,19 @@ Respond with ONLY valid JSON in this exact format:
   });
 
   let primary = "Your Story Starts Here";
-  let secondary = "Swipe to discover more";
 
   try {
     const textBlock = message.content.find((b) => b.type === "text");
     if (textBlock && textBlock.type === "text") {
       const parsed = JSON.parse(extractJSON(textBlock.text));
       primary = parsed.primary || primary;
-      secondary = parsed.secondary || secondary;
     }
   } catch {
     // Fall back to defaults if parsing fails
   }
 
   return {
-    content: { primary, secondary },
+    content: { primary },
     styling: {
       fontFamily: globalStyle?.fontFamily ?? DEFAULT_OVERLAY_STYLING.fontFamily,
       fontSize: {
@@ -337,7 +334,7 @@ export async function generateCarousel(
           content: {
             ...overlay.content,
             primary: project.globalOverlayStyle?.showHeadline === false ? "" : overlay.content.primary,
-            secondary: project.globalOverlayStyle?.showSubtitle === false ? undefined : overlay.content.secondary,
+            secondary: undefined,
           },
         };
 
@@ -345,9 +342,6 @@ export async function generateCarousel(
         const csvRow = project.csvOverrides?.[slide.position];
         if (csvRow) {
           slide.textOverlay.content.primary = csvRow.primary;
-          if (csvRow.secondary !== undefined) {
-            slide.textOverlay.content.secondary = csvRow.secondary;
-          }
         }
 
         slide.textOverlayState = {

@@ -95,8 +95,6 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
 
   // -- Per-slide editing state --
   const [editPrimary, setEditPrimary] = useState("");
-  const [editSecondary, setEditSecondary] = useState("");
-  const [editSubtitleEnabled, setEditSubtitleEnabled] = useState(false);
   const [editFontFamily, setEditFontFamily] = useState(DEFAULT_OVERLAY_STYLING.fontFamily);
   const [editFontSizePrimary, setEditFontSizePrimary] = useState(DEFAULT_OVERLAY_STYLING.fontSize.primary);
   const [editFontSizeSecondary, setEditFontSizeSecondary] = useState(DEFAULT_OVERLAY_STYLING.fontSize.secondary);
@@ -116,10 +114,9 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   const [globalToolbarOpen, setGlobalToolbarOpen] = useState(false);
   const [globalFontFamily, setGlobalFontFamily] = useState(gos.fontFamily);
   const [globalFontSizePrimary, setGlobalFontSizePrimary] = useState(gos.fontSize.primary);
-  const [globalFontSizeSecondary, setGlobalFontSizeSecondary] = useState(gos.fontSize.secondary);
+  const globalFontSizeSecondary = gos.fontSize.secondary;
   const [globalVerticalAlign, setGlobalVerticalAlign] = useState<"top" | "center" | "bottom">(gos.alignment);
   const [globalShowHeadline, setGlobalShowHeadline] = useState(gos.showHeadline);
-  const [globalShowSubtitle, setGlobalShowSubtitle] = useState(gos.showSubtitle);
   const [globalTextAlign, setGlobalTextAlign] = useState<"left" | "center" | "right">(gos.textAlign ?? "center");
   const [globalFontStyle, setGlobalFontStyle] = useState<"normal" | "italic">(gos.fontStyle ?? "normal");
   const [globalTextColor, setGlobalTextColor] = useState(gos.textColor ?? "#FFFFFF");
@@ -140,11 +137,6 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
     if (!selectedSlide) return;
     const overlay = selectedSlide.textOverlay;
     setEditPrimary(overlay?.content.primary ?? "");
-    setEditSecondary(overlay?.content.secondary ?? "");
-    // Respect the global showSubtitle setting — only enable per-slide subtitle
-    // if the global toggle is ON and the slide actually has subtitle text.
-    const globalSubtitleOn = project.globalOverlayStyle?.showSubtitle ?? DEFAULT_GLOBAL_OVERLAY_STYLE.showSubtitle;
-    setEditSubtitleEnabled(globalSubtitleOn && !!overlay?.content.secondary);
     setEditFontFamily(overlay?.styling.fontFamily ?? DEFAULT_OVERLAY_STYLING.fontFamily);
     setEditFontSizePrimary(overlay?.styling.fontSize.primary ?? DEFAULT_OVERLAY_STYLING.fontSize.primary);
     setEditFontSizeSecondary(overlay?.styling.fontSize.secondary ?? DEFAULT_OVERLAY_STYLING.fontSize.secondary);
@@ -165,7 +157,6 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
     return {
       content: {
         primary: editPrimary,
-        secondary: editSubtitleEnabled ? editSecondary || undefined : undefined,
         accent: existing?.content.accent,
       },
       styling: {
@@ -185,7 +176,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         freePosition: freePos,
       },
     };
-  }, [selectedSlide, editPrimary, editSecondary, editSubtitleEnabled, editFontFamily, editFontSizePrimary, editFontSizeSecondary, editTextAlign, editFontStyle, editTextColor, editBgPadX, editBgPadY]);
+  }, [selectedSlide, editPrimary, editFontFamily, editFontSizePrimary, editFontSizeSecondary, editTextAlign, editFontStyle, editTextColor, editBgPadX, editBgPadY]);
 
   // ── Auto-save with debounce (text/font changes) ──
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -345,16 +336,12 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
       const primaryText = globalShowHeadline
         ? (s.aiGeneratedOverlay?.content.primary || existingOverlay.content.primary || "")
         : "";
-      const secondaryText = globalShowSubtitle
-        ? (s.aiGeneratedOverlay?.content.secondary || existingOverlay.content.secondary || undefined)
-        : undefined;
 
       return {
         ...s,
         textOverlay: {
           content: {
             primary: primaryText,
-            secondary: secondaryText,
             accent: existingOverlay.content.accent,
           },
           styling: {
@@ -396,7 +383,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         horizontalAlign: "center" as const,
         padding: gos.padding,
         showHeadline: globalShowHeadline,
-        showSubtitle: globalShowSubtitle,
+        showSubtitle: false,
         freePosition: freePos,
         textAlign: globalTextAlign,
         fontStyle: globalFontStyle,
@@ -473,16 +460,6 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 </div>
                 <Slider min={24} max={96} step={2} value={[globalFontSizePrimary]} onValueChange={([v]) => setGlobalFontSizePrimary(v)} />
               </div>
-              {/* Subtitle Size — only visible when subtitle is enabled */}
-              {globalShowSubtitle && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs">Subtitle Size</Label>
-                  <span className="text-xs text-muted-foreground tabular-nums">{globalFontSizeSecondary}px</span>
-                </div>
-                <Slider min={14} max={56} step={2} value={[globalFontSizeSecondary]} onValueChange={([v]) => setGlobalFontSizeSecondary(v)} />
-              </div>
-              )}
               {/* Vertical Position */}
               <div className="space-y-1.5">
                 <Label className="text-xs">Vertical Position</Label>
@@ -601,10 +578,6 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
               <div className="flex items-center gap-2">
                 <Switch id="glob-headline" checked={globalShowHeadline} onCheckedChange={setGlobalShowHeadline} />
                 <Label htmlFor="glob-headline" className="text-xs">Show Headline</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch id="glob-subtitle" checked={globalShowSubtitle} onCheckedChange={setGlobalShowSubtitle} />
-                <Label htmlFor="glob-subtitle" className="text-xs">Show Subtitle</Label>
               </div>
               <Button onClick={applyGlobalStyle} size="sm" className="gap-2 ml-auto shrink-0">
                 <Paintbrush className="h-3.5 w-3.5" />
@@ -746,7 +719,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 <SlideTextOverlay overlay={liveOverlay} scale={previewScale} interactive />
               )}
               {/* Drag hint */}
-              {!isDragging && (liveOverlay?.content.primary || liveOverlay?.content.secondary) && (
+              {!isDragging && liveOverlay?.content.primary && (
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 rounded-full bg-black/50 px-2.5 py-1 text-[10px] text-white/80 pointer-events-none">
                   <Move className="h-3 w-3" />
                   Drag to position
@@ -882,22 +855,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                   />
                 </div>
 
-                {/* 4. Subtitle size (conditional) */}
-                {editSubtitleEnabled && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs">Subtitle Size</Label>
-                      <span className="text-xs text-muted-foreground tabular-nums">{editFontSizeSecondary}px</span>
-                    </div>
-                    <Slider
-                      min={14} max={56} step={2}
-                      value={[editFontSizeSecondary]}
-                      onValueChange={([v]) => setEditFontSizeSecondary(v)}
-                    />
-                  </div>
-                )}
-
-                {/* 5. Background padding */}
+                {/* 4. Background padding */}
                 <div className="space-y-1.5">
                   <Label className="text-xs">Background Padding</Label>
                   <div className="grid grid-cols-2 gap-4">
@@ -933,31 +891,6 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                   />
                 </div>
 
-                {/* Subtitle + toggle */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs">Subtitle</Label>
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="edit-sub-toggle" className="text-[10px] text-muted-foreground">
-                        {editSubtitleEnabled ? "On" : "Off"}
-                      </Label>
-                      <Switch
-                        id="edit-sub-toggle"
-                        checked={editSubtitleEnabled}
-                        onCheckedChange={setEditSubtitleEnabled}
-                      />
-                    </div>
-                  </div>
-                  {editSubtitleEnabled && (
-                    <Textarea
-                      value={editSecondary}
-                      onChange={(e) => setEditSecondary(e.target.value)}
-                      placeholder="Supporting text"
-                      className="text-sm resize-none"
-                      rows={2}
-                    />
-                  )}
-                </div>
               </TabsContent>
             </Tabs>
           )}

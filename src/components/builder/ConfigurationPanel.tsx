@@ -68,14 +68,6 @@ export function ConfigurationPanel({
     onUpdate({ ...project, globalOverlayStyle: { ...gos, showHeadline: value } });
   }
 
-  // Subtitle visibility — derived from globalOverlayStyle or default (OFF)
-  const showSubtitle = project.globalOverlayStyle?.showSubtitle ?? DEFAULT_GLOBAL_OVERLAY_STYLE.showSubtitle;
-
-  function updateShowSubtitle(value: boolean) {
-    const gos = project.globalOverlayStyle ?? { ...DEFAULT_GLOBAL_OVERLAY_STYLE };
-    onUpdate({ ...project, globalOverlayStyle: { ...gos, showSubtitle: value } });
-  }
-
   // Filter template state
   const [savedTemplates, setSavedTemplates] = useState<FilterTemplate[]>([]);
   const [templateName, setTemplateName] = useState("");
@@ -345,7 +337,7 @@ export function ConfigurationPanel({
   }
 
   // ── CSV Import ──
-  function handleCSVImport(data: { primary: string; secondary?: string }[]) {
+  function handleCSVImport(data: { primary: string }[]) {
     onUpdate({ ...project, csvOverrides: data });
     toast.success(`Imported text for ${data.length} slides`, {
       description: "Headlines will be applied during generation.",
@@ -659,16 +651,15 @@ export function ConfigurationPanel({
                 size="sm"
                 className="gap-1.5 h-7 text-xs"
                 onClick={() => setCsvImportOpen(true)}
-                title="Import your own headlines and subtitles from a CSV file instead of using Koda-generated text."
+                title="Import your own headlines from a CSV file instead of using Koda-generated text."
               >
                 <FileSpreadsheet className="h-3 w-3" />
                 Import
               </Button>
               <CardHelpIcon title="CSV Import">
-                Import a CSV file with your own headlines and subtitles instead of
-                Koda-generated text. Your file should have columns for headline (or
-                title/primary) and optionally subtitle (or caption/secondary).
-                Each row maps to a slide.
+                Import a CSV file with your own headlines instead of
+                Koda-generated text. Your file should have a column for headline (or
+                title/primary). Each row maps to a slide.
               </CardHelpIcon>
               {project.csvOverrides && (
                 <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
@@ -718,24 +709,6 @@ export function ConfigurationPanel({
                 />
               </div>
 
-              {/* Subtitle toggle — only shown when headlines are on */}
-              {showHeadline && (
-                <div className="flex items-center justify-between border-t pt-3">
-                  <div>
-                    <p className="text-sm font-medium">Subtitles</p>
-                    <p className="text-xs text-muted-foreground">
-                      {showSubtitle
-                        ? "Supporting text below each headline"
-                        : "Off — enable per-slide in Editorial"}
-                    </p>
-                  </div>
-                  <Switch
-                    checked={showSubtitle}
-                    onCheckedChange={updateShowSubtitle}
-                    aria-label="Toggle subtitle visibility"
-                  />
-                </div>
-              )}
             </TabsContent>
 
             {/* ── Slides Tab (carousel only) ── */}

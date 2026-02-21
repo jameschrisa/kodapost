@@ -16,7 +16,6 @@ import { toast } from "sonner";
 
 interface CSVRow {
   primary: string;
-  secondary?: string;
 }
 
 interface CSVImportDialogProps {
@@ -26,9 +25,8 @@ interface CSVImportDialogProps {
   onImport: (data: CSVRow[]) => void;
 }
 
-// Flexible column matching — accepts common names for headline and subtitle
+// Flexible column matching — accepts common names for headline
 const PRIMARY_ALIASES = ["headline", "primary", "title", "heading", "text"];
-const SECONDARY_ALIASES = ["caption", "subtitle", "secondary", "description", "subtext"];
 
 function findColumn(headers: string[], aliases: string[]): string | null {
   const normalized = headers.map((h) => h.toLowerCase().trim());
@@ -73,16 +71,11 @@ export function CSVImportDialog({
           return;
         }
 
-        const secondaryCol = findColumn(headers, SECONDARY_ALIASES);
-
         const rows: CSVRow[] = [];
         for (const row of results.data as Record<string, string>[]) {
           const primary = row[primaryCol]?.trim();
           if (!primary) continue;
-          rows.push({
-            primary,
-            secondary: secondaryCol ? row[secondaryCol]?.trim() || undefined : undefined,
-          });
+          rows.push({ primary });
         }
 
         if (rows.length === 0) {
@@ -126,7 +119,7 @@ export function CSVImportDialog({
             Import Headlines from CSV
           </DialogTitle>
           <DialogDescription>
-            Upload a CSV file with headline and optional subtitle columns.
+            Upload a CSV file with a headline column.
             Rows map to slides in order (row 1 = slide 1).
           </DialogDescription>
         </DialogHeader>
@@ -150,7 +143,7 @@ export function CSVImportDialog({
               {fileName ? "Choose Different File" : "Select File"}
             </Button>
             <p className="text-xs text-muted-foreground">
-              Columns: headline (or title/primary) + caption (or subtitle/secondary)
+              Column: headline (or title/primary)
             </p>
           </div>
 
@@ -174,7 +167,6 @@ export function CSVImportDialog({
                     <tr>
                       <th className="w-10 px-2 py-1.5 text-left font-medium">#</th>
                       <th className="px-2 py-1.5 text-left font-medium">Headline</th>
-                      <th className="px-2 py-1.5 text-left font-medium">Subtitle</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -185,9 +177,6 @@ export function CSVImportDialog({
                       >
                         <td className="px-2 py-1 text-muted-foreground">{i + 1}</td>
                         <td className="px-2 py-1 truncate max-w-[200px]">{row.primary}</td>
-                        <td className="px-2 py-1 truncate max-w-[200px] text-muted-foreground">
-                          {row.secondary || "—"}
-                        </td>
                       </tr>
                     ))}
                   </tbody>

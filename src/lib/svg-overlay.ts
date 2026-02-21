@@ -13,7 +13,7 @@ export function generateOverlaySVG(
 ): string {
   const { content, styling, positioning } = overlay;
 
-  if (!content.primary && !content.secondary && !content.accent) return "";
+  if (!content.primary && !content.accent) return "";
 
   const primarySize = styling.fontSize.primary;
   const secondarySize = styling.fontSize.secondary;
@@ -98,29 +98,20 @@ export function generateOverlaySVG(
     // Calculate total text height to offset upward (matching CSS translate(X, -100%))
     const totalTextHeight =
       (content.primary ? primarySize * 1.2 : 0) +
-      (content.secondary ? secondarySize * 1.3 + 8 : 0) +
       (content.accent ? secondarySize * 1.3 + 4 : 0);
 
     // Start Y: offset upward from the base position by the total text block height
     // Use the first text element's font size for the initial baseline
-    const firstTextSize = content.primary ? primarySize : content.secondary ? secondarySize : secondarySize;
+    const firstTextSize = content.primary ? primarySize : secondarySize;
     let currentY = svgBaseY - totalTextHeight + firstTextSize;
 
     if (content.primary) {
       addBackgroundText(content.primary, svgX, currentY, primarySize, fontWeight, svgTextAnchor);
-      currentY += primarySize * 0.4 + secondarySize + 8;
-    }
-
-    if (content.secondary) {
-      if (!content.primary) {
-        currentY = svgBaseY - totalTextHeight + secondarySize;
-      }
-      addBackgroundText(content.secondary, svgX, currentY, secondarySize, 400, svgTextAnchor, 0.9);
-      currentY += secondarySize * 1.3 + 4;
+      currentY += primarySize * 1.2 + 4;
     }
 
     if (content.accent) {
-      if (!content.primary && !content.secondary) {
+      if (!content.primary) {
         currentY = svgBaseY - totalTextHeight + secondarySize;
       }
       addBackgroundText(content.accent, svgX, currentY, secondarySize, 600, svgTextAnchor, 0.85);
@@ -162,7 +153,6 @@ export function generateOverlaySVG(
   let yPos: number;
   const totalTextHeight =
     (content.primary ? primarySize * 1.2 : 0) +
-    (content.secondary ? secondarySize * 1.3 + 8 : 0) +
     (content.accent ? secondarySize * 1.3 + 4 : 0);
 
   if (positioning.alignment === "top") {
@@ -178,14 +168,7 @@ export function generateOverlaySVG(
   let currentY = yPos;
   if (content.primary) {
     addBackgroundText(content.primary, xPos, currentY, primarySize, fontWeight, textAnchor);
-    currentY = yPos + primarySize * 0.4 + secondarySize + 8;
-  }
-
-  // Secondary text
-  if (content.secondary) {
-    const secY = content.primary ? currentY : yPos;
-    addBackgroundText(content.secondary, xPos, secY, secondarySize, 400, textAnchor, 0.9);
-    currentY = secY + secondarySize * 1.3 + 4;
+    currentY = yPos + primarySize * 1.2 + 4;
   }
 
   // Accent text

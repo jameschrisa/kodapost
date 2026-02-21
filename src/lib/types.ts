@@ -475,7 +475,7 @@ export interface CarouselProject {
   /** Global overlay style configured before generation */
   globalOverlayStyle?: GlobalOverlayStyle;
   /** Pre-imported CSV text overrides, applied during generation */
-  csvOverrides?: { primary: string; secondary?: string }[];
+  csvOverrides?: { primary: string }[];
   /** AI-generated social media caption for the post */
   caption?: string;
   /** Audio transcription from voice recording */

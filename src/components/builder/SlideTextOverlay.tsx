@@ -38,7 +38,7 @@ export function SlideTextOverlay({ overlay, scale = 0.3, interactive = false }: 
   const { content, styling, positioning } = overlay;
 
   // Only skip rendering if ALL text content is empty
-  if (!content.primary && !content.secondary && !content.accent) return null;
+  if (!content.primary && !content.accent) return null;
 
   // Scale font sizes for the preview card (preview is ~200px wide vs 1080px export)
   const primarySize = Math.max(3, Math.round(styling.fontSize.primary * scale));
@@ -90,35 +90,6 @@ export function SlideTextOverlay({ overlay, scale = 0.3, interactive = false }: 
             </span>
           )}
           {!styling.backgroundColor && content.primary}
-        </p>
-      )}
-
-      {/* Secondary text */}
-      {content.secondary && (
-        <p
-          className="mt-0.5"
-          style={{
-            fontFamily,
-            fontSize: `${secondarySize}px`,
-            fontWeight: 400,
-            fontStyle,
-            color: styling.textColor,
-            opacity: 0.9,
-            textShadow: shouldShowShadow
-              ? "0 1px 2px rgba(0,0,0,0.8)"
-              : undefined,
-            lineHeight: 1.3,
-          }}
-        >
-          {styling.backgroundColor && (
-            <span
-              className="inline-block rounded-sm"
-              style={{ ...bgPadStyle, backgroundColor: styling.backgroundColor }}
-            >
-              {content.secondary}
-            </span>
-          )}
-          {!styling.backgroundColor && content.secondary}
         </p>
       )}
 
