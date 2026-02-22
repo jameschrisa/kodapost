@@ -2,11 +2,13 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 
 export function TrialBanner() {
   const { plan, trialDaysRemaining, isTrialExpired, isLoaded } = useUserRole();
+  const router = useRouter();
 
   if (!isLoaded || plan !== "trial") return null;
 
@@ -27,6 +29,7 @@ export function TrialBanner() {
           <Button
             size="sm"
             className="shrink-0 gap-1.5 bg-white text-red-950 hover:bg-red-100"
+            onClick={() => router.push("/billing")}
           >
             Upgrade
             <ArrowRight className="h-3.5 w-3.5" />
@@ -59,6 +62,7 @@ export function TrialBanner() {
               variant="link"
               size="sm"
               className="ml-auto h-auto p-0 text-amber-300 hover:text-amber-100"
+              onClick={() => router.push("/billing")}
             >
               Upgrade
             </Button>

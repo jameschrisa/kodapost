@@ -48,10 +48,8 @@ export interface UserPlanInfo {
  * Maps "registered" → "standard" for backward compatibility.
  */
 function resolveTier(plan: string): PlanTier {
-  if (plan === "registered") return "standard";
-  if (plan === "trial" || plan === "starter" || plan === "standard" || plan === "pro") {
-    return plan;
-  }
+  if (plan === "registered") return "standard";  // legacy migration
+  if (plan === "trial" || plan === "standard" || plan === "pro") return plan;
   return "trial";
 }
 

@@ -4,13 +4,19 @@
  *
  * Used by useUserPlan hook and draft-manager for enforcement.
  * Pricing values are informational — actual billing is handled by Stripe.
+ *
+ * Tiers:
+ *   trial    → Explore Mode  (free, 10-day trial)
+ *   standard → Creator Mode  ($19/mo)
+ *   pro      → Monster Mode  ($39/mo)
+ *   admin    → Universal access, no plan
  */
 
 // -----------------------------------------------------------------------------
 // Plan Tier Type
 // -----------------------------------------------------------------------------
 
-export type PlanTier = "trial" | "starter" | "standard" | "pro";
+export type PlanTier = "trial" | "standard" | "pro";
 
 // -----------------------------------------------------------------------------
 // Plan Configuration
@@ -33,13 +39,15 @@ export interface PlanConfig {
   musicLibrary: boolean;
   /** Whether direct social publishing is available */
   directPublish: boolean;
+  /** Whether multi-language support is available (Asian Edition) */
+  multilingualSupport: boolean;
   /** Whether priority support is available */
   prioritySupport: boolean;
 }
 
 export const PLAN_CONFIGS: Record<PlanTier, PlanConfig> = {
   trial: {
-    displayName: "Trial",
+    displayName: "Explore Mode",
     maxDrafts: 1,
     draftExpirationDays: 30,
     maxGenerationsPerMonth: 10,
@@ -47,21 +55,11 @@ export const PLAN_CONFIGS: Record<PlanTier, PlanConfig> = {
     videoExport: true,
     musicLibrary: true,
     directPublish: false,
-    prioritySupport: false,
-  },
-  starter: {
-    displayName: "Starter",
-    maxDrafts: 1,
-    draftExpirationDays: 30,
-    maxGenerationsPerMonth: 50,
-    priceMonthly: 9,
-    videoExport: true,
-    musicLibrary: true,
-    directPublish: false,
+    multilingualSupport: false,
     prioritySupport: false,
   },
   standard: {
-    displayName: "Standard",
+    displayName: "Creator Mode",
     maxDrafts: 5,
     draftExpirationDays: 30,
     maxGenerationsPerMonth: 200,
@@ -69,17 +67,19 @@ export const PLAN_CONFIGS: Record<PlanTier, PlanConfig> = {
     videoExport: true,
     musicLibrary: true,
     directPublish: true,
+    multilingualSupport: true,
     prioritySupport: false,
   },
   pro: {
-    displayName: "Pro",
+    displayName: "Monster Mode",
     maxDrafts: 15,
-    draftExpirationDays: -1,
-    maxGenerationsPerMonth: -1,
+    draftExpirationDays: -1,     // never expire
+    maxGenerationsPerMonth: -1,  // unlimited
     priceMonthly: 39,
     videoExport: true,
     musicLibrary: true,
     directPublish: true,
+    multilingualSupport: true,
     prioritySupport: true,
   },
 };
@@ -92,12 +92,14 @@ export type GatedFeature =
   | "video_export"
   | "music_library"
   | "direct_publish"
+  | "multilingual_support"
   | "priority_support";
 
 const FEATURE_TO_CONFIG_KEY: Record<GatedFeature, keyof PlanConfig> = {
   video_export: "videoExport",
   music_library: "musicLibrary",
   direct_publish: "directPublish",
+  multilingual_support: "multilingualSupport",
   priority_support: "prioritySupport",
 };
 
@@ -144,7 +146,7 @@ export function canAccessFeature(tier: PlanTier, feature: GatedFeature): boolean
 
 /**
  * Calculates the expiration date for a new draft given the plan tier.
- * Returns null if drafts never expire (pro plan).
+ * Returns null if drafts never expire (pro/Monster Mode plan).
  */
 export function calculateDraftExpiration(tier: PlanTier): string | null {
   const days = PLAN_CONFIGS[tier].draftExpirationDays;
@@ -157,7 +159,7 @@ export function calculateDraftExpiration(tier: PlanTier): string | null {
 /**
  * Returns an ordered list of plan tiers for upgrade comparisons.
  */
-export const PLAN_TIER_ORDER: PlanTier[] = ["trial", "starter", "standard", "pro"];
+export const PLAN_TIER_ORDER: PlanTier[] = ["trial", "standard", "pro"];
 
 /**
  * Checks if upgrading from one tier to another is a meaningful upgrade.

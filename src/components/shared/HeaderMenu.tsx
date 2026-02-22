@@ -7,10 +7,12 @@ import { SignedIn } from "@/components/shared/ClerkComponents";
 import { useSignOut } from "@/components/shared/ClerkComponents";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import {
   Activity,
   BookOpen,
   Bot,
+  CreditCard,
   Eye,
   EyeOff,
   HelpCircle,
@@ -64,6 +66,7 @@ export function HeaderMenu({
   const { signOut } = useSignOut();
   const role = useUserRole();
   const userInfo = useUserInfo();
+  const userPlan = useUserPlan();
   const [mounted, setMounted] = useState(false);
 
   // Avoid hydration mismatch — render placeholder until mounted
@@ -131,6 +134,17 @@ export function HeaderMenu({
             <DropdownMenuItem onClick={onOpenProfile}>
               <User className="h-4 w-4" />
               Profile
+            </DropdownMenuItem>
+
+            {/* Billing & Plan */}
+            <DropdownMenuItem asChild>
+              <Link href="/billing" className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                <span className="flex-1">Billing &amp; Plan</span>
+                <span className="text-[10px] font-semibold text-purple-400">
+                  {role.isAdmin ? "Admin" : userPlan.config.displayName}
+                </span>
+              </Link>
             </DropdownMenuItem>
 
             {/* Admin-only items */}

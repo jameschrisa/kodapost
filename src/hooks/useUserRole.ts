@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { isClerkEnabled } from "@/hooks/useClerkAuth";
 
-export type UserPlan = "trial" | "registered" | "starter" | "standard" | "pro";
+export type UserPlan = "trial" | "registered" | "standard" | "pro";  // "registered" kept for legacy migration
 export type AdminViewMode = "admin" | "user";
 
 export interface UserRole {
@@ -47,7 +47,7 @@ export function useUserRole(): UserRole {
       isActualAdmin: true,
       adminViewMode: "admin",
       setAdminViewMode: noopSetMode,
-      plan: "registered",
+      plan: "pro",  // dev mode: full access
       isTrialExpired: false,
       trialDaysRemaining: null,
       isLoaded: true,

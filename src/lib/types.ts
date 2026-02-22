@@ -626,8 +626,8 @@ export type SubscriptionStatus = "active" | "past_due" | "canceled" | "trialing"
 
 /** Extended Clerk publicMetadata shape for billing */
 export interface ClerkBillingMetadata {
-  /** User's plan tier */
-  plan?: "trial" | "starter" | "standard" | "pro";
+  /** User's plan tier (trial=Explore Mode, standard=Creator Mode, pro=Monster Mode) */
+  plan?: "trial" | "standard" | "pro";
   /** Stripe subscription ID */
   subscriptionId?: string;
   /** Stripe customer ID */
