@@ -19,10 +19,13 @@ import {
   Database,
   BookOpen,
   HelpCircle,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { springGentle } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
+import { isClerkEnabled } from "@/hooks/useClerkAuth";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -250,14 +253,34 @@ export function SplashScreen({
                 ))}
               </nav>
 
-              {/* CTA */}
-              <Button
-                size="sm"
-                onClick={handleGetStarted}
-                className="rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:from-purple-500 hover:to-fuchsia-500 transition-all duration-200"
-              >
-                Launch App
-              </Button>
+              {/* Auth / CTA */}
+              <div className="flex items-center gap-3">
+                {isClerkEnabled ? (
+                  <>
+                    <Link
+                      href="/sign-in"
+                      className="hidden sm:inline-flex text-sm font-medium text-white/60 hover:text-white transition-colors duration-200"
+                    >
+                      Log In
+                    </Link>
+                    <Button
+                      size="sm"
+                      asChild
+                      className="rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:from-purple-500 hover:to-fuchsia-500 transition-all duration-200"
+                    >
+                      <Link href="/sign-up">Sign Up</Link>
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={handleGetStarted}
+                    className="rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:from-purple-500 hover:to-fuchsia-500 transition-all duration-200"
+                  >
+                    Launch App
+                  </Button>
+                )}
+              </div>
             </div>
           </header>
 
@@ -399,25 +422,66 @@ export function SplashScreen({
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 1.4, ease: "easeOut" }}
-                className="mt-4 flex flex-col sm:flex-row items-center gap-4"
+                className="mt-4 flex flex-col items-center gap-5"
               >
-                <Button
-                  size="lg"
-                  onClick={handleGetStarted}
-                  className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
-                >
-                  Get Started
-                </Button>
-                {onOpenTour && (
-                  <Button
-                    size="lg"
-                    variant="outline"
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  {isClerkEnabled ? (
+                    <>
+                      <Button
+                        size="lg"
+                        asChild
+                        className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                      >
+                        <Link href="/sign-up">
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Get Started Free
+                        </Link>
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        asChild
+                        className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
+                      >
+                        <Link href="/sign-in">
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Log In
+                        </Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        size="lg"
+                        onClick={handleGetStarted}
+                        className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                      >
+                        Get Started
+                      </Button>
+                      {onOpenTour && (
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          onClick={handleTour}
+                          className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
+                        >
+                          <Play className="mr-2 h-4 w-4" />
+                          Quick Tour
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
+                {/* Tour link — always available below main CTAs */}
+                {isClerkEnabled && onOpenTour && (
+                  <button
+                    type="button"
                     onClick={handleTour}
-                    className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
+                    className="text-sm text-white/35 hover:text-white/70 transition-colors duration-200 flex items-center gap-1.5"
                   >
-                    <Play className="mr-2 h-4 w-4" />
-                    Quick Tour
-                  </Button>
+                    <Play className="h-3 w-3" />
+                    Take a quick tour first
+                  </button>
                 )}
               </motion.div>
             </div>
@@ -603,23 +667,51 @@ export function SplashScreen({
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button
-                      size="lg"
-                      onClick={handleGetStarted}
-                      className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
-                    >
-                      Get Started Free
-                    </Button>
-                    {onOpenTour && (
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={handleTour}
-                        className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
-                      >
-                        <Play className="mr-2 h-4 w-4" />
-                        Quick Tour
-                      </Button>
+                    {isClerkEnabled ? (
+                      <>
+                        <Button
+                          size="lg"
+                          asChild
+                          className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                        >
+                          <Link href="/sign-up">
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Get Started Free
+                          </Link>
+                        </Button>
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          asChild
+                          className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
+                        >
+                          <Link href="/sign-in">
+                            <LogIn className="mr-2 h-4 w-4" />
+                            Log In
+                          </Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="lg"
+                          onClick={handleGetStarted}
+                          className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                        >
+                          Get Started Free
+                        </Button>
+                        {onOpenTour && (
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            onClick={handleTour}
+                            className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
+                          >
+                            <Play className="mr-2 h-4 w-4" />
+                            Quick Tour
+                          </Button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
