@@ -19,8 +19,6 @@ import {
   Database,
   BookOpen,
   HelpCircle,
-  LogIn,
-  UserPlus,
 } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { springGentle } from "@/lib/motion";
@@ -231,7 +229,8 @@ export function SplashScreen({
               {/* Nav links — hidden on mobile */}
               <nav className="hidden md:flex items-center gap-8">
                 {[
-                  { label: "How It Works", href: "#how-it-works" },
+                  { label: "KudoGo", href: "#how-it-works" },
+                  { label: "KudoPro", href: "#features" },
                   { label: "Features", href: "#features" },
                   { label: "Pricing", href: "/billing" },
                 ].map((link) => (
@@ -259,23 +258,23 @@ export function SplashScreen({
                   <>
                     <Link
                       href="/sign-in"
-                      className="hidden sm:inline-flex text-sm font-medium text-white/60 hover:text-white transition-colors duration-200"
+                      className="hidden sm:inline-flex text-sm font-semibold text-white/70 hover:text-white transition-colors duration-200"
                     >
                       Log In
                     </Link>
                     <Button
                       size="sm"
                       asChild
-                      className="rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:from-purple-500 hover:to-fuchsia-500 transition-all duration-200"
+                      className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
                     >
-                      <Link href="/sign-up">Sign Up</Link>
+                      <Link href="/sign-up">Launch App</Link>
                     </Button>
                   </>
                 ) : (
                   <Button
                     size="sm"
                     onClick={handleGetStarted}
-                    className="rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:from-purple-500 hover:to-fuchsia-500 transition-all duration-200"
+                    className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
                   >
                     Launch App
                   </Button>
@@ -379,11 +378,13 @@ export function SplashScreen({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
               >
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
-                  Your Photos.{" "}
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-amber-400">
-                    Your Story.
-                  </span>
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-[1.1]">
+                  Social Media that Feels Like{" "}
+                  <br className="hidden sm:block" />
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
+                    You.
+                  </span>{" "}
+                  Not an Algorithm.
                 </h1>
               </motion.div>
 
@@ -392,9 +393,9 @@ export function SplashScreen({
                 initial={{ y: 15, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
-                className="max-w-lg text-base sm:text-lg leading-relaxed text-white/50"
+                className="max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
               >
-                Transform personal photos into stunning nostalgic carousels with vintage camera styles, film filters, and AI-generated text.
+                Designed for indie brands and content creators who want to make and share their art without fighting the feed.
               </motion.p>
 
               {/* Quote */}
@@ -430,22 +431,20 @@ export function SplashScreen({
                       <Button
                         size="lg"
                         asChild
-                        className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                        className="rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-6 text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
                       >
                         <Link href="/sign-up">
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          Get Started Free
+                          Start Creating Free
                         </Link>
                       </Button>
                       <Button
                         size="lg"
                         variant="outline"
                         asChild
-                        className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
+                        className="rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-lg font-bold backdrop-blur-sm transition-all duration-300"
                       >
                         <Link href="/sign-in">
-                          <LogIn className="mr-2 h-4 w-4" />
-                          Log In
+                          View Showcase
                         </Link>
                       </Button>
                     </>
@@ -454,26 +453,23 @@ export function SplashScreen({
                       <Button
                         size="lg"
                         onClick={handleGetStarted}
-                        className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
+                        className="rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-6 text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
                       >
-                        Get Started
+                        Start Creating Free
                       </Button>
-                      {onOpenTour && (
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          onClick={handleTour}
-                          className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
-                        >
-                          <Play className="mr-2 h-4 w-4" />
-                          Quick Tour
-                        </Button>
-                      )}
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={handleTour}
+                        className="rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-lg font-bold backdrop-blur-sm transition-all duration-300"
+                      >
+                        View Showcase
+                      </Button>
                     </>
                   )}
                 </div>
                 {/* Tour link — always available below main CTAs */}
-                {isClerkEnabled && onOpenTour && (
+                {onOpenTour && (
                   <button
                     type="button"
                     onClick={handleTour}
@@ -650,68 +646,37 @@ export function SplashScreen({
               viewport={{ once: true, amount: 0.4 }}
               className="max-w-3xl mx-auto text-center"
             >
-              <div className="relative rounded-[2rem] border border-white/[0.06] bg-gradient-to-br from-purple-500/10 via-fuchsia-500/5 to-amber-500/10 p-12 sm:p-16 backdrop-blur-xl overflow-hidden">
+              <div className="relative rounded-[2rem] border border-white/[0.06] bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-purple-500/10 p-12 sm:p-16 backdrop-blur-xl overflow-hidden">
                 {/* Background glow */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-purple-500/10 rounded-full blur-[80px] -z-0" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-orange-500/10 rounded-full blur-[80px] -z-0" />
 
                 <div className="relative z-10">
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">
-                    Ready to create something{" "}
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-fuchsia-400">
-                      beautiful
-                    </span>
-                    ?
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
+                    Ready to reclaim your creative feed?
                   </h2>
-                  <p className="text-white/40 text-lg mb-10 max-w-md mx-auto">
-                    Join creators building stunning visual stories with vintage soul and modern tools.
+                  <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto">
+                    Join indie creators building the future of social media today.
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     {isClerkEnabled ? (
-                      <>
-                        <Button
-                          size="lg"
-                          asChild
-                          className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
-                        >
-                          <Link href="/sign-up">
-                            <UserPlus className="mr-2 h-4 w-4" />
-                            Get Started Free
-                          </Link>
-                        </Button>
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          asChild
-                          className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
-                        >
-                          <Link href="/sign-in">
-                            <LogIn className="mr-2 h-4 w-4" />
-                            Log In
-                          </Link>
-                        </Button>
-                      </>
+                      <Button
+                        size="lg"
+                        asChild
+                        className="rounded-2xl bg-orange-500 hover:bg-orange-400 px-12 py-6 text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
+                      >
+                        <Link href="/sign-up">
+                          Get Started Now
+                        </Link>
+                      </Button>
                     ) : (
-                      <>
-                        <Button
-                          size="lg"
-                          onClick={handleGetStarted}
-                          className="rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-600 px-10 py-6 text-base font-semibold text-white shadow-xl shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 transition-all duration-300 hover:from-purple-500 hover:via-fuchsia-500 hover:to-purple-500"
-                        >
-                          Get Started Free
-                        </Button>
-                        {onOpenTour && (
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            onClick={handleTour}
-                            className="rounded-full border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold backdrop-blur-sm transition-all duration-300"
-                          >
-                            <Play className="mr-2 h-4 w-4" />
-                            Quick Tour
-                          </Button>
-                        )}
-                      </>
+                      <Button
+                        size="lg"
+                        onClick={handleGetStarted}
+                        className="rounded-2xl bg-orange-500 hover:bg-orange-400 px-12 py-6 text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
+                      >
+                        Get Started Now
+                      </Button>
                     )}
                   </div>
                 </div>
