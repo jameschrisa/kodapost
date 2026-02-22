@@ -271,6 +271,7 @@ export function ImageUploader({ onComplete }: ImageUploaderProps) {
     <div className="space-y-4">
       {/* Drop zone */}
       <Card
+        data-tour="upload-zone"
         className={cn(
           "relative flex flex-col items-center justify-center gap-3 border-2 border-dashed p-10 text-center transition-colors cursor-pointer",
           dragActive

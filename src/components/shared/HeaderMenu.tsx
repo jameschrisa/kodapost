@@ -9,12 +9,15 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import {
   Activity,
+  BookOpen,
   Bot,
   Eye,
   EyeOff,
   HelpCircle,
   LogOut,
+  MapPin,
   Menu,
+  MessageSquare,
   Moon,
   RefreshCw,
   Settings,
@@ -22,6 +25,7 @@ import {
   Sun,
   User,
 } from "lucide-react";
+import Link from "next/link";
 import { UserHexagonIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +34,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -40,6 +47,7 @@ interface HeaderMenuProps {
   onOpenAdvancedSettings: () => void;
   onOpenContentBot: () => void;
   onResetApp: () => void;
+  onOpenTour: () => void;
 }
 
 export function HeaderMenu({
@@ -49,6 +57,7 @@ export function HeaderMenu({
   onOpenAdvancedSettings,
   onOpenContentBot,
   onResetApp,
+  onOpenTour,
 }: HeaderMenuProps) {
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
@@ -167,7 +176,7 @@ export function HeaderMenu({
       {/* ── App Menu (hamburger) ── */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Menu">
+          <Button variant="ghost" size="icon" aria-label="Menu" data-tour="header-settings">
             <Menu className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
@@ -189,10 +198,36 @@ export function HeaderMenu({
             Content Bot
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onOpenHelp}>
-            <HelpCircle className="h-4 w-4" />
-            Help
-          </DropdownMenuItem>
+          {/* Help submenu */}
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <HelpCircle className="h-4 w-4" />
+              Help
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={onOpenHelp}>
+                <HelpCircle className="h-4 w-4" />
+                Help Center
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onOpenTour}>
+                <MapPin className="h-4 w-4" />
+                Take a Tour
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/guide" className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  User Guide
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/support" className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Support FAQ
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuItem onClick={onOpenSettings}>
             <Settings className="h-4 w-4" />
             Social Media Settings

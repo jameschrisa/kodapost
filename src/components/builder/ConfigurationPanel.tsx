@@ -507,7 +507,7 @@ export function ConfigurationPanel({
       {/* 1. Your Story */}
       <motion.div variants={staggerItemVariants}>
       <Card>
-        <CardHeader>
+        <CardHeader data-tour="tour-story-card">
           <div className="flex items-center gap-2">
               <CardTitle className="text-base">Your Story</CardTitle>
               <CardHelpIcon title="Your Story">
@@ -628,7 +628,7 @@ export function ConfigurationPanel({
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  {captionText.trim() ? "Refine caption" : "Create a caption"}
+                  {captionText.trim() ? "Refine Headlines & Captions" : "Create Headlines and Captions"}
                 </>
               )}
             </Button>
@@ -875,7 +875,7 @@ export function ConfigurationPanel({
         </CardHeader>
         <CardContent className="pt-0">
           <Tabs defaultValue="emulation" className="w-full">
-            <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
+            <TabsList data-tour="tour-camera-filters" className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
               <TabsTrigger
                 value="emulation"
                 className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"

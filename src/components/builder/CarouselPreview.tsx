@@ -286,7 +286,7 @@ export function CarouselPreview({
         </TabsList>
 
         <TabsContent value="platform" className="mt-3">
-          <div className="flex gap-1 flex-wrap">
+          <div data-tour="tour-finalize-panel" className="flex gap-1 flex-wrap">
             {(["tiktok", "youtube_shorts", "instagram", "x", "linkedin"] as PreviewPlatform[]).map((platform) => {
               const config = PLATFORM_PREVIEW_CONFIG[platform];
               return (

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, ChevronDown, ChevronRight, Mail, MessageCircle } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronRight, Mail, MessageCircle, Play } from "lucide-react";
 import Link from "next/link";
 import { KodaPostIcon, AutomationIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,8 @@ import {
 interface HelpDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** When provided, shows a "Start Interactive Tour" button in the Quick Start section */
+  onOpenTour?: () => void;
 }
 
 interface FAQItem {
@@ -50,7 +53,7 @@ const FAQ_ITEMS: FAQItem[] = [
   },
 ];
 
-export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
+export function HelpDialog({ open, onOpenChange, onOpenTour }: HelpDialogProps) {
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
 
   function toggleFAQ(index: number) {
@@ -74,6 +77,20 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
           {/* Quick Start Guide */}
           <div>
             <h3 className="text-sm font-semibold mb-2">Quick Start</h3>
+            {onOpenTour && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 mb-3"
+                onClick={() => {
+                  onOpenChange(false);
+                  onOpenTour();
+                }}
+              >
+                <Play className="h-3.5 w-3.5" />
+                Start Interactive Tour
+              </Button>
+            )}
             <ol className="list-decimal list-inside space-y-1.5 text-sm text-muted-foreground">
               <li>Upload your photos (1&ndash;10 images)</li>
               <li>Pick a camera style and filter to set the mood</li>

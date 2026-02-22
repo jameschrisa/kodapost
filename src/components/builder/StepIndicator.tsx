@@ -86,7 +86,7 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
   const currentIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
-    <nav aria-label="Progress" className="w-full">
+    <nav data-tour="step-indicator" aria-label="Progress" className="w-full">
       {/* Horizontal on sm+, vertical on mobile */}
       <ol className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-0">
         {STEPS.map((step, index) => {
@@ -112,7 +112,7 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
               )}
 
               {/* Step circle + label */}
-              <li className="flex items-center gap-3 sm:flex-col sm:gap-1.5 sm:shrink-0">
+              <li data-tour={`step-${step.key}`} className="flex items-center gap-3 sm:flex-col sm:gap-1.5 sm:shrink-0">
                 <button
                   type="button"
                   disabled={!isClickable}

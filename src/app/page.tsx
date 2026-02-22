@@ -1,6 +1,9 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Onborda, OnbordaProvider, useOnborda } from "onborda";
+import { TourCard } from "@/components/tour/TourCard";
+import { appTourSteps } from "@/components/tour/tourSteps";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Download, Send } from "lucide-react";
@@ -72,12 +75,88 @@ import {
   loadDraft,
 } from "@/lib/draft-storage";
 import { createNewDraft, switchDraft } from "@/lib/draft-manager";
-import type { AudioClip, CarouselProject, DraftMetadata, UploadedImage, VideoSettings } from "@/lib/types";
+import type { AudioClip, CarouselProject, CarouselSlide, DraftMetadata, UploadedImage, VideoSettings } from "@/lib/types";
+import { TourContext } from "@/components/tour/TourContext";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
 type AppMode = "create" | "schedule";
 
 const STEP_ORDER: Step[] = ["upload", "configure", "edit", "review", "publish"];
+
+/** Tour step → app workflow screen mapping */
+const TOUR_STEP_TO_APP_STEP: Record<number, Step> = {
+  0: "upload",
+  1: "upload",
+  2: "upload",
+  3: "configure",
+  4: "configure",
+  5: "edit",
+  6: "review",
+  7: "publish",
+};
+
+/** Demo photos used to pre-populate the tour project */
+const DEMO_FILENAMES = ["testreal1.jpg", "testreal3.jpg", "testreal4.jpg", "testreal5.jpg"];
+const DEMO_SLIDE_TYPES = ["hook", "story", "story", "closer"] as const;
+
+/** Creates a minimal project from public test photos — no API calls, no base64 conversion. */
+function createDemoProject(): CarouselProject {
+  const uploadedImages: UploadedImage[] = DEMO_FILENAMES.map((filename, i) => ({
+    id: `demo-img-${i}`,
+    url: `/test-photos/${filename}`,
+    filename,
+    uploadedAt: new Date().toISOString(),
+    usedInSlides: [i],
+  }));
+  const slides: CarouselSlide[] = DEMO_FILENAMES.map((filename, i) => ({
+    id: `demo-slide-${i}`,
+    position: i,
+    slideType: DEMO_SLIDE_TYPES[i],
+    status: "ready" as const,
+    imageUrl: `/test-photos/${filename}`,
+    metadata: { source: "user_upload" as const, originalFilename: filename },
+  }));
+  return {
+    ...createEmptyProject(),
+    theme: "Demo — explore the workflow",
+    uploadedImages,
+    slides,
+    slideCount: DEMO_FILENAMES.length,
+  };
+}
+
+/** Starts the Onborda tour when `pending` becomes true. Resets app state when tour closes. */
+function TourStarter({
+  pending,
+  onStarted,
+  onClose,
+}: {
+  pending: boolean;
+  onStarted: () => void;
+  onClose: () => void;
+}) {
+  const { startOnborda, isOnbordaVisible } = useOnborda();
+  const wasVisible = useRef(false);
+
+  useEffect(() => {
+    if (pending) {
+      startOnborda("app-tour");
+      onStarted();
+    }
+  }, [pending, startOnborda, onStarted]);
+
+  // Detect when the tour closes (Done / Skip / ✕) and reset the demo project
+  useEffect(() => {
+    if (isOnbordaVisible) {
+      wasVisible.current = true;
+    } else if (wasVisible.current) {
+      wasVisible.current = false;
+      onClose();
+    }
+  }, [isOnbordaVisible, onClose]);
+
+  return null;
+}
 
 function OAuthRedirectHandler({
   onOpenSettings,
@@ -147,6 +226,7 @@ export default function Home() {
   const [appMode, setAppMode] = useState<AppMode>("create");
   const [reviewView, setReviewView] = useState<"grid" | "timeline">("grid");
   const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false);
+  const [tourPending, setTourPending] = useState(false);
 
   // Multi-draft state
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
@@ -590,6 +670,36 @@ export default function Home() {
     setSplashDismissed(false);
   }, []);
 
+  const handleOpenTour = useCallback(() => {
+    setSplashDismissed(true);
+    setSplashForced(false);
+    // Pre-populate a demo project so every workflow screen renders meaningful UI
+    setProject(createDemoProject());
+    setStep("upload");
+    setTourPending(true);
+  }, []);
+
+  /** Called when the tour closes — discard demo project, return to clean upload screen */
+  const handleTourClose = useCallback(() => {
+    setProject(createEmptyProject());
+    setStep("upload");
+  }, []);
+
+  /** Navigate the app to the screen required by a given tour step, then pause for animation */
+  const navigateForTourStep = useCallback(
+    async (tourStepIdx: number) => {
+      const appStep = TOUR_STEP_TO_APP_STEP[tourStepIdx];
+      if (!appStep) return;
+      if (STEP_ORDER.indexOf(appStep) !== STEP_ORDER.indexOf(step)) {
+        navigateToStep(appStep);
+        await new Promise((r) => setTimeout(r, 600));
+      }
+      // Scroll to top instantly before Onborda's own smooth scroll fires
+      window.scrollTo({ top: 0 });
+    },
+    [step, navigateToStep]
+  );
+
   const handleGetStarted = useCallback(
     (dismiss: () => void) => {
       if (!authLoaded) return;
@@ -757,6 +867,17 @@ export default function Home() {
   }
 
   return (
+    <TourContext.Provider value={{ navigateForTourStep }}>
+    <OnbordaProvider>
+      <Onborda
+        steps={appTourSteps}
+        cardComponent={TourCard}
+        shadowRgb="0,0,0"
+        shadowOpacity="0.85"
+      >
+        <TourStarter pending={tourPending} onStarted={() => setTourPending(false)} onClose={handleTourClose} />
+        {/* Hidden full-screen target for modal-style tour steps */}
+        <div data-tour="tour-modal" className="fixed inset-0 pointer-events-none z-[-1]" />
     <div className="flex min-h-screen flex-col bg-background">
       {/* Splash Screen */}
       {!splashDismissed && (
@@ -767,6 +888,7 @@ export default function Home() {
             setSplashForced(false);
           }}
           onGetStarted={handleGetStarted}
+          onOpenTour={handleOpenTour}
         />
       )}
 
@@ -811,6 +933,7 @@ export default function Home() {
             onOpenAdvancedSettings={() => setAdvancedSettingsOpen(true)}
             onOpenContentBot={() => setContentBotOpen(true)}
             onResetApp={handleResetApp}
+            onOpenTour={handleOpenTour}
           />
         </div>
       </header>
@@ -824,7 +947,7 @@ export default function Home() {
 
       {/* Dialogs */}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} onOpenTour={handleOpenTour} />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <ContentBotPanel open={contentBotOpen} onOpenChange={setContentBotOpen} />
       <AdvancedSettingsDialog open={advancedSettingsOpen} onOpenChange={setAdvancedSettingsOpen} />
@@ -1170,5 +1293,8 @@ export default function Home() {
         onOpenProfile={() => setProfileOpen(true)}
       />
     </div>
+      </Onborda>
+    </OnbordaProvider>
+    </TourContext.Provider>
   );
 }

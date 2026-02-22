@@ -748,7 +748,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
           {/* Inline text editing controls */}
           {selectedSlide && (
             <Tabs defaultValue="format" className="max-w-[500px] mx-auto">
-              <TabsList className="w-full mb-3">
+              <TabsList data-tour="tour-edit-panel" className="w-full mb-3">
                 <TabsTrigger value="format" className="flex-1">Format</TabsTrigger>
                 <TabsTrigger value="content" className="flex-1">Content</TabsTrigger>
               </TabsList>

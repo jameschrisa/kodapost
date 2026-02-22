@@ -1,6 +1,6 @@
 # KodaPost
 
-Transform your personal photos into stunning nostalgic social media carousels using AI. KodaPost combines vintage camera aesthetics with intelligent text overlay creation to produce scroll-stopping carousel content.
+Transform your personal photos into stunning nostalgic social media carousels using AI. KodaPost combines vintage camera aesthetics with intelligent text overlay creation to produce scroll-stopping carousel content — and now supports video reel generation with background music.
 
 ## Features
 
@@ -8,7 +8,7 @@ Transform your personal photos into stunning nostalgic social media carousels us
 - **Drag & Drop Photo Upload** -- Upload JPEG, PNG, WebP, or HEIC images (up to 10 MB each) with instant 4:5 previews and automatic HEIC-to-JPEG conversion
 - **10 Vintage Camera Styles** -- Apply aesthetics from iconic cameras like the Sony Mavica, Polaroid 600, Kodak EasyShare, and Apple iPhone 3G
 - **9 Retro Photo Filters** -- Instagram-inspired filters (1977, Earlybird, Lo-Fi, Nashville, etc.) with 5 adjustable sliders for grain, bloom, shadow fade, color bias, and vignette
-- **Smart Text Overlays** -- Claude generates punchy headlines and supporting subtitles tailored to each slide's narrative role (hook, story, closer)
+- **Smart Text Overlays** -- Koda generates punchy headlines and supporting subtitles tailored to each slide's narrative role (hook, story, closer)
 - **Image Source Strategy** -- Intelligent allocation engine that distributes your uploads across slides
 - **Carousel Validation** -- Three analog creativity modes (relaxed, recommended, strict) to control image allocation
 
@@ -21,9 +21,20 @@ Transform your personal photos into stunning nostalgic social media carousels us
 - **CSV Import** -- Import headlines and subtitles from CSV files for batch text customization
 - **Text Background Padding** -- Adjustable horizontal and vertical padding for text highlight backgrounds
 
-### Voice & AI Caption
+### Audio & Music
+- **Music Library Search** -- Browse and preview royalty-free tracks from the built-in music library
+- **Audio File Upload** -- Upload your own audio files with waveform visualization
 - **Voice Recording** -- Record your story via the Web Speech API; transcription auto-fills the Theme field
-- **AI Caption Generation** -- Claude generates social media captions from your theme, keywords, and transcription
+- **Staged Apply** -- Preview audio before applying it to the storyboard; swap tracks with "Change Track"
+- **Auto-Trim Goldilocks Zone** -- Automatically trims audio to the recommended duration (3.5s per slide) with manual override via trim handles
+
+### Storyboard & Video
+- **Storyboard Preview** -- Timeline filmstrip view with slide thumbnails, audio waveform sync, playhead, and transition/timing controls
+- **Video Reel Generation** -- Client-side FFmpeg.wasm pipeline: composites frames, applies crossfade/slide/none transitions, mixes audio, and encodes to MP4 (no server required)
+- **Grid / Timeline Toggle** -- Switch between grid review and timeline storyboard in the Finalize step
+
+### AI Caption
+- **AI Caption Generation** -- Koda generates social media captions from your theme, keywords, and transcription
 
 ### Review & Preview
 - **Drag-to-Reorder** -- Rearrange slides with drag and drop
@@ -32,10 +43,26 @@ Transform your personal photos into stunning nostalgic social media carousels us
 - **Image Cropping** -- Per-slide crop controls with platform-native aspect ratios
 
 ### Publishing & Export
+- **Video Reel Export** -- Download the generated MP4 video reel (shown as primary export when audio is present)
 - **Multi-Platform Export** -- Package carousels as ZIP with per-platform folders at native resolutions
 - **Direct Publishing** -- Post carousels directly to connected platforms via OAuth
 - **OAuth Integration** -- Connect Instagram, TikTok, LinkedIn, YouTube, Reddit, and Lemon8 accounts with automatic token refresh
 - **Scheduled Publishing** -- Set a date and time for future posts
+
+### Multi-Draft System
+- **Draft Management** -- Create, resume, and delete multiple carousel projects
+- **Plan-Aware Limits** -- Draft slots per plan: Trial (1), Starter (3), Standard (5), Pro (15)
+- **IndexedDB Persistence** -- Per-draft image storage in IndexedDB with auto-migration from legacy localStorage
+- **Draft Expiration** -- Drafts expire after 30 days (Pro drafts never expire)
+
+### Plans & Billing
+- **Trial** -- 1 draft, 10 generations/month, video export included
+- **Starter / Standard / Pro** -- Increasing limits on drafts, generations, and access to direct publish and priority support
+- **Feature Gating** -- Plan-aware restrictions on drafts, monthly generations, direct publishing, and music library
+
+### Activity Log & History
+- **Activity Log** -- Client-side log of key events (generation, export, publish, draft operations) with CSV/JSON export
+- **History Page** -- Calendar view of past posts with scheduling overview
 
 ### Headless REST API
 - **Generate via API** -- Create carousels programmatically from external apps, bots, and scripts
@@ -43,17 +70,25 @@ Transform your personal photos into stunning nostalgic social media carousels us
 - **Job Tracking** -- Async generation with progress reporting and result retrieval
 - **Full Pipeline** -- Image analysis, text overlay generation, Sharp compositing, and AI caption in one call
 
+### Telegram Bot
+- **GrammY-Powered Bot** -- Send photos and a caption to the Telegram bot to trigger carousel generation
+- **Webhook & Setup Endpoints** -- `/api/telegram/webhook` and `/api/telegram/setup` for bot registration
+
 ### Authentication & User Management
 - **Clerk Authentication** -- Full-featured auth with email/password, Google SSO, and Apple SSO
 - **User Profile Management** -- In-app profile dialog with email, phone, connected accounts, and security settings
 - **Protected Routes** -- Middleware-based route protection with public route allowlist
+- **Admin Dashboard** -- Admin-only page with user management API (`/api/admin/users`)
 - **Graceful Degradation** -- App runs without auth when Clerk keys are not configured
 
 ### General
 - **Welcome Screen** -- Animated splash with ambient orb effects and random creative quotes
+- **Onboarding Guide** -- First-run guide introducing the workflow
+- **Advanced Settings** -- Dialog for fine-tuning generation and app preferences
 - **Start Fresh** -- One-click app reset via the header menu to simulate a first-time user experience
-- **Auto-Save** -- Project state and workflow progress persist to localStorage
+- **Auto-Save** -- Project state and workflow progress persist to localStorage / IndexedDB
 - **Dark Mode** -- System-aware dark/light theme toggle
+- **Legal Pages** -- Privacy policy, terms of service, and data handling pages
 
 ---
 
@@ -65,19 +100,24 @@ Transform your personal photos into stunning nostalgic social media carousels us
 | Language | [TypeScript](https://www.typescriptlang.org/) (strict mode) |
 | Styling | [Tailwind CSS](https://tailwindcss.com/) |
 | Components | [shadcn/ui](https://ui.shadcn.com/) (New York style) |
-| AI Text & Analysis | [Anthropic Claude API](https://docs.anthropic.com/) (Claude Sonnet 4.5) |
+| State Management | [Zustand](https://zustand-demo.pmnd.rs/) |
+| AI Text & Analysis | [Anthropic Claude API](https://docs.anthropic.com/) (Claude Sonnet 4.6) |
 | Image Processing | [Sharp](https://sharp.pixelplumbing.com/) (server-side compositing, filters, HEIC conversion) |
+| Video Encoding | [FFmpeg.wasm](https://ffmpegwasm.netlify.app/) (`@ffmpeg/ffmpeg`) — client-side MP4 generation |
 | Database | [Turso](https://turso.tech/) (libSQL/SQLite) via [Drizzle ORM](https://orm.drizzle.team/) |
+| Draft Storage | IndexedDB (client-side per-draft image persistence) |
 | Authentication | [Clerk](https://clerk.com/) (email, Google SSO, Apple SSO, user management) |
+| Telegram Bot | [GrammY](https://grammy.dev/) |
+| PDF Export | [jsPDF](https://github.com/parallax/jsPDF) |
 | Animation | [Framer Motion](https://www.framer.com/motion/) |
-| Icons | [Lucide React](https://lucide.dev/) |
+| Icons | [Lucide React](https://lucide.dev/) + [@tabler/icons-react](https://tabler.io/icons) |
 | Notifications | [Sonner](https://sonner.emilkowal.dev/) |
 
 ---
 
 ## Prerequisites
 
-- **Node.js 18.17 or later** -- [Download here](https://nodejs.org/)
+- **Node.js 20 or later** -- [Download here](https://nodejs.org/)
 - **Anthropic API Key** -- [Get one at console.anthropic.com](https://console.anthropic.com/)
 - **Clerk Account** (optional) -- [Sign up at clerk.com](https://clerk.com/) for authentication features
 
@@ -299,15 +339,27 @@ src/
 │   ├── actions.ts                  # Server actions (Claude AI + Sharp compositing)
 │   ├── globals.css                 # Tailwind base + shadcn theme + custom fonts
 │   ├── layout.tsx                  # Root layout with ClerkProvider, fonts, Toaster
-│   ├── page.tsx                    # Main 5-step wizard UI
+│   ├── page.tsx                    # Main wizard UI (upload → setup → stylize → edit → finalize → publish)
+│   ├── admin/                      # Admin dashboard (admin-only, user management)
+│   ├── guide/                      # User guide page
+│   ├── history/                    # Post history with calendar view
+│   ├── introduction/               # Onboarding/introduction page
+│   ├── legal/                      # Privacy, terms, and data handling pages
+│   ├── preview/[jobId]/            # Public job preview page
 │   ├── sign-in/[[...sign-in]]/     # Clerk sign-in page (catch-all route)
 │   ├── sign-up/[[...sign-up]]/     # Clerk sign-up page (catch-all route)
-│   ├── introduction/               # Introduction/onboarding page
 │   └── api/
+│       ├── admin/users/            # Admin user management (GET/PATCH)
 │       ├── auth/                   # OAuth routes (authorize, callback, disconnect, verify, status)
 │       ├── convert-image/          # HEIC/HEIF → JPEG conversion
+│       ├── health/                 # Internal health check
 │       ├── media/                  # Temporary media file serving (for Instagram uploads)
+│       ├── music/search/           # Music library search
+│       ├── posts/                  # Post CRUD endpoints
+│       ├── preview/[jobId]/        # Job preview endpoint
 │       ├── publish/                # Direct publishing per platform
+│       ├── telegram/               # Telegram bot webhook and setup
+│       ├── webhooks/clerk/         # Clerk webhook handler
 │       └── v1/                     # Headless REST API
 │           ├── generate/           #   POST — carousel generation endpoint
 │           ├── health/             #   GET — health check
@@ -315,25 +367,45 @@ src/
 │           └── keys/               #   POST — API key creation (admin)
 │
 ├── components/
+│   ├── audio/                      # Audio panel components
+│   │   ├── AudioPanel.tsx          #   Music library, upload, and voice recording UI
+│   │   ├── AudioPlayer.tsx         #   Audio playback with waveform
+│   │   ├── MusicBrowser.tsx        #   Music library search and preview
+│   │   └── Waveform.tsx            #   SVG waveform visualization
 │   ├── builder/                    # Workflow step components
 │   │   ├── ImageUploader.tsx       #   Drag & drop upload with HEIC conversion
 │   │   ├── ConfigurationPanel.tsx  #   Theme, voice, caption, camera, filter settings
 │   │   ├── TextEditPanel.tsx       #   Text editor with font, color, position controls
+│   │   ├── StoryboardPreview.tsx   #   Timeline filmstrip with audio waveform + playhead
 │   │   ├── CarouselPreview.tsx     #   Review grid, reorder, platform/mobile preview
-│   │   ├── PublishPanel.tsx        #   Platform selection, export, direct posting
+│   │   ├── PublishPanel.tsx        #   Platform selection, export (video/ZIP), direct posting
 │   │   └── ...                     #   SlideTextOverlay, MobilePhoneFrame, etc.
+│   ├── history/                    # History page components (CalendarGrid, PostCard, etc.)
+│   ├── icons/                      # Custom icons + animated icon components
+│   ├── legal/                      # Legal page components (nav, table of contents)
 │   ├── shared/                     # Reusable UI pieces
 │   │   ├── SplashScreen.tsx        #   Animated welcome screen with ambient orbs
+│   │   ├── DraftListPanel.tsx      #   Multi-draft management panel
+│   │   ├── EmptyStateGuide.tsx     #   First-run onboarding guide
+│   │   ├── AdvancedSettingsDialog.tsx #  Advanced settings
 │   │   ├── CameraSelector.tsx      #   10-camera visual grid
 │   │   ├── FilterSelector.tsx      #   9-filter visual grid + custom sliders
 │   │   ├── HeaderMenu.tsx          #   Theme toggle, help, settings, profile, reset
+│   │   ├── TrialBanner.tsx         #   Trial plan limit banner
 │   │   ├── ClerkComponents.tsx     #   Clerk auth component wrappers (SSO-safe)
 │   │   ├── ProfileDialog.tsx       #   User profile dialog (Clerk UserProfile)
 │   │   └── ...
 │   └── ui/                         # shadcn/ui primitives
 │
 ├── hooks/
-│   └── useClerkAuth.ts             # Clerk auth hook with graceful degradation
+│   ├── useAudioFile.ts             # Audio file upload + waveform extraction
+│   ├── useAudioRecorder.ts         # Web Speech API + microphone recording
+│   ├── useClerkAuth.ts             # Clerk auth hook with graceful degradation
+│   ├── useKeyboardShortcuts.ts     # Keyboard shortcut bindings
+│   ├── useUserInfo.ts              # Current user info from Clerk
+│   ├── useUserPlan.ts              # Plan tier + feature gating
+│   ├── useUserRole.ts              # Admin/user role check
+│   └── useVideoGenerator.ts        # FFmpeg.wasm MP4 generation pipeline
 │
 ├── middleware.ts                    # Clerk auth middleware (route protection)
 │
@@ -358,19 +430,28 @@ src/
     │   ├── reddit.ts               #   Reddit gallery posts
     │   ├── lemon8.ts               #   Lemon8 Content API
     │   └── media-server.ts         #   Temporary media server for upload URLs
+    ├── telegram/                   # Telegram bot (GrammY)
+    │   ├── bot.ts                  #   Bot instance and command handlers
+    │   └── helpers.ts              #   Bot utility functions
+    ├── activity-log.ts             # Client-side activity log with CSV/JSON export
+    ├── audio-utils.ts              # Audio waveform extraction + trim utilities
     ├── camera-filters-sharp.ts     # Server-side camera filter processing
     ├── camera-filters-css.ts       # Client-side CSS filter previews
     ├── carousel-validator.ts       # Pre-generation validation
     ├── constants.ts                # Platform specs, defaults, font options, OAuth config
+    ├── draft-manager.ts            # Draft CRUD + plan limit enforcement
+    ├── draft-storage.ts            # IndexedDB-based multi-draft + image persistence
     ├── filter-presets.ts           # 9 predefined filter configurations
     ├── image-source-calculator.ts  # Upload-to-slide allocation engine
     ├── motion.ts                   # Framer Motion animation presets
     ├── oauth.ts                    # OAuth flow utilities
+    ├── plans.ts                    # Plan tier config (Trial/Starter/Standard/Pro)
     ├── storage.ts                  # localStorage persistence
     ├── svg-overlay.ts              # SVG text overlay rendering for Sharp
     ├── token-storage.ts            # OAuth token encryption + cookie management
     ├── types.ts                    # Complete TypeScript type system
-    └── utils.ts                    # Utility functions
+    ├── utils.ts                    # Utility functions
+    └── video-utils.ts              # Canvas frame rendering + FFmpeg timing calculations
 ```
 
 ---
@@ -379,7 +460,8 @@ src/
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start the development server on port 3000 |
+| `npm run dev` | Start the development server on port 3000 (clears `.next` cache) |
+| `npm run dev:clean` | Clean dev start (runs `scripts/dev-clean.sh`) |
 | `npm run build` | Create an optimized production build |
 | `npm run start` | Serve the production build |
 | `npm run lint` | Run ESLint checks |
@@ -472,9 +554,23 @@ To enable direct publishing to social platforms, you need OAuth app credentials 
 
 Set the corresponding `*_CLIENT_ID` / `*_CLIENT_SECRET` environment variables. OAuth callback URLs should point to `https://yourdomain.com/api/auth/[platform]/callback`.
 
+### Setting Up the Telegram Bot
+
+To enable carousel generation via Telegram:
+
+1. Create a bot via [@BotFather](https://t.me/botfather) and get a bot token
+2. Set `TELEGRAM_BOT_TOKEN=your-token` in your environment variables
+3. Register the webhook after deployment:
+
+```bash
+curl -X POST https://yourdomain.com/api/telegram/setup
+```
+
+Users can then send photos to the bot with a caption to trigger carousel generation.
+
 ### Self-Hosting
 
-KodaPost can also be self-hosted on any platform that supports Node.js 18+:
+KodaPost can also be self-hosted on any platform that supports Node.js 20+:
 
 ```bash
 npm run build

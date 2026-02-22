@@ -41,3 +41,6 @@ local.db
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# internal docs (not deployed, not tracked)
+/docs/

@@ -39,9 +39,11 @@ interface SplashScreenProps {
   forceShow?: boolean;
   /** Optional external handler for "Get started". Receives a dismiss function to trigger the exit animation. */
   onGetStarted?: (dismiss: () => void) => void;
+  /** Called when user clicks "Take a tour" — dismisses splash then starts tour */
+  onOpenTour?: () => void;
 }
 
-export function SplashScreen({ onComplete, forceShow = false, onGetStarted }: SplashScreenProps) {
+export function SplashScreen({ onComplete, forceShow = false, onGetStarted, onOpenTour }: SplashScreenProps) {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
 
@@ -228,7 +230,7 @@ export function SplashScreen({ onComplete, forceShow = false, onGetStarted }: Sp
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 1.4, ease: "easeOut" }}
-              className="mt-4"
+              className="mt-4 flex flex-col items-center gap-3"
             >
               <div className="inline-flex rounded-full shadow-lg">
                 {/* Primary action */}
@@ -271,6 +273,20 @@ export function SplashScreen({ onComplete, forceShow = false, onGetStarted }: Sp
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+
+              {/* Tour link */}
+              {onOpenTour && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVisible(false);
+                    onOpenTour();
+                  }}
+                  className="text-sm text-white/40 hover:text-white/80 underline-offset-2 hover:underline transition-colors"
+                >
+                  Take a quick tour →
+                </button>
+              )}
             </motion.div>
           </div>
         </motion.div>
