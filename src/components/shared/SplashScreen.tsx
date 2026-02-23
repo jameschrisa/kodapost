@@ -14,6 +14,7 @@ import {
   Layers,
   ArrowDown,
   Play,
+  Smartphone,
   Shield,
   FileText,
   Database,
@@ -153,12 +154,18 @@ export function SplashScreen({
   const router = useRouter();
   const { isSignedIn } = useClerkAuth();
   const [visible, setVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Parallax for hero orbs based on scroll
   const { scrollY } = useScroll({ container: containerRef });
   const orbY = useTransform(scrollY, [0, 600], [0, -120]);
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+
+  // Detect mobile viewport for KodaGo routing
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   useEffect(() => {
     router.prefetch("/introduction");
@@ -261,7 +268,15 @@ export function SplashScreen({
 
               {/* Auth / CTA */}
               <div className="flex items-center gap-3">
-                {isClerkEnabled ? (
+                {isMobile ? (
+                  <Button
+                    size="sm"
+                    asChild
+                    className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
+                  >
+                    <a href="https://go.kodapost.com">KodaGo</a>
+                  </Button>
+                ) : isClerkEnabled ? (
                   <>
                     <Link
                       href="/sign-in"
@@ -433,7 +448,31 @@ export function SplashScreen({
                 className="mt-4 flex flex-col items-center gap-5"
               >
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                  {isClerkEnabled ? (
+                  {isMobile ? (
+                    <>
+                      <Button
+                        size="lg"
+                        asChild
+                        className="rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-6 text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
+                      >
+                        <a href="https://go.kodapost.com">
+                          Start Creating Free
+                        </a>
+                      </Button>
+                      {isClerkEnabled && (
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          asChild
+                          className="rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-lg font-bold backdrop-blur-sm transition-all duration-300"
+                        >
+                          <Link href="/sign-in">
+                            Log In
+                          </Link>
+                        </Button>
+                      )}
+                    </>
+                  ) : isClerkEnabled ? (
                     <>
                       <Button
                         size="lg"
@@ -475,8 +514,20 @@ export function SplashScreen({
                     </>
                   )}
                 </div>
+
+                {/* KodaGo mobile banner */}
+                {isMobile && (
+                  <a
+                    href="https://go.kodapost.com"
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] text-sm text-white/50 hover:text-white/80 hover:bg-white/[0.1] transition-all duration-200"
+                  >
+                    <Smartphone className="h-3.5 w-3.5" />
+                    KodaGo &mdash; designed for your phone
+                  </a>
+                )}
+
                 {/* Tour link — always available below main CTAs */}
-                {onOpenTour && (
+                {!isMobile && onOpenTour && (
                   <button
                     type="button"
                     onClick={handleTour}
@@ -666,7 +717,17 @@ export function SplashScreen({
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    {isClerkEnabled ? (
+                    {isMobile ? (
+                      <Button
+                        size="lg"
+                        asChild
+                        className="rounded-2xl bg-orange-500 hover:bg-orange-400 px-12 py-6 text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
+                      >
+                        <a href="https://go.kodapost.com">
+                          Get Started on Mobile
+                        </a>
+                      </Button>
+                    ) : isClerkEnabled ? (
                       <Button
                         size="lg"
                         asChild
