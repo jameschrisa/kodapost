@@ -6,8 +6,8 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "rm -rf .next && NODE_OPTIONS='--disable-warning=DEP0040' next dev",
-    "dev:clean": "bash scripts/dev-clean.sh",
+    "dev": "NODE_OPTIONS='--disable-warning=DEP0040' next dev",
+    "dev:clean": "rm -rf .next && NODE_OPTIONS='--disable-warning=DEP0040' next dev",
     "build": "NODE_OPTIONS='--disable-warning=DEP0040' next build",
     "start": "next start",
     "lint": "next lint",

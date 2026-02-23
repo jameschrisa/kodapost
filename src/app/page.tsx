@@ -304,8 +304,9 @@ export default function Home() {
             : "upload";
           setStep(stepToUse);
 
-          // Skip splash for returning users
-          if (loaded.name && stepToUse !== "upload") {
+          // Skip splash for returning users (only when auth is not required;
+          // when Clerk is enabled, the auth effect below handles dismissal).
+          if (loaded.name && stepToUse !== "upload" && !isClerkEnabled) {
             setSplashDismissed(true);
           }
         }
@@ -344,7 +345,7 @@ export default function Home() {
             setStep(savedStep);
           }
 
-          if (savedName && savedStep !== "upload") {
+          if (savedName && savedStep !== "upload" && !isClerkEnabled) {
             setSplashDismissed(true);
           }
         } else {
@@ -851,8 +852,22 @@ export default function Home() {
     onEscape: step !== "upload" ? handleBack : undefined,
   });
 
-  // Don't render until hydrated to avoid mismatch
+  // Show splash/landing page immediately while hydrating project data.
+  // Only gate the app UI behind hydration — the marketing site needs no project data.
   if (!hydrated) {
+    if (!splashDismissed) {
+      return (
+        <SplashScreen
+          forceShow={splashForced}
+          onComplete={() => {
+            setSplashDismissed(true);
+            setSplashForced(false);
+          }}
+          onGetStarted={handleGetStarted}
+          onOpenTour={handleOpenTour}
+        />
+      );
+    }
     return (
       <div className="flex min-h-screen items-center justify-center">
         <motion.div

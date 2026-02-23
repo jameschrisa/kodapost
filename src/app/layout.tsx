@@ -99,9 +99,9 @@ const bebasNeue = Bebas_Neue({
   variable: "--font-bebas-neue",
 });
 
-// When Clerk is configured, the root layout wraps ClerkProvider which
-// requires runtime context — so we force dynamic rendering.
-export const dynamic = clerkPubKey ? "force-dynamic" : "auto";
+// The root layout wraps ClerkProvider (when configured) which requires
+// runtime context, so we always use dynamic rendering.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "KodaPost - Create Stunning Carousels",

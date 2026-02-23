@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
@@ -23,7 +23,7 @@ import {
 import { KodaPostIcon } from "@/components/icons";
 import { springGentle } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
-import { isClerkEnabled } from "@/hooks/useClerkAuth";
+import { isClerkEnabled, useClerkAuth } from "@/hooks/useClerkAuth";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -151,6 +151,7 @@ export function SplashScreen({
   onOpenTour,
 }: SplashScreenProps) {
   const router = useRouter();
+  const { isSignedIn } = useClerkAuth();
   const [visible, setVisible] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -166,7 +167,9 @@ export function SplashScreen({
   useEffect(() => {
     if (!forceShow) {
       try {
-        if (sessionStorage.getItem(SESSION_KEY)) {
+        // Only skip the landing page via sessionStorage for signed-in users.
+        // Unauthenticated visitors should always see the marketing site.
+        if (isSignedIn && sessionStorage.getItem(SESSION_KEY)) {
           setVisible(false);
           onComplete();
           return;
@@ -185,7 +188,11 @@ export function SplashScreen({
     return undefined;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const quote = useMemo(() => QUOTES[Math.floor(Math.random() * QUOTES.length)], []);
+  // Use first quote for SSR, then pick a random one after mount to avoid hydration mismatch.
+  const [quote, setQuote] = useState(QUOTES[0]);
+  useEffect(() => {
+    setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+  }, []);
 
   const handleDismiss = () => setVisible(false);
 
