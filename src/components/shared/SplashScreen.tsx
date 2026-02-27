@@ -20,6 +20,10 @@ import {
   Database,
   BookOpen,
   HelpCircle,
+  Music,
+  LayoutTemplate,
+  Radio,
+  Users,
 } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { springGentle } from "@/lib/motion";
@@ -79,8 +83,8 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: "AI-Powered Captions",
-    description: "Koda analyzes your photos and generates scroll-stopping text overlays that feel authentically you.",
+    title: "Caption Writer",
+    description: "Tell your story and Koda writes scroll-stopping captions and headlines that feel authentically you.",
     span: "",
     style: "accent" as const,
   },
@@ -92,10 +96,31 @@ const FEATURES = [
     style: "card" as const,
   },
   {
+    icon: Music,
+    title: "Audio Clips",
+    description: "Browse and add royalty-free music clips with allowable licensing for use in your reels and carousels.",
+    span: "",
+    style: "card" as const,
+  },
+  {
+    icon: Radio,
+    title: "Nano-Casts",
+    description: "Turn your carousel into a short-form audio story. Record a voiceover or let Koda generate one for you.",
+    span: "",
+    style: "dark" as const,
+  },
+  {
+    icon: LayoutTemplate,
+    title: "Customizable Templates",
+    description: "Start from beautifully designed templates or build your own. Every element is fully customizable.",
+    span: "md:col-span-2",
+    style: "card" as const,
+  },
+  {
     icon: Calendar,
     title: "Content Calendar",
     description: "Schedule your carousels, track your creative output, and stay consistent without the burnout.",
-    span: "md:col-span-2",
+    span: "",
     style: "dark" as const,
   },
 ];
@@ -365,19 +390,19 @@ export function SplashScreen({
               initial={{ opacity: 0, x: -30, rotate: -15 }}
               animate={{ opacity: 1, x: 0, rotate: -12 }}
               transition={{ delay: 1.6, duration: 0.6, ease: "easeOut" }}
-              className="absolute top-[22%] left-[8%] hidden lg:block pointer-events-none select-none"
+              className="absolute top-[22%] left-[6%] hidden lg:block pointer-events-none select-none"
             >
-              <div className="bg-purple-500/20 border border-purple-400/30 text-purple-300 px-4 py-2 rounded-full font-semibold text-sm backdrop-blur-sm">
-                No Algorithms
+              <div className="bg-purple-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-full font-bold text-base backdrop-blur-sm shadow-lg shadow-purple-500/10">
+                AI Fortified
               </div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 30, rotate: 12 }}
               animate={{ opacity: 1, x: 0, rotate: 8 }}
               transition={{ delay: 1.8, duration: 0.6, ease: "easeOut" }}
-              className="absolute top-[30%] right-[8%] hidden lg:block pointer-events-none select-none"
+              className="absolute top-[30%] right-[6%] hidden lg:block pointer-events-none select-none"
             >
-              <div className="bg-amber-500/20 border border-amber-400/30 text-amber-300 px-4 py-2 rounded-full font-semibold text-sm backdrop-blur-sm">
+              <div className="bg-amber-500/20 border border-amber-400/30 text-amber-300 px-6 py-3 rounded-full font-bold text-base backdrop-blur-sm shadow-lg shadow-amber-500/10">
                 Verified Indie
               </div>
             </motion.div>
@@ -486,12 +511,11 @@ export function SplashScreen({
                       <Button
                         size="lg"
                         variant="outline"
-                        asChild
+                        onClick={handleTour}
                         className="rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-lg font-bold backdrop-blur-sm transition-all duration-300"
                       >
-                        <Link href="/sign-in">
-                          View Showcase
-                        </Link>
+                        <Play className="h-4 w-4 mr-2" />
+                        Take a Tour
                       </Button>
                     </>
                   ) : (
@@ -509,7 +533,8 @@ export function SplashScreen({
                         onClick={handleTour}
                         className="rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-lg font-bold backdrop-blur-sm transition-all duration-300"
                       >
-                        View Showcase
+                        <Play className="h-4 w-4 mr-2" />
+                        Take a Tour
                       </Button>
                     </>
                   )}
@@ -632,7 +657,7 @@ export function SplashScreen({
               >
                 <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight flex items-center gap-3">
                   <Camera className="h-7 w-7 text-purple-400" />
-                  The Creative Toolkit
+                  Your Creative Partner
                 </h2>
                 <p className="mt-3 text-white/40 max-w-lg">
                   Everything you need to turn everyday photos into scroll-stopping content.
@@ -689,6 +714,68 @@ export function SplashScreen({
                     )}
                   </motion.div>
                 ))}
+              </motion.div>
+            </div>
+          </section>
+
+          {/* ================================================================
+              HUMAN-IN-THE-LOOP PHILOSOPHY
+              ================================================================ */}
+          <section id="philosophy" className="relative py-28 px-6 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-900 scroll-mt-16">
+            <div className="max-w-5xl mx-auto">
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                className="grid md:grid-cols-2 gap-12 items-center"
+              >
+                {/* Text content */}
+                <motion.div variants={staggerChild}>
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
+                    <Users className="h-3.5 w-3.5" />
+                    Our Philosophy
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
+                    You Create.{" "}
+                    <span className="text-white/40">Koda Assists.</span>
+                  </h2>
+                  <div className="space-y-4 text-white/45 text-sm leading-relaxed">
+                    <p>
+                      KodaPost is built on the belief that the best creative tools keep humans in the loop. Koda never takes over &mdash; it works alongside you, handling the tedious parts so you can focus on what matters: your story.
+                    </p>
+                    <p>
+                      Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. Koda is the assistant, never the artist.
+                    </p>
+                    <p>
+                      We believe authentic content comes from real people making real choices &mdash; not from fully automated pipelines. That&apos;s why every KodaPost carousel is a collaboration between you and your tools.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* Visual / image placeholder */}
+                <motion.div variants={staggerChild} className="relative">
+                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden">
+                    <div className="space-y-5">
+                      {[
+                        { label: "You upload your photos", icon: ImagePlus, color: "text-violet-400", bg: "bg-violet-500/10" },
+                        { label: "Koda suggests captions & styles", icon: Sparkles, color: "text-amber-400", bg: "bg-amber-500/10" },
+                        { label: "You review, edit, and approve", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+                        { label: "Publish on your terms", icon: Share2, color: "text-blue-400", bg: "bg-blue-500/10" },
+                      ].map((step, i) => (
+                        <div key={step.label} className="flex items-center gap-4">
+                          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${step.bg}`}>
+                            <step.icon className={`h-5 w-5 ${step.color}`} />
+                          </div>
+                          <div className="flex-1 flex items-center gap-3">
+                            <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
+                            <span className="text-sm font-medium text-white/70">{step.label}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
               </motion.div>
             </div>
           </section>
@@ -767,7 +854,7 @@ export function SplashScreen({
                     <span className="text-base font-bold tracking-tight text-white/80">KodaPost</span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
-                    Transform your everyday photos into stunning nostalgic social media carousels. Vintage camera styles, retro film filters, and AI-powered text overlays &mdash; designed for creators who value authenticity over algorithms.
+                    Transform your everyday photos into stunning nostalgic social media carousels. Vintage camera styles, retro film filters, and Koda-powered text overlays &mdash; designed for creators who value authenticity over algorithms.
                   </p>
                 </div>
 
