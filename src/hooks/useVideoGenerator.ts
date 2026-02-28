@@ -187,10 +187,12 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         setStage("rendering");
         setProgress(0);
 
+        const slideOverrides = readySlides.map((s) => s.durationOverride);
         const timing = calculateVideoTiming(
           slideImages.length,
           project.audioClip,
-          settings
+          settings,
+          slideOverrides
         );
 
         // Get dimensions from the first image

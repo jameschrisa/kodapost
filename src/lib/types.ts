@@ -225,6 +225,8 @@ export interface CarouselSlide {
   };
   /** Percentage-based crop area applied to this slide's image */
   cropArea?: { x: number; y: number; width: number; height: number };
+  /** Per-slide duration override in seconds. Undefined = use default/auto. */
+  durationOverride?: number;
 }
 
 // -----------------------------------------------------------------------------

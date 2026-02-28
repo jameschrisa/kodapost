@@ -3,6 +3,9 @@
  *
  * Handles timing calculations, canvas-based frame rendering with transitions,
  * and image decoding for the video generation pipeline.
+ *
+ * Supports per-slide duration overrides: individual slides can have custom
+ * durations while the remaining slides share the default/auto-calculated time.
  */
 
 import type { AudioClip, SlideTransition, VideoSettings } from "./types";
@@ -14,34 +17,59 @@ import type { AudioClip, SlideTransition, VideoSettings } from "./types";
 export interface VideoTiming {
   /** Total video duration in seconds */
   totalDuration: number;
-  /** Duration per slide in seconds */
-  slideDuration: number;
+  /** Default duration per slide (used for slides without overrides) */
+  defaultSlideDuration: number;
+  /** Per-slide durations array (length = slideCount). Each entry is the
+   *  effective duration for that slide index, accounting for overrides. */
+  slideDurations: number[];
   /** Duration of transition between slides in seconds */
   transitionDuration: number;
   /** Total number of frames */
   totalFrames: number;
   /** Frames per second */
   fps: number;
+  /** Cumulative start times for each slide (length = slideCount).
+   *  Precomputed for efficient frame lookup. */
+  slideStartTimes: number[];
 }
 
 /**
- * Calculate video timing based on slide count, audio, and settings.
+ * Calculate video timing based on slide count, audio, settings, and
+ * optional per-slide duration overrides.
  *
- * In "match-audio" mode: slide duration is auto-calculated to fill the audio
- * length. In "custom" mode: uses the explicit slideDuration setting.
+ * In "match-audio" mode: default slide duration is auto-calculated to fill
+ * the audio length (after subtracting time claimed by overridden slides).
+ * In "custom" mode: uses the explicit slideDuration setting as the default.
  *
  * Transition time is "shared" — the transition overlaps between two slides,
- * so total time = (slideCount × slideDuration) - ((slideCount - 1) × transitionDuration).
+ * so total time = sum(slideDurations) - ((slideCount - 1) × transitionDuration).
  */
 export function calculateVideoTiming(
   slideCount: number,
   audioClip: AudioClip | undefined,
-  settings: VideoSettings
+  settings: VideoSettings,
+  /** Per-slide duration overrides. Array index = slide index.
+   *  `undefined` entries use the default duration. */
+  slideOverrides?: (number | undefined)[]
 ): VideoTiming {
   const { fps, transitionDuration: rawTransDur } = settings;
   const transitionDuration = slideCount > 1 ? rawTransDur : 0;
 
-  let slideDuration: number;
+  // Count overrides vs auto slides
+  const overrides = slideOverrides ?? [];
+  let overrideCount = 0;
+  let totalOverrideTime = 0;
+  for (let i = 0; i < slideCount; i++) {
+    const ov = overrides[i];
+    if (ov !== undefined && ov > 0) {
+      overrideCount++;
+      totalOverrideTime += ov;
+    }
+  }
+  const autoCount = slideCount - overrideCount;
+
+  // Calculate default slide duration
+  let defaultSlideDuration: number;
 
   if (settings.timingMode === "match-audio" && audioClip) {
     // Calculate effective audio duration (trimmed)
@@ -49,31 +77,56 @@ export function calculateVideoTiming(
     const audioEnd = audioClip.trimEnd ?? audioClip.duration;
     const audioDuration = Math.max(1, audioEnd - audioStart);
 
-    // Solve for slideDuration:
-    // totalDuration = slideCount * slideDuration - (slideCount - 1) * transitionDuration
-    // audioDuration = slideCount * slideDuration - (slideCount - 1) * transitionDuration
-    // slideDuration = (audioDuration + (slideCount - 1) * transitionDuration) / slideCount
-    slideDuration = Math.max(
-      1,
-      (audioDuration + (slideCount - 1) * transitionDuration) / slideCount
-    );
+    // Total "slide time" budget (transitions overlap, so each saves transitionDuration)
+    const totalAvailable = audioDuration + (slideCount - 1) * transitionDuration;
+
+    if (autoCount > 0) {
+      // Distribute remaining time evenly across non-overridden slides
+      const remainingForAuto = totalAvailable - totalOverrideTime;
+      defaultSlideDuration = Math.max(1, remainingForAuto / autoCount);
+    } else {
+      // All slides have overrides — use the average override as default (for display)
+      defaultSlideDuration = slideCount > 0 ? totalOverrideTime / slideCount : settings.slideDuration;
+    }
   } else {
-    slideDuration = settings.slideDuration;
+    defaultSlideDuration = settings.slideDuration;
   }
 
-  // Ensure transition doesn't exceed half the slide duration
-  const effectiveTransition = Math.min(transitionDuration, slideDuration / 2);
+  // Build per-slide durations array
+  const slideDurations: number[] = [];
+  for (let i = 0; i < slideCount; i++) {
+    const ov = overrides[i];
+    slideDurations.push(ov !== undefined && ov > 0 ? ov : defaultSlideDuration);
+  }
 
-  const totalDuration =
-    slideCount * slideDuration - (slideCount - 1) * effectiveTransition;
+  // Ensure transition doesn't exceed half the shortest slide duration
+  const minDuration = slideDurations.length > 0 ? Math.min(...slideDurations) : defaultSlideDuration;
+  const effectiveTransition = Math.min(transitionDuration, minDuration / 2);
+
+  // Compute cumulative start times (accounting for overlapping transitions)
+  const slideStartTimes: number[] = [];
+  for (let i = 0; i < slideCount; i++) {
+    if (i === 0) {
+      slideStartTimes.push(0);
+    } else {
+      slideStartTimes.push(slideStartTimes[i - 1] + slideDurations[i - 1] - effectiveTransition);
+    }
+  }
+
+  // Total duration = last slide start + last slide duration
+  const totalDuration = slideCount > 0
+    ? slideStartTimes[slideCount - 1] + slideDurations[slideCount - 1]
+    : 0;
   const totalFrames = Math.ceil(totalDuration * fps);
 
   return {
     totalDuration,
-    slideDuration,
+    defaultSlideDuration,
+    slideDurations,
     transitionDuration: effectiveTransition,
     totalFrames,
     fps,
+    slideStartTimes,
   };
 }
 
@@ -105,6 +158,7 @@ export async function base64ToImageBitmap(
 
 /**
  * Determine which slide(s) are visible at a given time and the blend factor.
+ * Uses precomputed slideStartTimes for efficient lookup with variable durations.
  *
  * Returns:
  * - slideA: primary slide index
@@ -113,27 +167,31 @@ export async function base64ToImageBitmap(
  */
 export function getFrameSlideInfo(
   time: number,
-  slideCount: number,
-  slideDuration: number,
-  transitionDuration: number
+  timing: VideoTiming
 ): { slideA: number; slideB: number | null; blendFactor: number } {
+  const { slideDurations, slideStartTimes, transitionDuration } = timing;
+  const slideCount = slideDurations.length;
+
   if (slideCount <= 0) {
     return { slideA: 0, slideB: null, blendFactor: 0 };
   }
 
-  // The "effective" duration per slide step (overlap-adjusted)
-  const step = slideDuration - transitionDuration;
+  // Find the active slide via linear scan of start times
+  // (binary search would be faster for large counts, but carousels are typically < 35 slides)
+  let slideA = 0;
+  for (let i = 0; i < slideCount; i++) {
+    if (slideStartTimes[i] <= time) {
+      slideA = i;
+    } else {
+      break;
+    }
+  }
 
-  // Which step are we in?
-  const rawIndex = step > 0 ? time / step : 0;
-  const slideA = Math.min(Math.floor(rawIndex), slideCount - 1);
-
-  // Time within this slide's segment
-  const slideStartTime = slideA * step;
-  const elapsed = time - slideStartTime;
+  // Time elapsed within this slide's segment
+  const elapsed = time - slideStartTimes[slideA];
 
   // Are we in the transition zone at the END of this slide?
-  const transitionStart = slideDuration - transitionDuration;
+  const transitionStart = slideDurations[slideA] - transitionDuration;
 
   if (
     slideA < slideCount - 1 &&
@@ -163,17 +221,11 @@ export function renderFrameToCanvas(
   timing: VideoTiming,
   transition: SlideTransition
 ): void {
-  const { fps, slideDuration, transitionDuration } = timing;
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
-  const time = frameIndex / fps;
+  const time = frameIndex / timing.fps;
 
-  const { slideA, slideB, blendFactor } = getFrameSlideInfo(
-    time,
-    slideImages.length,
-    slideDuration,
-    transitionDuration
-  );
+  const { slideA, slideB, blendFactor } = getFrameSlideInfo(time, timing);
 
   const imgA = slideImages[slideA];
   if (!imgA) return;

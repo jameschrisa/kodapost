@@ -6,6 +6,10 @@
  * Displays a horizontal filmstrip of slide thumbnails with an audio waveform
  * below, a playhead that scrubs through both, and controls for transition
  * type and slide timing. Users can preview how their reel will play.
+ *
+ * Supports per-slide duration overrides: click a slide's duration badge to
+ * set a custom duration. When audio is attached, remaining time redistributes
+ * evenly across non-overridden slides.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -17,6 +21,7 @@ import {
   Music,
   Layers,
   Trash2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +42,8 @@ interface StoryboardPreviewProps {
   onVideoSettingsChange: (settings: VideoSettings) => void;
   /** Callback to clear the audio track from the storyboard */
   onClearAudio?: () => void;
+  /** Callback to update a slide's durationOverride */
+  onSlideDurationChange?: (slideId: string, duration: number | undefined) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -59,6 +66,7 @@ export function StoryboardPreview({
   project,
   onVideoSettingsChange,
   onClearAudio,
+  onSlideDurationChange,
 }: StoryboardPreviewProps) {
   const settings = project.videoSettings ?? DEFAULT_VIDEO_SETTINGS;
   const readySlides = useMemo(
@@ -74,6 +82,10 @@ export function StoryboardPreview({
   const startTimeRef = useRef<number>(0);
   const filmstripRef = useRef<HTMLDivElement>(null);
 
+  // Per-slide duration editing
+  const [editingSlideIdx, setEditingSlideIdx] = useState<number | null>(null);
+  const durationInputRef = useRef<HTMLInputElement | null>(null);
+
   // Camera filter styles
   const filterStyles = useMemo(
     () =>
@@ -84,22 +96,33 @@ export function StoryboardPreview({
   );
   const grainSVG = useMemo(() => getGrainSVGDataUri(), []);
 
-  // Video timing
-  const timing = useMemo(
-    () => calculateVideoTiming(readySlides.length, project.audioClip, settings),
-    [readySlides.length, project.audioClip, settings]
+  // Video timing — now with per-slide overrides
+  const slideOverrides = useMemo(
+    () => readySlides.map((s) => s.durationOverride),
+    [readySlides]
   );
 
-  // Current slide based on playhead
+  const timing = useMemo(
+    () => calculateVideoTiming(readySlides.length, project.audioClip, settings, slideOverrides),
+    [readySlides.length, project.audioClip, settings, slideOverrides]
+  );
+
+  // Count of slides with custom overrides
+  const overrideCount = useMemo(
+    () => readySlides.filter((s) => s.durationOverride !== undefined).length,
+    [readySlides]
+  );
+
+  // Current slide based on playhead — uses precomputed slideStartTimes
   const currentSlideIndex = useMemo(() => {
     if (readySlides.length === 0) return 0;
-    const step = timing.slideDuration - timing.transitionDuration;
-    if (step <= 0) return 0;
-    return Math.min(
-      Math.floor(currentTime / step),
-      readySlides.length - 1
-    );
-  }, [currentTime, readySlides.length, timing]);
+    let idx = 0;
+    for (let i = 0; i < timing.slideStartTimes.length; i++) {
+      if (timing.slideStartTimes[i] <= currentTime) idx = i;
+      else break;
+    }
+    return idx;
+  }, [currentTime, readySlides.length, timing.slideStartTimes]);
 
   // -----------------------------------------------------------------------
   // Playback controls
@@ -160,6 +183,14 @@ export function StoryboardPreview({
     container.scrollTo({ left: targetScroll, behavior: isPlaying ? "auto" : "smooth" });
   }, [currentSlideIndex, readySlides.length, isPlaying]);
 
+  // Auto-focus duration input when editing
+  useEffect(() => {
+    if (editingSlideIdx !== null && durationInputRef.current) {
+      durationInputRef.current.focus();
+      durationInputRef.current.select();
+    }
+  }, [editingSlideIdx]);
+
   // -----------------------------------------------------------------------
   // Settings handlers
   // -----------------------------------------------------------------------
@@ -178,11 +209,38 @@ export function StoryboardPreview({
   }, [settings, onVideoSettingsChange]);
 
   // -----------------------------------------------------------------------
+  // Per-slide duration editing
+  // -----------------------------------------------------------------------
+
+  const handleDurationSubmit = useCallback(
+    (slideId: string, value: string) => {
+      const parsed = parseFloat(value);
+      if (!isNaN(parsed) && parsed >= 0.5 && parsed <= 60) {
+        onSlideDurationChange?.(slideId, Math.round(parsed * 10) / 10);
+      }
+      setEditingSlideIdx(null);
+    },
+    [onSlideDurationChange]
+  );
+
+  const handleDurationReset = useCallback(
+    (slideId: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      onSlideDurationChange?.(slideId, undefined);
+      setEditingSlideIdx(null);
+    },
+    [onSlideDurationChange]
+  );
+
+  // -----------------------------------------------------------------------
   // Filmstrip click to seek
   // -----------------------------------------------------------------------
 
   const handleFilmstripClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      // Don't seek if clicking on a duration badge or editor
+      if ((e.target as HTMLElement).closest("[data-duration-control]")) return;
+
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const ratio = x / rect.width;
@@ -203,12 +261,16 @@ export function StoryboardPreview({
 
   const durationLabel = useMemo(() => {
     const totalSec = timing.totalDuration.toFixed(1);
-    const slideSec = timing.slideDuration.toFixed(1);
+    const slideSec = timing.defaultSlideDuration.toFixed(1);
     if (settings.timingMode === "match-audio" && project.audioClip) {
-      return `Matched to audio: ${totalSec}s (${slideSec}s per slide)`;
+      return overrideCount > 0
+        ? `Matched to audio: ${totalSec}s (${overrideCount} slide${overrideCount > 1 ? "s" : ""} custom, ${slideSec}s default)`
+        : `Matched to audio: ${totalSec}s (${slideSec}s per slide)`;
     }
-    return `${readySlides.length} slides \u00d7 ${slideSec}s = ${totalSec}s total`;
-  }, [timing, settings.timingMode, project.audioClip, readySlides.length]);
+    return overrideCount > 0
+      ? `${readySlides.length} slides = ${totalSec}s total (${overrideCount} custom, ${slideSec}s default)`
+      : `${readySlides.length} slides \u00d7 ${slideSec}s = ${totalSec}s total`;
+  }, [timing, settings.timingMode, project.audioClip, readySlides.length, overrideCount]);
 
   const formatTime = (t: number) => {
     const m = Math.floor(t / 60);
@@ -353,10 +415,12 @@ export function StoryboardPreview({
           >
             {readySlides.map((slide, idx) => {
               const isActive = idx === currentSlideIndex;
-              // Calculate width proportional to slide duration
+              const slideDur = timing.slideDurations[idx] ?? timing.defaultSlideDuration;
+              const hasOverride = slide.durationOverride !== undefined;
+              // Calculate width proportional to this slide's duration
               const widthPercent =
                 timing.totalDuration > 0
-                  ? ((timing.slideDuration - (idx < readySlides.length - 1 ? timing.transitionDuration : 0)) /
+                  ? ((slideDur - (idx < readySlides.length - 1 ? timing.transitionDuration : 0)) /
                       timing.totalDuration) *
                     100
                   : 100 / readySlides.length;
@@ -437,11 +501,66 @@ export function StoryboardPreview({
                     </div>
                   )}
 
-                  {/* Slide number label */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
+                  {/* Slide number + duration badge */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5 flex items-center justify-between">
                     <span className="text-[9px] font-medium text-white/80">
                       {idx + 1}
                     </span>
+                    {/* Clickable duration badge */}
+                    {editingSlideIdx === idx ? (
+                      <div
+                        data-duration-control
+                        className="flex items-center gap-0.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          ref={durationInputRef}
+                          type="number"
+                          step="0.5"
+                          min="0.5"
+                          max="60"
+                          defaultValue={slideDur.toFixed(1)}
+                          className="w-10 rounded bg-black/80 px-1 py-0 text-[9px] font-medium text-white text-center border border-purple-500/50 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleDurationSubmit(slide.id, e.currentTarget.value);
+                            } else if (e.key === "Escape") {
+                              setEditingSlideIdx(null);
+                            }
+                          }}
+                          onBlur={(e) => handleDurationSubmit(slide.id, e.currentTarget.value)}
+                        />
+                        {hasOverride && (
+                          <button
+                            type="button"
+                            data-duration-control
+                            onClick={(e) => handleDurationReset(slide.id, e)}
+                            className="text-white/60 hover:text-white"
+                            title="Reset to auto"
+                          >
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        data-duration-control
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingSlideIdx(editingSlideIdx === idx ? null : idx);
+                        }}
+                        className={cn(
+                          "text-[9px] font-medium transition-colors",
+                          hasOverride
+                            ? "text-purple-400 hover:text-purple-300"
+                            : "text-white/60 hover:text-white/90"
+                        )}
+                        title={hasOverride ? `Custom: ${slideDur.toFixed(1)}s (click to edit, right-click to reset)` : "Click to set custom duration"}
+                      >
+                        {slideDur.toFixed(1)}s
+                      </button>
+                    )}
                   </div>
 
                   {/* Transition indicator between slides */}

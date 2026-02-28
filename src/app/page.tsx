@@ -485,6 +485,15 @@ export default function Home() {
     setProject((prev) => ({ ...prev, videoSettings: vs }));
   }, []);
 
+  const handleSlideDurationChange = useCallback((slideId: string, duration: number | undefined) => {
+    setProject((prev) => ({
+      ...prev,
+      slides: prev.slides.map((s) =>
+        s.id === slideId ? { ...s, durationOverride: duration } : s
+      ),
+    }));
+  }, []);
+
   // Auto-switch to timeline view when audio is added in Finalize step
   useEffect(() => {
     if (project.audioClip?.objectUrl) {
@@ -1255,6 +1264,7 @@ export default function Home() {
                       project={project}
                       onVideoSettingsChange={handleVideoSettingsChange}
                       onClearAudio={() => handleAudioChange(undefined)}
+                      onSlideDurationChange={handleSlideDurationChange}
                     />
                   )}
 
