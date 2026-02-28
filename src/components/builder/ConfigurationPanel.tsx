@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowRight, Camera, FileSpreadsheet, Image as ImageIcon, ImagePlus, Layers, Loader2, Mic, MicOff, Palette, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Type, Wand2, X } from "lucide-react";
+import { AlertCircle, ArrowRight, Camera, FileSpreadsheet, Image as ImageIcon, ImagePlus, Layers, Loader2, Mic, MicOff, Palette, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Wand2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { staggerContainerVariants, staggerItemVariants, buttonTapScale } from "@/lib/motion";
@@ -500,6 +500,66 @@ export function ConfigurationPanel({
               );
             })}
           </div>
+
+          {/* Headlines mode */}
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Headlines</p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-7 text-xs"
+                  onClick={() => setCsvImportOpen(true)}
+                  title="Import your own headlines from a CSV file instead of using Koda-generated text."
+                >
+                  <FileSpreadsheet className="h-3 w-3" />
+                  Import
+                </Button>
+                {project.csvOverrides && (
+                  <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
+                    {project.csvOverrides.length} rows
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-1">
+              {([
+                { value: "all", label: "All slides" },
+                { value: "first_only", label: "First slide only" },
+                { value: "none", label: "Off" },
+              ] as const).map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => updateHeadlineMode(value)}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    headlineMode === value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {headlineMode === "all" && "Headlines generated on every slide"}
+              {headlineMode === "first_only" && "Title card on slide 1 — photos only after"}
+              {headlineMode === "none" && "No headline text — images only"}
+            </p>
+          </div>
+
+          {/* Slide count (carousel only) */}
+          {(project.postMode ?? "carousel") === "carousel" && (
+            <div className="mt-4">
+              <SlideCountSelector
+                value={project.slideCount}
+                onChange={(count) => updateField("slideCount", count)}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
       </motion.div>
@@ -637,111 +697,6 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* 2. Content & Slides — tabbed: Text Overlays / Slides & Images */}
-      <motion.div variants={staggerItemVariants}>
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-base">Content &amp; Slides</CardTitle>
-              <CardHelpIcon title="Content & Slides">
-                Configure text overlays for your {(project.postMode ?? "carousel") === "single" ? "post" : "slides"} and
-                manage slide count and image distribution.
-              </CardHelpIcon>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 h-7 text-xs"
-                onClick={() => setCsvImportOpen(true)}
-                title="Import your own headlines from a CSV file instead of using Koda-generated text."
-              >
-                <FileSpreadsheet className="h-3 w-3" />
-                Import
-              </Button>
-              <CardHelpIcon title="CSV Import">
-                Import a CSV file with your own headlines instead of
-                Koda-generated text. Your file should have a column for headline (or
-                title/primary). Each row maps to a slide.
-              </CardHelpIcon>
-              {project.csvOverrides && (
-                <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                  {project.csvOverrides.length} rows
-                </span>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <Tabs defaultValue="text-overlays" className="w-full">
-            <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
-              <TabsTrigger
-                value="text-overlays"
-                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
-              >
-                <Type className="h-3.5 w-3.5" />
-                Text Overlays
-              </TabsTrigger>
-              {(project.postMode ?? "carousel") === "carousel" && (
-                <TabsTrigger
-                  value="slides"
-                  className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
-                >
-                  <Layers className="h-3.5 w-3.5" />
-                  Slides
-                </TabsTrigger>
-              )}
-            </TabsList>
-
-            {/* ── Text Overlays Tab ── */}
-            <TabsContent value="text-overlays" className="mt-4 space-y-3">
-              {/* Headline mode selector */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Headlines</p>
-                <div className="flex gap-1">
-                  {([
-                    { value: "all", label: "All slides" },
-                    { value: "first_only", label: "First slide only" },
-                    { value: "none", label: "Off" },
-                  ] as const).map(({ value, label }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => updateHeadlineMode(value)}
-                      className={cn(
-                        "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                        headlineMode === value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {headlineMode === "all" && "Headlines generated on every slide"}
-                  {headlineMode === "first_only" && "Title card on slide 1 — photos only after"}
-                  {headlineMode === "none" && "No headline text — images only"}
-                </p>
-              </div>
-
-            </TabsContent>
-
-            {/* ── Slides Tab (carousel only) ── */}
-            {(project.postMode ?? "carousel") === "carousel" && (
-              <TabsContent value="slides" className="mt-4 space-y-4">
-                <SlideCountSelector
-                  value={project.slideCount}
-                  onChange={(count) => updateField("slideCount", count)}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </CardContent>
-      </Card>
-      </motion.div>
 
       {/* 3. Social Caption (Required) — auto-generates from story, editable */}
       <motion.div variants={staggerItemVariants}>
@@ -785,65 +740,6 @@ export function ConfigurationPanel({
             )}
           </div>
 
-          {/* Writing style selector */}
-          <div className="mt-4 space-y-2">
-            <Label className="text-xs">Writing Style</Label>
-            <div className="flex flex-wrap gap-2">
-              {([
-                { value: "storyteller" as const, label: "Storyteller", emoji: "📖" },
-                { value: "minimalist" as const, label: "Minimalist", emoji: "✏️" },
-                { value: "data_driven" as const, label: "Data-Driven", emoji: "📊" },
-                { value: "witty" as const, label: "Witty", emoji: "😄" },
-                { value: "educational" as const, label: "Educational", emoji: "🎓" },
-                { value: "poetic" as const, label: "Poetic", emoji: "🪶" },
-              ]).map(({ value, label, emoji }) => {
-                const isActive = (project.captionStyle ?? "storyteller") === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => {
-                      updateField("captionStyle", value);
-                      updateField("customCaptionStyle", undefined);
-                    }}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                      isActive
-                        ? "bg-purple-500/15 text-purple-400 border border-purple-500/40"
-                        : "bg-muted text-muted-foreground border border-transparent hover:bg-muted-foreground/10"
-                    }`}
-                  >
-                    <span>{emoji}</span>
-                    {label}
-                  </button>
-                );
-              })}
-              {/* Custom style option */}
-              <button
-                type="button"
-                onClick={() => updateField("captionStyle", "custom")}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                  project.captionStyle === "custom"
-                    ? "bg-purple-500/15 text-purple-400 border border-purple-500/40"
-                    : "bg-muted text-muted-foreground border border-transparent hover:bg-muted-foreground/10"
-                }`}
-              >
-                <span>✍️</span>
-                Custom
-              </button>
-            </div>
-            {project.captionStyle === "custom" && (
-              <Input
-                placeholder="Describe your writing style (e.g., 'casual Gen-Z slang with emoji')"
-                value={project.customCaptionStyle ?? ""}
-                onChange={(e) => updateField("customCaptionStyle", e.target.value)}
-                className="h-8 text-sm mt-2"
-                maxLength={120}
-              />
-            )}
-            <p className="text-xs text-muted-foreground">
-              Shapes how Koda generates captions and headline text.
-            </p>
-          </div>
         </CardContent>
       </Card>
       </motion.div>

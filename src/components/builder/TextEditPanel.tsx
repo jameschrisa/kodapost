@@ -12,7 +12,9 @@ import {
   Italic,
   Move,
   Paintbrush,
+  Square,
   SunMoon,
+  Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -104,6 +106,8 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   const [editTextColor, setEditTextColor] = useState("#FFFFFF");
   const [editBgPadX, setEditBgPadX] = useState<number>(DEFAULT_BG_PADDING.x);
   const [editBgPadY, setEditBgPadY] = useState<number>(DEFAULT_BG_PADDING.y);
+  type TextDisplayMode = "background" | "shadow" | "plain";
+  const [editTextDisplayMode, setEditTextDisplayMode] = useState<TextDisplayMode>("background");
 
   // -- Drag state --
   const [isDragging, setIsDragging] = useState(false);
@@ -123,6 +127,9 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   const [globalTextColor, setGlobalTextColor] = useState(gos.textColor ?? "#FFFFFF");
   const [globalBgPadX, setGlobalBgPadX] = useState<number>(gos.backgroundPadding?.x ?? DEFAULT_BG_PADDING.x);
   const [globalBgPadY, setGlobalBgPadY] = useState<number>(gos.backgroundPadding?.y ?? DEFAULT_BG_PADDING.y);
+  const [globalTextDisplayMode, setGlobalTextDisplayMode] = useState<TextDisplayMode>(
+    gos.backgroundColor ? "background" : gos.textShadow ? "shadow" : "plain"
+  );
 
   // -- Platform preview --
   const [previewPlatform] = useState<PreviewPlatform>(
@@ -147,6 +154,14 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
     setEditTextColor(overlay?.styling.textColor ?? "#FFFFFF");
     setEditBgPadX(overlay?.styling.backgroundPadding?.x ?? DEFAULT_BG_PADDING.x);
     setEditBgPadY(overlay?.styling.backgroundPadding?.y ?? DEFAULT_BG_PADDING.y);
+    // Derive display mode from existing overlay styling
+    if (overlay?.styling.backgroundColor) {
+      setEditTextDisplayMode("background");
+    } else if (overlay?.styling.textShadow) {
+      setEditTextDisplayMode("shadow");
+    } else {
+      setEditTextDisplayMode("plain");
+    }
   }, [selectedIndex, selectedSlide?.id, styleRefreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Build live overlay from editing state ──
@@ -168,7 +183,10 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         textAlign: editTextAlign,
         fontStyle: editFontStyle,
         textColor: editTextColor,
-        backgroundColor: isLightColor(editTextColor) ? COLOR_SCHEMES.dark.backgroundColor : COLOR_SCHEMES.light.backgroundColor,
+        backgroundColor: editTextDisplayMode === "background"
+          ? (isLightColor(editTextColor) ? COLOR_SCHEMES.dark.backgroundColor : COLOR_SCHEMES.light.backgroundColor)
+          : undefined,
+        textShadow: editTextDisplayMode === "shadow" ? true : editTextDisplayMode === "background" ? baseStyling.textShadow : false,
         backgroundPadding: { x: editBgPadX, y: editBgPadY },
       },
       positioning: {
@@ -178,7 +196,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         freePosition: freePos,
       },
     };
-  }, [selectedSlide, editPrimary, editFontFamily, editFontSizePrimary, editFontSizeSecondary, editTextAlign, editFontStyle, editTextColor, editBgPadX, editBgPadY]);
+  }, [selectedSlide, editPrimary, editFontFamily, editFontSizePrimary, editFontSizeSecondary, editTextAlign, editFontStyle, editTextColor, editTextDisplayMode, editBgPadX, editBgPadY]);
 
   // ── Auto-save with debounce (text/font changes) ──
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -363,7 +381,10 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
             textAlign: globalTextAlign,
             fontStyle: globalFontStyle,
             textColor: globalTextColor,
-            backgroundColor: isLightColor(globalTextColor) ? COLOR_SCHEMES.dark.backgroundColor : COLOR_SCHEMES.light.backgroundColor,
+            backgroundColor: globalTextDisplayMode === "background"
+              ? (isLightColor(globalTextColor) ? COLOR_SCHEMES.dark.backgroundColor : COLOR_SCHEMES.light.backgroundColor)
+              : undefined,
+            textShadow: globalTextDisplayMode === "shadow" ? true : globalTextDisplayMode === "background" ? existingOverlay.styling.textShadow : false,
             backgroundPadding: { x: globalBgPadX, y: globalBgPadY },
           },
           positioning: {
@@ -389,8 +410,10 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         fontSize: { primary: globalFontSizePrimary, secondary: globalFontSizeSecondary },
         fontWeight: gos.fontWeight,
         textColor: globalTextColor,
-        backgroundColor: isLightColor(globalTextColor) ? COLOR_SCHEMES.dark.backgroundColor : COLOR_SCHEMES.light.backgroundColor,
-        textShadow: gos.textShadow,
+        backgroundColor: globalTextDisplayMode === "background"
+          ? (isLightColor(globalTextColor) ? COLOR_SCHEMES.dark.backgroundColor : COLOR_SCHEMES.light.backgroundColor)
+          : undefined,
+        textShadow: globalTextDisplayMode === "shadow" ? true : globalTextDisplayMode === "background" ? gos.textShadow : false,
         alignment: globalVerticalAlign,
         horizontalAlign: "center" as const,
         padding: gos.padding,
@@ -568,7 +591,34 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 </div>
               </div>
             </div>
-            {/* Background Padding */}
+            {/* Text Display Mode */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Text Display</Label>
+              <div className="flex gap-1">
+                {([
+                  { mode: "background" as TextDisplayMode, label: "Background", icon: <Square className="h-3.5 w-3.5" /> },
+                  { mode: "shadow" as TextDisplayMode, label: "Shadow", icon: <Type className="h-3.5 w-3.5" /> },
+                  { mode: "plain" as TextDisplayMode, label: "Plain", icon: <span className="h-3.5 w-3.5 flex items-center justify-center text-[10px] font-bold">Aa</span> },
+                ]).map(({ mode, label, icon }) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setGlobalTextDisplayMode(mode)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs transition-colors",
+                      globalTextDisplayMode === mode
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    )}
+                  >
+                    {icon}
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Background Padding — only shown in background mode */}
+            {globalTextDisplayMode === "background" && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
@@ -585,6 +635,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 <Slider min={0} max={30} step={1} value={[globalBgPadY]} onValueChange={([v]) => setGlobalBgPadY(v)} />
               </div>
             </div>
+            )}
             {/* Visibility toggles + Apply */}
             <div className="flex items-center gap-6 flex-wrap">
               <div className="flex items-center gap-2">
@@ -867,7 +918,35 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                   />
                 </div>
 
-                {/* 4. Background padding */}
+                {/* 4. Text Display Mode */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Text Display</Label>
+                  <div className="flex gap-1">
+                    {([
+                      { mode: "background" as TextDisplayMode, label: "Background", icon: <Square className="h-3.5 w-3.5" /> },
+                      { mode: "shadow" as TextDisplayMode, label: "Shadow", icon: <Type className="h-3.5 w-3.5" /> },
+                      { mode: "plain" as TextDisplayMode, label: "Plain", icon: <span className="h-3.5 w-3.5 flex items-center justify-center text-[10px] font-bold">Aa</span> },
+                    ]).map(({ mode, label, icon }) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setEditTextDisplayMode(mode)}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs transition-colors",
+                          editTextDisplayMode === mode
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        )}
+                      >
+                        {icon}
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 5. Background padding — only shown in background mode */}
+                {editTextDisplayMode === "background" && (
                 <div className="space-y-1.5">
                   <Label className="text-xs">Background Padding</Label>
                   <div className="grid grid-cols-2 gap-4">
@@ -887,6 +966,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                     </div>
                   </div>
                 </div>
+                )}
               </TabsContent>
 
               {/* Content tab: text input controls */}

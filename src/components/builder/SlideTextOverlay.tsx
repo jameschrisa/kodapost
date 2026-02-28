@@ -50,9 +50,12 @@ export function SlideTextOverlay({ overlay, scale = 0.3, interactive = false }: 
   const fontStyle = styling.fontStyle ?? "normal";
   const textAlign = styling.textAlign ?? "center";
 
-  // Only apply shadow when text is light-colored (readability aid on dark backgrounds).
-  // Dark text on light backgrounds should be flat — no shadow.
-  const shouldShowShadow = styling.textShadow && isLightColor(styling.textColor);
+  // Shadow display logic:
+  // - When text has a background box, only show shadow for light text (readability aid)
+  // - When text has NO background (shadow mode), always show shadow for contrast
+  const shouldShowShadow = styling.textShadow && (
+    !styling.backgroundColor || isLightColor(styling.textColor)
+  );
 
   // Background padding for text highlight (scaled for preview)
   const bgPad = styling.backgroundPadding ?? DEFAULT_BG_PADDING;
