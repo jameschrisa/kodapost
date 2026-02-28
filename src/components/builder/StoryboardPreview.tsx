@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Clock,
   Pause,
   Play,
   RotateCcw,
@@ -238,9 +239,6 @@ export function StoryboardPreview({
 
   const handleFilmstripClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      // Don't seek if clicking on a duration badge or editor
-      if ((e.target as HTMLElement).closest("[data-duration-control]")) return;
-
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const ratio = x / rect.width;
@@ -416,7 +414,6 @@ export function StoryboardPreview({
             {readySlides.map((slide, idx) => {
               const isActive = idx === currentSlideIndex;
               const slideDur = timing.slideDurations[idx] ?? timing.defaultSlideDuration;
-              const hasOverride = slide.durationOverride !== undefined;
               // Calculate width proportional to this slide's duration
               const widthPercent =
                 timing.totalDuration > 0
@@ -501,66 +498,11 @@ export function StoryboardPreview({
                     </div>
                   )}
 
-                  {/* Slide number + duration badge */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5 flex items-center justify-between">
+                  {/* Slide number label */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-0.5">
                     <span className="text-[9px] font-medium text-white/80">
                       {idx + 1}
                     </span>
-                    {/* Clickable duration badge */}
-                    {editingSlideIdx === idx ? (
-                      <div
-                        data-duration-control
-                        className="flex items-center gap-0.5"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <input
-                          ref={durationInputRef}
-                          type="number"
-                          step="0.5"
-                          min="0.5"
-                          max="60"
-                          defaultValue={slideDur.toFixed(1)}
-                          className="w-10 rounded bg-black/80 px-1 py-0 text-[9px] font-medium text-white text-center border border-purple-500/50 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleDurationSubmit(slide.id, e.currentTarget.value);
-                            } else if (e.key === "Escape") {
-                              setEditingSlideIdx(null);
-                            }
-                          }}
-                          onBlur={(e) => handleDurationSubmit(slide.id, e.currentTarget.value)}
-                        />
-                        {hasOverride && (
-                          <button
-                            type="button"
-                            data-duration-control
-                            onClick={(e) => handleDurationReset(slide.id, e)}
-                            className="text-white/60 hover:text-white"
-                            title="Reset to auto"
-                          >
-                            <X className="h-2.5 w-2.5" />
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        data-duration-control
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingSlideIdx(editingSlideIdx === idx ? null : idx);
-                        }}
-                        className={cn(
-                          "text-[9px] font-medium transition-colors",
-                          hasOverride
-                            ? "text-purple-400 hover:text-purple-300"
-                            : "text-white/60 hover:text-white/90"
-                        )}
-                        title={hasOverride ? `Custom: ${slideDur.toFixed(1)}s (click to edit, right-click to reset)` : "Click to set custom duration"}
-                      >
-                        {slideDur.toFixed(1)}s
-                      </button>
-                    )}
                   </div>
 
                   {/* Transition indicator between slides */}
@@ -581,6 +523,84 @@ export function StoryboardPreview({
             >
               <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2.5 w-2.5 rounded-full bg-purple-500 border-2 border-background" />
             </div>
+          </div>
+
+          {/* Timing strip — per-slide duration controls */}
+          <div className="flex gap-1 mt-1">
+            {readySlides.map((slide, idx) => {
+              const slideDur = timing.slideDurations[idx] ?? timing.defaultSlideDuration;
+              const hasOverride = slide.durationOverride !== undefined;
+              const widthPercent =
+                timing.totalDuration > 0
+                  ? ((slideDur - (idx < readySlides.length - 1 ? timing.transitionDuration : 0)) /
+                      timing.totalDuration) *
+                    100
+                  : 100 / readySlides.length;
+
+              return (
+                <div
+                  key={slide.id}
+                  className={cn(
+                    "flex-shrink-0 flex items-center justify-center rounded",
+                    "h-7 transition-colors",
+                    hasOverride
+                      ? "bg-purple-500/15 border border-purple-500/30"
+                      : "bg-muted/40 border border-transparent hover:bg-muted/60"
+                  )}
+                  style={{ width: `${Math.max(widthPercent, 8)}%` }}
+                >
+                  {editingSlideIdx === idx ? (
+                    <div
+                      className="flex items-center gap-1 px-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        ref={durationInputRef}
+                        type="number"
+                        step="0.5"
+                        min="0.5"
+                        max="60"
+                        defaultValue={slideDur.toFixed(1)}
+                        className="w-12 rounded bg-background px-1.5 py-0.5 text-xs font-medium text-foreground text-center border border-purple-500/50 outline-none focus:ring-1 focus:ring-purple-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleDurationSubmit(slide.id, e.currentTarget.value);
+                          } else if (e.key === "Escape") {
+                            setEditingSlideIdx(null);
+                          }
+                        }}
+                        onBlur={(e) => handleDurationSubmit(slide.id, e.currentTarget.value)}
+                      />
+                      {hasOverride && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDurationReset(slide.id, e)}
+                          className="text-muted-foreground hover:text-foreground"
+                          title="Reset to auto"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setEditingSlideIdx(editingSlideIdx === idx ? null : idx)}
+                      className={cn(
+                        "flex items-center gap-1 text-xs font-medium transition-colors",
+                        hasOverride
+                          ? "text-purple-400 hover:text-purple-300"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      title={hasOverride ? `Custom: ${slideDur.toFixed(1)}s — click to edit` : "Click to set custom duration"}
+                    >
+                      <Clock className="h-3 w-3" />
+                      {slideDur.toFixed(1)}s
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* Audio waveform (only when audio is present) */}
