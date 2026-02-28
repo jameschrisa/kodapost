@@ -25,6 +25,7 @@ import {
   Radio,
   Users,
 } from "lucide-react";
+import { IconBrandTelegram } from "@tabler/icons-react";
 import { KodaPostIcon } from "@/components/icons";
 import { springGentle } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
@@ -774,6 +775,136 @@ export function SplashScreen({
                         </div>
                       ))}
                     </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
+
+          {/* ================================================================
+              MOBILE / TELEGRAM SECTION
+              ================================================================ */}
+          <section id="mobile" className="relative py-28 px-6 bg-black overflow-hidden scroll-mt-16">
+            {/* Subtle blue glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-500/5 rounded-full blur-[120px] -z-0" />
+
+            <div className="max-w-5xl mx-auto relative z-10">
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                className="grid md:grid-cols-2 gap-12 items-center"
+              >
+                {/* Image placeholder — left side */}
+                <motion.div variants={staggerChild} className="relative order-2 md:order-1">
+                  <div className="aspect-[4/5] max-w-[320px] mx-auto rounded-[2rem] border border-white/[0.06] bg-gradient-to-b from-zinc-800/50 to-zinc-900/80 overflow-hidden flex flex-col items-center justify-center">
+                    {/* Phone mockup placeholder */}
+                    <div className="flex flex-col items-center gap-4 px-8 text-center">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                        <IconBrandTelegram size={32} className="text-blue-400" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-3 w-32 rounded-full bg-white/[0.06]" />
+                        <div className="h-3 w-24 rounded-full bg-white/[0.04] mx-auto" />
+                      </div>
+                      <div className="mt-4 space-y-3 w-full">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-purple-500/10 shrink-0" />
+                          <div className="flex-1 space-y-1.5">
+                            <div className="h-2 w-full rounded-full bg-white/[0.06]" />
+                            <div className="h-2 w-3/4 rounded-full bg-white/[0.04]" />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-amber-500/10 shrink-0" />
+                          <div className="flex-1 space-y-1.5">
+                            <div className="h-2 w-full rounded-full bg-white/[0.06]" />
+                            <div className="h-2 w-2/3 rounded-full bg-white/[0.04]" />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-green-500/10 shrink-0" />
+                          <div className="flex-1 space-y-1.5">
+                            <div className="h-2 w-full rounded-full bg-white/[0.06]" />
+                            <div className="h-2 w-1/2 rounded-full bg-white/[0.04]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Replace placeholder text */}
+                    <p className="mt-6 text-[10px] uppercase tracking-widest text-white/15 font-medium">Image placeholder</p>
+                  </div>
+                </motion.div>
+
+                {/* Text content — right side */}
+                <motion.div variants={staggerChild} className="order-1 md:order-2">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6">
+                    <Smartphone className="h-3.5 w-3.5" />
+                    Create on the Go
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
+                    Your Phone is a{" "}
+                    <span className="text-white/40">Content Studio.</span>
+                  </h2>
+                  <div className="space-y-4 text-white/45 text-sm leading-relaxed">
+                    <p>
+                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. Koda receives your images, applies your preferred style, and queues a carousel draft &mdash; all while you&apos;re still on the go.
+                    </p>
+                    <p>
+                      No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
+                    </p>
+                  </div>
+
+                  {/* Steps */}
+                  <div className="mt-8 space-y-4">
+                    {[
+                      { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
+                      { icon: IconBrandTelegram, label: "Send to Koda via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
+                      { icon: Sparkles, label: "Koda drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
+                      { icon: Camera, label: "Finalize on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
+                    ].map((step, i) => (
+                      <div key={step.label} className="flex items-center gap-4">
+                        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step.bg}`}>
+                          {step.tabler ? (
+                            <step.icon size={18} className={step.color} />
+                          ) : (
+                            <step.icon className={`h-[18px] w-[18px] ${step.color}`} />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="text-sm font-medium text-white/70">{step.label}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA buttons */}
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    {isMobile ? (
+                      <Button
+                        size="sm"
+                        asChild
+                        className="rounded-xl bg-blue-600 hover:bg-blue-500 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/20"
+                      >
+                        <a href="https://go.kodapost.com">
+                          Try KodaGo
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="rounded-xl border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white px-5 text-sm font-bold"
+                      >
+                        <a href="https://go.kodapost.com">
+                          <Smartphone className="h-3.5 w-3.5 mr-1.5" />
+                          KodaGo Mobile
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               </motion.div>
