@@ -434,21 +434,21 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={onBack}>
             &larr; Back
           </Button>
           <div>
-            <h2 className="text-lg font-semibold">Editorial</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="text-lg font-semibold">Design</h2>
+            <p className="hidden sm:block text-sm text-muted-foreground">
               Drag to position text. Changes save automatically.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <SaveProjectButton project={project} />
-          <Button onClick={onNext} className="gap-2">
+          <Button onClick={onNext} className="gap-2 flex-1 sm:flex-none">
             Continue to Review
             <ArrowRight className="h-4 w-4" />
           </Button>
@@ -729,7 +729,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
               onTouchMove={handleTouchMove}
               onTouchEnd={handleDragMouseUp}
               className={cn(
-                "relative w-full max-w-[500px] overflow-hidden rounded-lg bg-black shadow-lg select-none",
+                "relative w-full max-w-full sm:max-w-[500px] overflow-hidden rounded-lg bg-black shadow-lg select-none",
                 platformConfig.aspectClass,
                 isDragging ? "cursor-grabbing" : "cursor-move"
               )}
@@ -798,7 +798,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
 
           {/* Inline text editing controls */}
           {selectedSlide && (
-            <Tabs defaultValue="format" className="max-w-[500px] mx-auto">
+            <Tabs defaultValue="format" className="max-w-full sm:max-w-[500px] mx-auto">
               <TabsList data-tour="tour-edit-panel" className="w-full mb-3">
                 <TabsTrigger value="format" className="flex-1">Format</TabsTrigger>
                 <TabsTrigger value="content" className="flex-1">Content</TabsTrigger>
@@ -807,7 +807,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
               {/* Format tab: styling controls */}
               <TabsContent value="format" className="space-y-4 mt-0">
                 {/* 1. Icon toolbar: alignment + italic + text color */}
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1">
                   {(["left", "center", "right"] as const).map((align) => (
                     <button
                       key={align}

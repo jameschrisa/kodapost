@@ -5,11 +5,17 @@ import { isLightColor } from "./utils";
 /**
  * Generates an SVG string that renders the text overlay for Sharp compositing.
  * The SVG matches the full image dimensions so Sharp can composite it directly.
+ *
+ * @param safeArea - Optional platform-specific safe zone insets (in pixels).
+ *   Text positions are clamped so they never render outside this region.
+ *   Used for YouTube Shorts where UI chrome (Subscribe button, description)
+ *   covers the top and bottom 285 px of the 1080×1920 frame.
  */
 export function generateOverlaySVG(
   overlay: TextOverlay,
   width: number,
-  height: number
+  height: number,
+  safeArea?: { top: number; right: number; bottom: number; left: number }
 ): string {
   const { content, styling, positioning } = overlay;
 
@@ -92,8 +98,18 @@ export function generateOverlaySVG(
   if (freePos) {
     const textAlign = styling.textAlign ?? "center";
     const svgTextAnchor = textAlign === "left" ? "start" : textAlign === "right" ? "end" : "middle";
-    const svgX = (freePos.x / 100) * width;
-    const svgBaseY = (freePos.y / 100) * height;
+
+    // Clamp X within safe horizontal zone
+    const safeLeft = safeArea?.left ?? 0;
+    const safeRight = safeArea?.right ?? 0;
+    const rawX = (freePos.x / 100) * width;
+    const svgX = Math.max(safeLeft, Math.min(width - safeRight, rawX));
+
+    // Clamp Y within safe vertical zone
+    const safeTop = safeArea?.top ?? 0;
+    const safeBottom = safeArea?.bottom ?? 0;
+    const rawY = (freePos.y / 100) * height;
+    const svgBaseY = Math.max(safeTop, Math.min(height - safeBottom, rawY));
 
     // Calculate total text height to offset upward (matching CSS translate(X, -100%))
     const totalTextHeight =
@@ -125,12 +141,13 @@ export function generateOverlaySVG(
 
   // ── Legacy padding+alignment fallback ──
 
-  // Enforce minimum padding on all sides
+  // Enforce minimum padding: use the greater of MIN_OVERLAY_PADDING, the
+  // user's configured padding, and any platform safe-area inset.
   const padding = {
-    top: Math.max(MIN_OVERLAY_PADDING, positioning.padding.top),
-    right: Math.max(MIN_OVERLAY_PADDING, positioning.padding.right),
-    bottom: Math.max(MIN_OVERLAY_PADDING, positioning.padding.bottom),
-    left: Math.max(MIN_OVERLAY_PADDING, positioning.padding.left),
+    top: Math.max(MIN_OVERLAY_PADDING, positioning.padding.top, safeArea?.top ?? 0),
+    right: Math.max(MIN_OVERLAY_PADDING, positioning.padding.right, safeArea?.right ?? 0),
+    bottom: Math.max(MIN_OVERLAY_PADDING, positioning.padding.bottom, safeArea?.bottom ?? 0),
+    left: Math.max(MIN_OVERLAY_PADDING, positioning.padding.left, safeArea?.left ?? 0),
   };
 
   // Calculate text anchor based on horizontal alignment

@@ -622,13 +622,24 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         // Collect warnings (constraints that affect this specific project)
         const warnings: string[] = [];
         for (const { platform, rules } of selectedRules) {
+          const platformLabel =
+            platform === "youtube" ? "YouTube" :
+            platform === "youtube_shorts" ? "YouTube Shorts" :
+            platform === "x" ? "X" :
+            platform.charAt(0).toUpperCase() + platform.slice(1);
+
           if (!rules.supportsCarousel && readySlides.length > 1) {
             warnings.push(
-              `${platform === "youtube" ? "YouTube" : platform.charAt(0).toUpperCase() + platform.slice(1)} community posts are single-image only — only your first slide will be used.`
+              `${platformLabel} supports a single image only — only your first slide will be used.`
             );
           } else if (rules.maxCarouselImages < readySlides.length) {
             warnings.push(
-              `${platform === "x" ? "X" : platform.charAt(0).toUpperCase() + platform.slice(1)} supports max ${rules.maxCarouselImages} images — only the first ${rules.maxCarouselImages} slides will be exported.`
+              `${platformLabel} supports max ${rules.maxCarouselImages} images — only the first ${rules.maxCarouselImages} slides will be exported.`
+            );
+          }
+          if (platform === "youtube_shorts" && rules.supportsCarousel) {
+            warnings.push(
+              "YouTube Shorts: keep text and logos within the centered 4:5 safe zone — the Subscribe button and description cover the top and bottom ~285 px of each frame."
             );
           }
         }
@@ -658,12 +669,14 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                       {platform === "tiktok" && "TikTok"}
                       {platform === "linkedin" && "LinkedIn"}
                       {platform === "youtube" && "YouTube"}
+                      {platform === "youtube_shorts" && "YouTube Shorts"}
                       {platform === "x" && "X (Twitter)"}
                     </>
                   )}{" "}
                   — {rules.carouselType === "native_swipe" && "Swipeable carousel"}
                   {rules.carouselType === "photo_mode" && "Photo Mode carousel"}
                   {rules.carouselType === "pdf_document" && "PDF document carousel"}
+                  {rules.carouselType === "vertical_swipe" && "Vertical swipe carousel (up to 10 images)"}
                   {rules.carouselType === "single_image" && "Single image only"}
                   {rules.carouselType === "multi_image_grid" && "Multi-image grid (max 4)"}
                 </p>
@@ -694,7 +707,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       {selected.size > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Export Mode</p>
-          <div className={cn("grid gap-3", project.audioClip?.objectUrl ? "grid-cols-3" : "grid-cols-2")}>
+          <div className={cn("grid gap-3", project.audioClip?.objectUrl ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
             {/* Video Reel — primary when audio present */}
             {project.audioClip?.objectUrl && (
               <button

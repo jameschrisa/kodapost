@@ -75,7 +75,8 @@ import {
   loadDraft,
 } from "@/lib/draft-storage";
 import { createNewDraft, switchDraft } from "@/lib/draft-manager";
-import type { AudioClip, CarouselProject, CarouselSlide, DraftMetadata, UploadedImage, VideoSettings } from "@/lib/types";
+import { DEFAULT_GLOBAL_OVERLAY_STYLE } from "@/lib/constants";
+import type { AudioClip, CarouselProject, CarouselSlide, DraftMetadata, PostMode, UploadedImage, VideoSettings } from "@/lib/types";
 import { TourContext } from "@/components/tour/TourContext";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
@@ -477,6 +478,28 @@ export default function Home() {
     setProject(updated);
   }, []);
 
+  const handlePostModeChange = useCallback((mode: PostMode) => {
+    setProject((prev) => ({
+      ...prev,
+      postMode: mode,
+      slideCount: mode === "single" ? 1 : (prev.slideCount < 2 ? 5 : prev.slideCount),
+    }));
+  }, []);
+
+  const handleHeadlineModeChange = useCallback((mode: "all" | "first_only" | "none") => {
+    setProject((prev) => {
+      const gos = prev.globalOverlayStyle ?? { ...DEFAULT_GLOBAL_OVERLAY_STYLE };
+      return {
+        ...prev,
+        globalOverlayStyle: { ...gos, headlineMode: mode, showHeadline: mode !== "none" },
+      };
+    });
+  }, []);
+
+  const handleSlideCountChange = useCallback((count: number) => {
+    setProject((prev) => ({ ...prev, slideCount: count }));
+  }, []);
+
   const handleAudioChange = useCallback((clip: AudioClip | undefined) => {
     setProject((prev) => ({ ...prev, audioClip: clip }));
   }, []);
@@ -643,7 +666,7 @@ export default function Home() {
       navigateToStep(targetStep);
       logActivity("draft_resumed", `Resumed at ${targetStep}`, activeDraftId ?? undefined);
       toast.success("Project restored", {
-        description: `Resuming at ${targetStep === "configure" ? "Setup" : targetStep === "edit" ? "Editorial" : targetStep === "review" ? "Finalize" : targetStep === "publish" ? "Publish" : "Upload"}.`,
+        description: `Resuming at ${targetStep === "configure" ? "Craft" : targetStep === "edit" ? "Editorial" : targetStep === "review" ? "Finalize" : targetStep === "publish" ? "Publish" : "Upload"}.`,
         duration: 3000,
       });
     } else if (!hasImages && savedStep !== "upload") {
@@ -918,19 +941,19 @@ export default function Home() {
 
       {/* Header */}
       <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center gap-2 sm:gap-4 px-4 py-3 sm:py-4 sm:px-6">
           <button
             type="button"
             onClick={handleBrandClick}
-            className="flex items-center gap-3 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex items-center gap-2 sm:gap-3 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label="Show start screen"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <KodaPostIcon className="h-5 w-5" />
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <KodaPostIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="text-left">
-              <h1 className="text-lg font-bold leading-tight">KodaPost</h1>
-              <p className="text-xs text-muted-foreground">
+              <h1 className="text-base sm:text-lg font-bold leading-tight">KodaPost</h1>
+              <p className="hidden sm:block text-xs text-muted-foreground">
                 Transform photos into stunning carousels
               </p>
             </div>
@@ -1110,7 +1133,19 @@ export default function Home() {
                   </motion.div>
                 )}
                 <motion.div variants={staggerItemVariants}>
-                  <ImageUploader onComplete={handleUploadComplete} />
+                  <ImageUploader
+                    onComplete={handleUploadComplete}
+                    postMode={project.postMode ?? "carousel"}
+                    onPostModeChange={handlePostModeChange}
+                    existingImages={project.uploadedImages.length > 0 ? project.uploadedImages : undefined}
+                    headlineMode={
+                      project.globalOverlayStyle?.headlineMode ??
+                      (project.globalOverlayStyle?.showHeadline === false ? "none" : "all")
+                    }
+                    onHeadlineModeChange={handleHeadlineModeChange}
+                    slideCount={project.slideCount}
+                    onSlideCountChange={handleSlideCountChange}
+                  />
                 </motion.div>
               </motion.div>
             </motion.div>
@@ -1133,7 +1168,7 @@ export default function Home() {
               >
                 <motion.div className="mb-6" variants={staggerItemVariants}>
                   <h2 className="text-xl font-semibold">
-                    {(project.postMode ?? "carousel") === "single" ? "Setup Your Post" : "Setup Your Carousel"}
+                    {(project.postMode ?? "carousel") === "single" ? "Craft Your Post" : "Craft Your Carousel"}
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Set your theme, choose a vintage camera style, and customize

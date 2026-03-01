@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "priceId is required" }, { status: 400 });
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: "2026-01-28.clover" });
+  const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
 
   // Get or create Stripe customer for this Clerk user
   const client = await clerkClient();

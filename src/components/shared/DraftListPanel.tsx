@@ -33,8 +33,8 @@ import type { DraftMetadata } from "@/lib/types";
 const STEP_LABELS: Record<string, string> = {
   upload: "Upload",
   configure: "Configure",
-  edit: "Editorial",
-  review: "Finalize",
+  edit: "Design",
+  review: "Review",
   publish: "Publish",
 };
 

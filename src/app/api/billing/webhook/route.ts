@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: "2026-01-28.clover" });
+  const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
 
   const sig = request.headers.get("stripe-signature");
   if (!sig) {

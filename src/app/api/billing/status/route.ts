@@ -41,7 +41,7 @@ export async function GET() {
     return NextResponse.json({ invoices: [] });
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: "2026-01-28.clover" });
+  const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
 
   // Fetch last 5 invoices
   const invoiceList = await stripe.invoices.list({

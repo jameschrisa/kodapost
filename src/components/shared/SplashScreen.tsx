@@ -24,6 +24,8 @@ import {
   LayoutTemplate,
   Radio,
   Users,
+  Menu,
+  X,
 } from "lucide-react";
 import { IconBrandTelegram } from "@tabler/icons-react";
 import { KodaPostIcon, UserHexagonIcon } from "@/components/icons";
@@ -183,6 +185,7 @@ export function SplashScreen({
   const userInfo = useUserInfo();
   const [visible, setVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Parallax for hero orbs based on scroll
@@ -301,8 +304,18 @@ export function SplashScreen({
                 )}
               </nav>
 
-              {/* Auth / CTA */}
-              <div className="flex items-center gap-3">
+              {/* Mobile menu toggle — visible below md */}
+              <button
+                type="button"
+                className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+
+              {/* Auth / CTA — hidden on mobile (moved into hamburger menu) */}
+              <div className="hidden md:flex items-center gap-3">
                 {isMobile ? (
                   <Button
                     size="sm"
@@ -370,6 +383,91 @@ export function SplashScreen({
               </div>
             </div>
           </header>
+
+          {/* Mobile navigation menu — slide down on small screens */}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="sticky top-[57px] z-40 overflow-hidden md:hidden border-b border-white/[0.06] bg-zinc-950/95 backdrop-blur-xl"
+              >
+                <nav className="max-w-5xl mx-auto flex flex-col gap-1 px-6 py-4">
+                  {[
+                    { label: "About", href: "/about", isPage: true },
+                    { label: "Features", href: "#features", isPage: false },
+                    { label: "Pricing", href: "/billing", isPage: true },
+                  ].map((link) =>
+                    link.isPage ? (
+                      <Link
+                        key={link.label}
+                        href={link.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg px-3 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setMobileMenuOpen(false);
+                          containerRef.current
+                            ?.querySelector(link.href)
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className="block rounded-lg px-3 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    )
+                  )}
+                  {/* Auth CTA in mobile menu */}
+                  <div className="mt-2 pt-3 border-t border-white/[0.06] flex flex-col gap-2">
+                    {isClerkEnabled && isSignedIn ? (
+                      <Button
+                        size="sm"
+                        onClick={() => { setMobileMenuOpen(false); handleGetStarted(); }}
+                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 text-sm font-bold text-white shadow-lg shadow-orange-500/20"
+                      >
+                        Open App
+                      </Button>
+                    ) : isClerkEnabled ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          asChild
+                          className="w-full text-sm font-semibold text-white/70 hover:text-white"
+                        >
+                          <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          asChild
+                          className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 text-sm font-bold text-white shadow-lg shadow-orange-500/20"
+                        >
+                          <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)}>Launch App</Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => { setMobileMenuOpen(false); handleGetStarted(); }}
+                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 text-sm font-bold text-white shadow-lg shadow-orange-500/20"
+                      >
+                        Launch App
+                      </Button>
+                    )}
+                  </div>
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* ================================================================
               HERO SECTION

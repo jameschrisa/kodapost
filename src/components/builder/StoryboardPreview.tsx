@@ -57,7 +57,9 @@ const TRANSITION_OPTIONS: { value: SlideTransition; label: string }[] = [
   { value: "none", label: "None" },
 ];
 
-const THUMB_HEIGHT = 120;
+// Responsive: use smaller thumbs on mobile, larger on desktop
+const THUMB_HEIGHT_SM = 120;
+const THUMB_HEIGHT_LG = 200;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -74,6 +76,15 @@ export function StoryboardPreview({
     () => project.slides.filter((s) => s.status === "ready"),
     [project.slides]
   );
+
+  // Responsive thumbnail height
+  const [thumbHeight, setThumbHeight] = useState(THUMB_HEIGHT_LG);
+  useEffect(() => {
+    const update = () => setThumbHeight(window.innerWidth < 640 ? THUMB_HEIGHT_SM : THUMB_HEIGHT_LG);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   // Playback state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -232,6 +243,15 @@ export function StoryboardPreview({
     },
     [onSlideDurationChange]
   );
+
+  const handleResetAllDurations = useCallback(() => {
+    readySlides.forEach((slide) => {
+      if (slide.durationOverride !== undefined) {
+        onSlideDurationChange?.(slide.id, undefined);
+      }
+    });
+    setEditingSlideIdx(null);
+  }, [readySlides, onSlideDurationChange]);
 
   // -----------------------------------------------------------------------
   // Filmstrip click to seek
@@ -400,6 +420,23 @@ export function StoryboardPreview({
               </Button>
             </>
           )}
+
+          {/* Reset all custom durations */}
+          {overrideCount > 0 && (
+            <>
+              <div className="h-5 w-px bg-border" />
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleResetAllDurations}
+                className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+                title="Reset all custom slide durations to default"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Reset Timings
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Filmstrip + Playhead + Waveform */}
@@ -408,7 +445,7 @@ export function StoryboardPreview({
           <div
             ref={filmstripRef}
             className="relative flex gap-1 overflow-x-auto pb-1 scrollbar-thin cursor-pointer"
-            style={{ height: THUMB_HEIGHT + 24 }}
+            style={{ height: thumbHeight + 24 }}
             onClick={handleFilmstripClick}
           >
             {readySlides.map((slide, idx) => {
@@ -433,7 +470,7 @@ export function StoryboardPreview({
                   )}
                   style={{
                     width: `${Math.max(widthPercent, 8)}%`,
-                    height: THUMB_HEIGHT,
+                    height: thumbHeight,
                   }}
                 >
                   {/* Slide thumbnail */}

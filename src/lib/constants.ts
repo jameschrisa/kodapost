@@ -148,24 +148,24 @@ export const PLATFORM_RULES = {
     ],
   },
   youtube_shorts: {
-    maxCarouselImages: 1,
-    minCarouselImages: 1,
-    supportsCarousel: false,
-    carouselType: "single_image" as const,
+    maxCarouselImages: 10,
+    minCarouselImages: 2,
+    supportsCarousel: true,
+    carouselType: "vertical_swipe" as const,
     captionMax: 2200,
     captionFirstLinePreview: 150,
     hashtagMax: 30,
     hashtagOptimal: { min: 3, max: 5 },
     requirements: [
-      "Shorts are vertical-first: 1080×1920 px (9:16 aspect ratio required)",
-      "Content must be 60 seconds or under to qualify as a Short",
-      "Single image Shorts use a still frame at full 9:16 resolution",
-      "Supported formats: JPEG, PNG (for static image Shorts)",
+      "Up to 10 images per carousel — swiped vertically in the Shorts player",
+      "All images must be 9:16 vertical (1080×1920 px) for full-screen display",
+      "Safe area: keep critical text within the centered 4:5 zone (285 px top/bottom margin) to avoid Subscribe button and description overlay",
+      "Supported formats: JPEG, PNG",
     ],
     bestPractices: [
       "9:16 vertical fills the entire mobile screen — no letterboxing",
-      "Shorts surface in YouTube's dedicated Shorts feed for massive reach",
-      "Hook viewers in the first 2 seconds — attention span is very short",
+      "Hook viewers in the first slide — it's the frame shown before they swipe",
+      "Keep text and logos inside the 4:5 safe zone (center of the frame) to avoid UI occlusion",
       "Text overlays are critical — Shorts auto-play without sound",
       "Use 3–5 niche hashtags including #Shorts to enter the Shorts algorithm",
     ],
@@ -454,6 +454,25 @@ export const DEFAULT_OVERLAY_PADDING = {
 };
 
 export const MIN_OVERLAY_PADDING = 20;
+
+// -----------------------------------------------------------------------------
+// Platform Safe Areas
+// -----------------------------------------------------------------------------
+// Defines the minimum insets that keep text/logos clear of platform UI chrome
+// at export time (e.g. Subscribe button, description overlay in YouTube Shorts).
+//
+// YouTube Shorts safe area: the centered 4:5 region within the 9:16 canvas.
+//   Full frame:  1080 × 1920 px
+//   4:5 at 1080: 1080 × 1350 px
+//   Top offset:  (1920 − 1350) / 2 = 285 px
+//   Bottom offset: 285 px
+//   Left/Right: full-width is safe (0 px inset)
+
+export const PLATFORM_SAFE_AREA: Partial<
+  Record<string, { top: number; right: number; bottom: number; left: number }>
+> = {
+  youtube_shorts: { top: 285, right: 0, bottom: 285, left: 0 },
+};
 
 // Default stroke (text outline) settings
 export const DEFAULT_STROKE_WIDTH = 3;

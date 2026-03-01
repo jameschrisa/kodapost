@@ -1,4 +1,5 @@
-import { DEFAULT_GLOBAL_OVERLAY_STYLE } from "./constants";
+import { DEFAULT_GLOBAL_OVERLAY_STYLE, PLATFORM_RULES } from "./constants";
+import type { PlatformRulesKey } from "./constants";
 import type { CarouselProject, ValidationResult } from "./types";
 
 const MIN_SLIDES = 2;
@@ -31,6 +32,17 @@ export function validateCarouselReadiness(
       errors.push(`Slide count must be at least ${MIN_SLIDES}. Currently: ${project.slideCount}.`);
     } else if (project.slideCount > MAX_SLIDES) {
       errors.push(`Slide count cannot exceed ${MAX_SLIDES}. Currently: ${project.slideCount}.`);
+    }
+
+    // Platform-specific slide count limits
+    for (const platform of project.targetPlatforms) {
+      const rules = PLATFORM_RULES[platform as PlatformRulesKey];
+      if (!rules || !rules.supportsCarousel) continue;
+      if (project.slideCount > rules.maxCarouselImages) {
+        errors.push(
+          `${platform === "youtube_shorts" ? "YouTube Shorts" : platform} supports a maximum of ${rules.maxCarouselImages} images. Reduce your slide count to ${rules.maxCarouselImages} or fewer.`
+        );
+      }
     }
   }
 

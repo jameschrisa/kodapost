@@ -14,8 +14,8 @@
    - [Step 1: Upload](#step-1-upload)
    - [Step 2: Setup](#step-2-setup)
    - [Step 3: Stylize](#step-3-stylize)
-   - [Step 4: Editorial](#step-4-editorial)
-   - [Step 5: Finalize](#step-5-finalize)
+   - [Step 4: Design](#step-4-design)
+   - [Step 5: Review](#step-5-review)
    - [Step 6: Publish](#step-6-publish)
 5. [Audio & Music](#5-audio--music)
 6. [Storyboard & Video Reel](#6-storyboard--video-reel)
@@ -74,7 +74,10 @@ KodaPost supports **email/password**, **Google Sign-In**, and **Apple Sign-In** 
 
 ### The Welcome Screen
 
-On your first visit, an animated splash screen introduces KodaPost with a random creative quote. Click **Get Started** to enter the app.
+On your first visit, an animated splash screen introduces KodaPost with a random creative quote. Two primary buttons appear:
+
+- **Get Started** — enters the app immediately
+- **Take a Tour** — launches the interactive guided tour (highlighted in purple; recommended for first-time users)
 
 ### The Introduction Page
 
@@ -155,12 +158,12 @@ The carousel builder is a **6-step wizard** that guides you from raw photos to a
 
 #### Post Type
 
-Below the upload area, choose your post type:
+Once your images appear in the preview grid, a **Post Type** card fades in below them:
 
 - **Single Post** — One image, one story (for standalone posts)
-- **Carousel** — Multi-slide storytelling with 2–12 slides (default when you upload multiple images)
+- **Carousel** — Multi-slide storytelling with 2–12 slides
 
-The app selects the appropriate type automatically based on how many images you upload, but you can switch manually.
+The app selects the appropriate type automatically: uploading one image selects **Single Post** and disables **Carousel** (add more images to unlock it). Uploading two or more images selects **Carousel** by default. You can switch freely before continuing.
 
 #### What Happens Next
 
@@ -193,16 +196,16 @@ Select one or more **Vibe** tags to set the emotional tone of your content:
 | 🔥 Controversial | Opinion pieces, conversation starters |
 | 👀 Observational | Trends, social commentary, slice-of-life |
 
-#### Slides & Text Overlays
+#### Text Overlays & Slide Count
 
-Use the **Slides** tab to set the number of slides (2–12 for carousel). Use the **Text Overlays** tab to toggle:
+At the top of Setup, the **Text Overlays** card controls what Koda generates for each slide:
 
-- **Headlines** — Main text overlay per slide (on by default for carousels)
-- **Subtitles** — Supporting secondary text (off by default)
+- **Headlines** mode — **All slides** (default for carousels), **First slide only** (title card + photo-only remaining slides), or **Off** (images only)
+- **Slide count** — For carousels, choose how many slides to generate (2–12). Visible only in Carousel mode.
 
 #### CSV Import
 
-If you have your own headlines and subtitles ready, click **Import CSV** to upload a spreadsheet. The CSV should have columns named `headline` (or `title`/`primary`) and optionally `subtitle` (or `caption`/`secondary`). One row per slide.
+If you have your own headlines ready, click **Import** in the Text Overlays card to upload a spreadsheet. The CSV should have columns named `headline` (or `title`/`primary`) and optionally `subtitle` (or `caption`/`secondary`). One row per slide.
 
 #### Social Caption
 
@@ -287,11 +290,11 @@ Click **Reset** to return to the camera profile's default values.
 
 ---
 
-### Step 4: Editorial
+### Step 4: Design
 
 **Goal:** Perfect the text overlays on each slide.
 
-The Editorial step opens a full-screen text editor with a large slide preview on the right and controls on the left.
+The Design step opens a full-screen text editor with a large slide preview on the right and controls on the left.
 
 #### Global Style Controls
 
@@ -334,11 +337,11 @@ Click the crop icon on any slide to open the crop dialog. Crop is applied per-sl
 
 ---
 
-### Step 5: Finalize
+### Step 5: Review
 
 **Goal:** Review your slides, add audio, and prepare for export or publishing.
 
-The Finalize step has two view modes toggled at the top:
+The Review step has two view modes toggled at the top:
 
 #### Grid View
 
@@ -351,15 +354,15 @@ A paginated grid showing all generated slide thumbnails (6 per page). Each card 
 - **Text overlay preview** at thumbnail scale
 - **Drag handle** for reordering
 
-Use the **Export** and **Publish** buttons in the header to proceed without switching to Timeline view.
+Use the **Export** and **Publish** buttons in the header to proceed without switching to Storyboard view.
 
 **Retrying Failed Slides**
 
 If a slide fails to generate, an error icon appears on its card. Click the **Retry** button on the individual card, or use the **Retry Failed** button in the header to retry all failed slides at once.
 
-#### Timeline View (Storyboard)
+#### Storyboard View
 
-The Timeline view activates when audio is present and provides a visual storyboard with:
+The Storyboard view activates when audio is present and provides a visual timeline with:
 
 - A **filmstrip** of slide thumbnails scrolling horizontally, proportional to each slide's duration
 - An **audio waveform** below the filmstrip, synchronized to the timeline
@@ -385,7 +388,7 @@ KodaPost supports adding a soundtrack to your carousel, which is used for video 
 
 ### Opening the Audio Panel
 
-The **Audio** panel is available in the Finalize step. Click the music note icon or the "Add Audio" button to expand it.
+The **Audio** panel is available in the Review step. Click the music note icon or the "Add Audio" button to expand it.
 
 ### Three Ways to Add Audio
 
@@ -447,7 +450,7 @@ KodaPost can generate a **video reel** — a full MP4 video with your slides com
 
 ### Viewing the Storyboard
 
-In the Finalize step, click **Timeline** (visible when audio is present) to switch to the storyboard view.
+In the Review step, click **Storyboard** (visible when audio is present) to switch to the storyboard view.
 
 ### Storyboard Controls
 
@@ -474,6 +477,15 @@ Choose how slides transition into each other:
 | **Custom** | Each slide displays for a fixed duration (default 3 seconds) |
 
 **Match Audio** is the recommended mode when you have a soundtrack — it ensures the video ends exactly when the music ends.
+
+#### Per-Slide Duration Overrides
+
+Below the filmstrip, a **timing strip** shows each slide's current duration. Slides are sized proportionally to their share of the total video length.
+
+- **Click any duration badge** (e.g. `3.0s`) to enter a custom duration for that slide (0.5–60 seconds). Press **Enter** or click away to confirm; press **Escape** to cancel.
+- Slides with a custom override are highlighted in purple. When audio is attached, the remaining time is redistributed evenly across all non-overridden slides.
+- **Reset** icon next to the input — clears the override for that slide and returns it to auto timing.
+- **Reset Timings button** — appears in the toolbar when any overrides are active. Click it to clear all custom durations at once and return to automatic distribution.
 
 #### Clear Track
 
@@ -511,7 +523,7 @@ Before exporting, preview exactly how your carousel will look on each target pla
 
 ### Platform Preview Buttons
 
-Click any platform button in the Finalize header to switch the slide grid to that platform's aspect ratio:
+Click any platform button in the Review step header to switch the slide grid to that platform's aspect ratio:
 
 | Preview | Aspect Ratio | Represents |
 |---|---|---|
@@ -682,7 +694,7 @@ By default, text overlays use:
 
 ### Editing Text
 
-In the Editorial step, you can:
+In the Design step, you can:
 
 1. **Edit text directly** — Click the headline or subtitle input for any slide and type your own content
 2. **Drag to reposition** — Click and drag the text overlay in the large preview to place it exactly where you want
@@ -727,10 +739,13 @@ See [Section 6: Storyboard & Video Reel](#6-storyboard--video-reel) for the full
 |---|---|---|---|---|
 | Instagram | 1080 × 1350 px | 4:5 | JPEG | 85 |
 | TikTok | 1080 × 1920 px | 9:16 | JPEG | 90 |
+| YouTube Shorts | 1080 × 1920 px | 9:16 | JPEG | 90 |
 | LinkedIn | 1080 × 1350 px | 4:5 | PNG | 95 |
 | YouTube | 1000 × 1000 px | 1:1 | JPEG | 85 |
 | Reddit | 1200 × 1200 px | 1:1 | PNG | 95 |
 | Lemon8 | 1080 × 1440 px | 3:4 | JPEG | 90 |
+
+> **YouTube Shorts safe zone:** The Shorts player overlays a Subscribe button and description bar that cover approximately the top and bottom 285 px of each 1080 × 1920 frame. KodaPost automatically clamps text overlays to stay within the centered 4:5 safe region (1080 × 1350 px) during export. Keep important logos and text within this area when positioning manually.
 
 ---
 
@@ -746,6 +761,7 @@ KodaPost can post directly to your connected social accounts via OAuth. Direct p
 | TikTok | Carousel via Content API |
 | LinkedIn | Image post via Share API |
 | YouTube | Community post |
+| YouTube Shorts | Vertical swipe carousel (up to 10 images) |
 | Reddit | Gallery post |
 | Lemon8 | Photo post via Content API |
 
@@ -770,7 +786,7 @@ In the Publish step:
 
 ### Scheduled Publishing
 
-Click **Schedule for Later** to expand scheduling controls. Set a date and time, and KodaPost will mark the post as scheduled. A visual amber badge appears in the Finalize header as a reminder. Scheduled times are stored in your draft.
+Click **Schedule for Later** to expand scheduling controls. Set a date and time, and KodaPost will mark the post as scheduled. A visual amber badge appears in the Review step header as a reminder. Scheduled times are stored in your draft.
 
 ### Caption Limits by Platform
 

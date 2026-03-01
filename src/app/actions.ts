@@ -11,7 +11,7 @@ import type {
   TextOverlay,
 } from "@/lib/types";
 import { generateOverlaySVG } from "@/lib/svg-overlay";
-import { PLATFORM_IMAGE_SPECS, DEFAULT_OVERLAY_STYLING, DEFAULT_OVERLAY_PADDING, FREE_POSITION_FROM_ALIGNMENT, FREE_POSITION_X_FROM_HORIZONTAL } from "@/lib/constants";
+import { PLATFORM_IMAGE_SPECS, PLATFORM_SAFE_AREA, DEFAULT_OVERLAY_STYLING, DEFAULT_OVERLAY_PADDING, FREE_POSITION_FROM_ALIGNMENT, FREE_POSITION_X_FROM_HORIZONTAL } from "@/lib/constants";
 import {
   calculateImageSourceStrategy,
   getSlideType,
@@ -684,7 +684,8 @@ export async function compositeSlideImages(
             const svgString = generateOverlaySVG(
               slide.textOverlay,
               spec.width,
-              spec.height
+              spec.height,
+              PLATFORM_SAFE_AREA[platform]
             );
             if (svgString) {
               const svgBuffer = Buffer.from(svgString);

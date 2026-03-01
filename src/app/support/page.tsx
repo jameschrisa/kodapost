@@ -52,8 +52,8 @@ export default function SupportPage() {
             your files.
           </li>
           <li>
-            Follow the five-step workflow: <strong>Upload → Setup →
-            Editorial → Finalize → Publish</strong>.
+            Follow the five-step workflow: <strong>Upload → Craft →
+            Design → Review → Publish</strong>.
           </li>
           <li>
             Use the interactive tour (Menu → Help → Take a Tour) for a guided
@@ -100,7 +100,7 @@ export default function SupportPage() {
 
         <h3>Can I reorder photos after uploading?</h3>
         <p>
-          Yes. In the Editorial step, drag and drop slides to reorder them. The
+          Yes. In the Design step, drag and drop slides to reorder them. The
           first slide becomes the cover image of your carousel.
         </p>
 
@@ -116,7 +116,7 @@ export default function SupportPage() {
 
         <h3>Can I adjust the filter intensity?</h3>
         <p>
-          Yes. In the Setup step, use the sliders to control <strong>grain,
+          Yes. In the Craft step, use the sliders to control <strong>grain,
           vignette, bloom, saturation, contrast</strong>, and other parameters
           independently of the camera preset.
         </p>
@@ -124,7 +124,7 @@ export default function SupportPage() {
         <h3>Can I change the filter after generating?</h3>
         <p>
           Yes. Filters are applied as live CSS overlays at export time. Return
-          to the Setup step at any time to change the camera style, predefined
+          to the Craft step at any time to change the camera style, predefined
           filter, or fine-tune the sliders — then regenerate.
         </p>
 
@@ -148,14 +148,14 @@ export default function SupportPage() {
 
         <h3>Can I edit the generated text?</h3>
         <p>
-          Yes. Every text overlay can be edited in the Editorial step. You can
+          Yes. Every text overlay can be edited in the Design step. You can
           also toggle text on or off per slide, change font style, and adjust
           text position.
         </p>
 
         <h3>How do I regenerate text for a single slide?</h3>
         <p>
-          In the Editorial step, select a slide and use the regenerate button
+          In the Design step, select a slide and use the regenerate button
           next to the text field to generate a new overlay for that slide only.
         </p>
 

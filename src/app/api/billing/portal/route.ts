@@ -41,7 +41,7 @@ export async function POST() {
     );
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: "2026-01-28.clover" });
+  const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
   const appUrl = process.env.APP_URL ?? "http://localhost:3000";
 
   const portalSession = await stripe.billingPortal.sessions.create({

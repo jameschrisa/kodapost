@@ -17,8 +17,8 @@ import {
 const STEP_LABELS: Record<string, string> = {
   upload: "Upload",
   configure: "Configure",
-  edit: "Editorial",
-  review: "Finalize",
+  edit: "Design",
+  review: "Review",
   publish: "Publish",
 };
 
@@ -162,7 +162,7 @@ export function SavedDraftCard({ onResume, onDiscard }: SavedDraftCardProps) {
                 </button>
               )}
 
-              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {formatRelativeTime(draft.savedAt)}
