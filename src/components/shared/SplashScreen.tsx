@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import {
   Camera,
+  ChevronDown,
+  Clock,
   Sparkles,
   Share2,
   ImagePlus,
@@ -64,14 +66,14 @@ const WORKFLOW_STEPS = [
   {
     icon: Palette,
     title: "Style with Vintage Cameras",
-    description: "Choose from 10 iconic camera profiles and 9 retro film filters. Koda writes your captions.",
+    description: "Choose from 10 iconic camera profiles and 9 retro film filters. KodaPost's AI writes your captions.",
     accent: "from-fuchsia-500 to-pink-600",
     glow: "fuchsia",
   },
   {
     icon: Share2,
     title: "Publish Everywhere",
-    description: "Export for Instagram, TikTok, LinkedIn, YouTube, Reddit and more. One click, every platform.",
+    description: "Export for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X. One click, every platform.",
     accent: "from-amber-500 to-orange-600",
     glow: "amber",
   },
@@ -87,8 +89,8 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: "Caption Writer",
-    description: "Tell your story and Koda writes scroll-stopping captions and headlines that feel authentically you.",
+    title: "AI Caption Writer",
+    description: "Tell your story and KodaPost writes scroll-stopping captions and headlines that feel authentically you.",
     span: "",
     style: "accent" as const,
   },
@@ -109,23 +111,62 @@ const FEATURES = [
   {
     icon: Radio,
     title: "Nano-Casts",
-    description: "Turn your carousel into a short-form audio story. Record a voiceover or let Koda generate one for you.",
+    description: "Turn your carousel into a short-form audio story. Record a voiceover or let KodaPost generate one for you.",
     span: "",
     style: "dark" as const,
   },
   {
     icon: LayoutTemplate,
     title: "Customizable Templates",
-    description: "Start from beautifully designed templates or build your own. Every element is fully customizable.",
+    description: "Start from beautifully designed carousel templates or build your own. Every element is fully customizable.",
     span: "md:col-span-2",
     style: "card" as const,
   },
   {
     icon: Calendar,
     title: "Content Calendar",
-    description: "Schedule your carousels, track your creative output, and stay consistent without the burnout.",
+    description: "Schedule your social media carousels, track your creative output, and stay consistent without the burnout.",
     span: "",
     style: "dark" as const,
+  },
+];
+
+const INDIE_CREATOR_CARDS = [
+  {
+    icon: Clock,
+    title: "Batch-Create a Week of Posts in One Sitting",
+    description: "Upload product photos once, KodaPost generates a full week of on-brand carousels — styled, captioned, and ready to publish.",
+    color: "amber" as const,
+  },
+  {
+    icon: Palette,
+    title: "Consistent Brand Aesthetic Without a Designer",
+    description: "Lock in camera profile, film filter, fonts, and color palette — every carousel matches your brand automatically.",
+    color: "violet" as const,
+  },
+  {
+    icon: Share2,
+    title: "Publish to Every Platform from One Tool",
+    description: "Export optimized carousels for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X — no reformatting required.",
+    color: "blue" as const,
+  },
+  {
+    icon: Shield,
+    title: "Professional Results on a Bootstrapped Budget",
+    description: "Replace graphic designer, copywriter, and scheduling tool with one app. KodaPost does the heavy lifting so your budget goes further.",
+    color: "emerald" as const,
+  },
+  {
+    icon: Sparkles,
+    title: "AI Captions That Sound Like You, Not a Robot",
+    description: "KodaPost writes scroll-stopping captions you edit and approve — no generic AI slop, just your voice amplified.",
+    color: "fuchsia" as const,
+  },
+  {
+    icon: Camera,
+    title: "Stand Out with a Vintage Aesthetic Nobody Else Has",
+    description: "Retro film filters and vintage camera profiles give your brand a visual differentiator vs sterile Canva templates.",
+    color: "orange" as const,
   },
 ];
 
@@ -185,6 +226,7 @@ export function SplashScreen({
   const userInfo = useUserInfo();
   const [visible, setVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [indieCardsExpanded, setIndieCardsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Parallax for hero orbs based on scroll
@@ -258,13 +300,18 @@ export function SplashScreen({
               ================================================================ */}
           <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl">
             <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-3.5">
-              {/* Brand */}
-              <div className="flex items-center gap-2.5">
+              {/* Brand — tap to scroll to top */}
+              <button
+                type="button"
+                onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+                className="flex items-center gap-2.5 cursor-pointer"
+                aria-label="Scroll to top"
+              >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 border border-white/[0.06]">
                   <KodaPostIcon className="h-4 w-4 text-white" />
                 </div>
                 <span className="text-base font-bold tracking-tight text-white">KodaPost</span>
-              </div>
+              </button>
 
               {/* Nav links — hidden on mobile */}
               <nav className="hidden md:flex items-center gap-8">
@@ -482,18 +529,19 @@ export function SplashScreen({
                 className="absolute bottom-1/4 left-1/2 h-[35vh] w-[35vh] -translate-x-1/2 rounded-full"
                 style={{ background: "radial-gradient(circle, hsl(280 70% 55% / 0.5) 0%, transparent 65%)", filter: "blur(30px)" }}
               />
+              {/* Hidden on mobile to reduce blur-filter jank on budget devices */}
               <motion.div
                 initial={{ x: "5%", y: "-8%", opacity: 0 }}
                 animate={{ x: ["5%", "-10%", "5%"], y: ["-8%", "5%", "-8%"], opacity: [0.25, 0.45, 0.25] }}
                 transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute right-1/3 top-1/4 h-[35vh] w-[35vh] rounded-full"
+                className="absolute right-1/3 top-1/4 h-[35vh] w-[35vh] rounded-full hidden sm:block"
                 style={{ background: "radial-gradient(circle, hsl(30 95% 55% / 0.45) 0%, transparent 65%)", filter: "blur(35px)" }}
               />
               <motion.div
                 initial={{ x: "-5%", y: "5%", opacity: 0 }}
                 animate={{ x: ["-5%", "12%", "-5%"], y: ["5%", "-8%", "5%"], opacity: [0.25, 0.4, 0.25] }}
                 transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-1/3 left-1/4 h-[30vh] w-[30vh] rounded-full"
+                className="absolute bottom-1/3 left-1/4 h-[30vh] w-[30vh] rounded-full hidden sm:block"
                 style={{ background: "radial-gradient(circle, hsl(175 80% 50% / 0.4) 0%, transparent 65%)", filter: "blur(30px)" }}
               />
             </motion.div>
@@ -521,7 +569,7 @@ export function SplashScreen({
             </motion.div>
 
             {/* Hero content */}
-            <div className="relative z-10 flex flex-col items-center gap-6 px-6 text-center max-w-4xl mx-auto">
+            <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 px-6 text-center max-w-4xl mx-auto">
               {/* Logo */}
               <motion.div
                 initial={{ scale: 0.3, opacity: 0 }}
@@ -555,15 +603,15 @@ export function SplashScreen({
                 transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
                 className="max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
               >
-                Designed for indie brands and content creators who want to make and share their art without fighting the feed.
+                KodaPost is the social media carousel maker for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping carousels with vintage camera styles, retro film filters, and AI-powered captions.
               </motion.p>
 
-              {/* Quote */}
+              {/* Quote — hidden on mobile to keep CTAs above fold */}
               <motion.div
                 initial={{ y: 15, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
-                className="max-w-md"
+                className="max-w-md hidden sm:block"
               >
                 <p
                   className="text-lg sm:text-xl font-semibold leading-relaxed text-white/80"
@@ -651,7 +699,7 @@ export function SplashScreen({
           {/* ================================================================
               HOW IT WORKS — 3-step workflow
               ================================================================ */}
-          <section id="how-it-works" className="relative py-28 px-6 bg-gradient-to-b from-black via-zinc-950 to-zinc-900 scroll-mt-16">
+          <section id="how-it-works" className="relative py-16 sm:py-28 px-6 bg-gradient-to-b from-black via-zinc-950 to-zinc-900 scroll-mt-16">
             <div className="max-w-5xl mx-auto">
               <motion.div
                 variants={sectionReveal}
@@ -662,11 +710,11 @@ export function SplashScreen({
               >
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold uppercase tracking-widest mb-6">
                   <Sparkles className="h-3.5 w-3.5" />
-                  How It Works
+                  How KodaPost Works
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  From Photos to Feed.{" "}
-                  <span className="text-white/40">In Minutes.</span>
+                  Create Social Media Carousels{" "}
+                  <span className="text-white/40">in 3 Steps</span>
                 </h2>
               </motion.div>
 
@@ -681,10 +729,14 @@ export function SplashScreen({
                   <motion.div
                     key={step.title}
                     variants={staggerChild}
-                    className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden hover:border-white/10 transition-colors duration-500"
+                    className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500"
                   >
-                    {/* Glow on hover */}
-                    <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full bg-${step.glow}-500/0 group-hover:bg-${step.glow}-500/10 blur-3xl transition-all duration-700`} />
+                    {/* Glow — subtle always-on for touch, hover-enhanced for pointer */}
+                    <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${
+                      step.glow === "violet" ? "bg-violet-500/5 [@media(hover:hover)]:bg-violet-500/0 [@media(hover:hover)]:group-hover:bg-violet-500/10" :
+                      step.glow === "fuchsia" ? "bg-fuchsia-500/5 [@media(hover:hover)]:bg-fuchsia-500/0 [@media(hover:hover)]:group-hover:bg-fuchsia-500/10" :
+                      "bg-amber-500/5 [@media(hover:hover)]:bg-amber-500/0 [@media(hover:hover)]:group-hover:bg-amber-500/10"
+                    }`} />
 
                     <div className="relative z-10">
                       {/* Step number */}
@@ -709,7 +761,7 @@ export function SplashScreen({
           {/* ================================================================
               FEATURES — Bento Grid
               ================================================================ */}
-          <section id="features" className="relative py-28 px-6 bg-zinc-900 scroll-mt-16">
+          <section id="features" className="relative py-16 sm:py-28 px-6 bg-zinc-900 scroll-mt-16">
             {/* Subtle gradient accent */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] -z-0" />
 
@@ -723,10 +775,10 @@ export function SplashScreen({
               >
                 <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight flex items-center gap-3">
                   <Camera className="h-7 w-7 text-purple-400" />
-                  Your Creative Partner
+                  KodaPost Features
                 </h2>
                 <p className="mt-3 text-white/40 max-w-lg">
-                  Everything you need to turn everyday photos into scroll-stopping content.
+                  Everything indie creators need to turn everyday photos into scroll-stopping social media carousels — no design experience required.
                 </p>
               </motion.div>
 
@@ -746,11 +798,11 @@ export function SplashScreen({
                         ? "bg-gradient-to-br from-purple-600 to-fuchsia-700 p-8 text-white"
                         : feature.style === "dark"
                         ? "bg-zinc-800/80 border border-white/[0.06] p-8"
-                        : "bg-white/[0.03] border border-white/[0.06] p-8 hover:border-white/10"
-                    }`}
+                        : "bg-white/[0.03] border border-white/[0.06] p-8 [@media(hover:hover)]:hover:border-white/10"
+                    } ${feature.span ? "border-l-2 border-l-purple-500/20 md:border-l-0 md:border-l-transparent" : ""}`}
                   >
                     {feature.style !== "accent" && (
-                      <div className="absolute -bottom-10 -right-10 h-48 w-48 bg-purple-500/0 group-hover:bg-purple-500/5 rounded-full blur-3xl transition-all duration-700" />
+                      <div className="absolute -bottom-10 -right-10 h-48 w-48 bg-purple-500/[0.03] [@media(hover:hover)]:bg-purple-500/0 [@media(hover:hover)]:group-hover:bg-purple-500/5 rounded-full blur-3xl transition-all duration-700" />
                     )}
                     <div className="relative z-10">
                       <div className={`h-11 w-11 rounded-xl flex items-center justify-center mb-5 ${
@@ -774,7 +826,7 @@ export function SplashScreen({
 
                     {/* Decorative icon ghost */}
                     {feature.style !== "accent" && (
-                      <div className="absolute top-6 right-6 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-500">
+                      <div className="absolute top-6 right-6 opacity-[0.04] [@media(hover:hover)]:group-hover:opacity-[0.08] transition-opacity duration-500">
                         <feature.icon className="h-16 w-16" />
                       </div>
                     )}
@@ -787,7 +839,7 @@ export function SplashScreen({
           {/* ================================================================
               HUMAN-IN-THE-LOOP PHILOSOPHY
               ================================================================ */}
-          <section id="philosophy" className="relative py-28 px-6 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-900 scroll-mt-16">
+          <section id="philosophy" className="relative py-16 sm:py-28 px-6 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-900 scroll-mt-16">
             <div className="max-w-5xl mx-auto">
               <motion.div
                 variants={staggerContainer}
@@ -800,21 +852,21 @@ export function SplashScreen({
                 <motion.div variants={staggerChild}>
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
                     <Users className="h-3.5 w-3.5" />
-                    Our Philosophy
+                    KodaPost Philosophy
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
                     You Create.{" "}
-                    <span className="text-white/40">Koda Assists.</span>
+                    <span className="text-white/40">KodaPost Assists.</span>
                   </h2>
                   <div className="space-y-4 text-white/45 text-sm leading-relaxed">
                     <p>
-                      KodaPost is built on the belief that the best creative tools keep humans in the loop. Koda never takes over &mdash; it works alongside you, handling the tedious parts so you can focus on what matters: your story.
+                      KodaPost is built on the belief that the best creative tools keep humans in the loop. KodaPost never takes over &mdash; it works alongside you, handling the tedious parts so you can focus on what matters: your story.
                     </p>
                     <p>
-                      Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. Koda is the assistant, never the artist.
+                      Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. KodaPost is the assistant, never the artist.
                     </p>
                     <p>
-                      We believe authentic content comes from real people making real choices &mdash; not from fully automated pipelines. That&apos;s why every KodaPost carousel is a collaboration between you and your tools.
+                      We believe authentic content comes from real people making real choices &mdash; not from fully automated pipelines. That&apos;s why every KodaPost social media carousel is a collaboration between you and your AI-powered creative assistant.
                     </p>
                   </div>
                 </motion.div>
@@ -825,7 +877,7 @@ export function SplashScreen({
                     <div className="space-y-5">
                       {[
                         { label: "You upload your photos", icon: ImagePlus, color: "text-violet-400", bg: "bg-violet-500/10" },
-                        { label: "Koda suggests captions & styles", icon: Sparkles, color: "text-amber-400", bg: "bg-amber-500/10" },
+                        { label: "KodaPost suggests captions & styles", icon: Sparkles, color: "text-amber-400", bg: "bg-amber-500/10" },
                         { label: "You review, edit, and approve", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
                         { label: "Publish on your terms", icon: Share2, color: "text-blue-400", bg: "bg-blue-500/10" },
                       ].map((step, i) => (
@@ -847,9 +899,104 @@ export function SplashScreen({
           </section>
 
           {/* ================================================================
+              BUILT FOR INDIE CREATORS
+              ================================================================ */}
+          <section id="indie-creators" className="relative py-16 sm:py-28 px-6 bg-gradient-to-b from-zinc-900 to-black scroll-mt-16">
+            {/* Background glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] -z-0" />
+
+            <div className="max-w-5xl mx-auto relative z-10">
+              <motion.div
+                variants={sectionReveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                className="text-center mb-16"
+              >
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-widest mb-6">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Built for Indie Creators
+                </span>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                  KodaPost: The Carousel Maker for{" "}
+                  <span className="text-white/40">Small Brands &amp; Content Creators</span>
+                </h2>
+                <p className="mt-4 text-white/40 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
+                  You handle the creative vision — KodaPost handles the production work. Batch-create carousels, maintain a consistent brand aesthetic, and publish everywhere from one tool.
+                </p>
+              </motion.div>
+
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {INDIE_CREATOR_CARDS.map((card, i) => {
+                  const Icon = card.icon;
+                  return (
+                    <motion.div
+                      key={card.title}
+                      variants={staggerChild}
+                      className={`group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500 ${
+                        i >= 3 && !indieCardsExpanded ? "hidden md:block" : ""
+                      }`}
+                    >
+                      {/* Glow — always-on at low opacity on touch, hover-enhanced on pointer devices */}
+                      <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${
+                        card.color === "amber" ? "bg-amber-500/5 [@media(hover:hover)]:bg-amber-500/0 [@media(hover:hover)]:group-hover:bg-amber-500/10" :
+                        card.color === "violet" ? "bg-violet-500/5 [@media(hover:hover)]:bg-violet-500/0 [@media(hover:hover)]:group-hover:bg-violet-500/10" :
+                        card.color === "blue" ? "bg-blue-500/5 [@media(hover:hover)]:bg-blue-500/0 [@media(hover:hover)]:group-hover:bg-blue-500/10" :
+                        card.color === "emerald" ? "bg-emerald-500/5 [@media(hover:hover)]:bg-emerald-500/0 [@media(hover:hover)]:group-hover:bg-emerald-500/10" :
+                        card.color === "fuchsia" ? "bg-fuchsia-500/5 [@media(hover:hover)]:bg-fuchsia-500/0 [@media(hover:hover)]:group-hover:bg-fuchsia-500/10" :
+                        "bg-orange-500/5 [@media(hover:hover)]:bg-orange-500/0 [@media(hover:hover)]:group-hover:bg-orange-500/10"
+                      }`} />
+
+                      <div className="relative z-10">
+                        <div className={`h-11 w-11 rounded-xl flex items-center justify-center mb-5 ${
+                          card.color === "amber" ? "bg-amber-500/10 text-amber-400" :
+                          card.color === "violet" ? "bg-violet-500/10 text-violet-400" :
+                          card.color === "blue" ? "bg-blue-500/10 text-blue-400" :
+                          card.color === "emerald" ? "bg-emerald-500/10 text-emerald-400" :
+                          card.color === "fuchsia" ? "bg-fuchsia-500/10 text-fuchsia-400" :
+                          "bg-orange-500/10 text-orange-400"
+                        }`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-base sm:text-lg font-bold text-white mb-2">{card.title}</h3>
+                        <p className="text-sm leading-relaxed text-white/40">{card.description}</p>
+                      </div>
+
+                      {/* Decorative icon ghost */}
+                      <div className="absolute top-6 right-6 opacity-[0.04] [@media(hover:hover)]:group-hover:opacity-[0.08] transition-opacity duration-500">
+                        <Icon className="h-16 w-16" />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+
+              {/* Expand toggle — mobile only */}
+              {!indieCardsExpanded && (
+                <div className="mt-6 text-center md:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIndieCardsExpanded(true)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/[0.08] bg-white/[0.04] text-sm font-medium text-white/60 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
+                  >
+                    See all benefits
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* ================================================================
               MOBILE / TELEGRAM SECTION
               ================================================================ */}
-          <section id="mobile" className="relative py-28 px-6 bg-black overflow-hidden scroll-mt-16">
+          <section id="mobile" className="relative py-16 sm:py-28 px-6 bg-black overflow-hidden scroll-mt-16">
             {/* Subtle blue glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-500/5 rounded-full blur-[120px] -z-0" />
 
@@ -862,7 +1009,7 @@ export function SplashScreen({
                 className="grid md:grid-cols-2 gap-12 items-center"
               >
                 {/* Image placeholder — left side */}
-                <motion.div variants={staggerChild} className="relative order-2 md:order-1">
+                <motion.div variants={staggerChild} className="relative order-2 md:order-1 hidden md:block">
                   <div className="aspect-[4/5] max-w-[320px] mx-auto rounded-[2rem] border border-white/[0.06] bg-gradient-to-b from-zinc-800/50 to-zinc-900/80 overflow-hidden flex flex-col items-center justify-center">
                     {/* Phone mockup placeholder */}
                     <div className="flex flex-col items-center gap-4 px-8 text-center">
@@ -906,15 +1053,15 @@ export function SplashScreen({
                 <motion.div variants={staggerChild} className="order-1 md:order-2">
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6">
                     <Smartphone className="h-3.5 w-3.5" />
-                    Create on the Go
+                    Mobile Content Creation
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
-                    Your Phone is a{" "}
-                    <span className="text-white/40">Content Studio.</span>
+                    Create Carousels from Your Phone with{" "}
+                    <span className="text-white/40">KodaPost + Telegram</span>
                   </h2>
                   <div className="space-y-4 text-white/45 text-sm leading-relaxed">
                     <p>
-                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. Koda receives your images, applies your preferred style, and queues a carousel draft &mdash; all while you&apos;re still on the go.
+                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft &mdash; all while you&apos;re still on the go.
                     </p>
                     <p>
                       No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
@@ -925,9 +1072,9 @@ export function SplashScreen({
                   <div className="mt-8 space-y-4">
                     {[
                       { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
-                      { icon: IconBrandTelegram, label: "Send to Koda via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
-                      { icon: Sparkles, label: "Koda drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
-                      { icon: Camera, label: "Review on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
+                      { icon: IconBrandTelegram, label: "Send to KodaPost via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
+                      { icon: Sparkles, label: "KodaPost drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
+                      { icon: Camera, label: "Review and publish on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-4">
                         <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step.bg}`}>
@@ -953,7 +1100,7 @@ export function SplashScreen({
           {/* ================================================================
               CTA SECTION
               ================================================================ */}
-          <section className="relative py-32 px-6 bg-gradient-to-b from-zinc-900 to-black">
+          <section className="relative py-16 sm:py-32 px-6 bg-gradient-to-b from-zinc-900 to-black">
             <motion.div
               variants={sectionReveal}
               initial="hidden"
@@ -961,16 +1108,16 @@ export function SplashScreen({
               viewport={{ once: true, amount: 0.4 }}
               className="max-w-3xl mx-auto text-center"
             >
-              <div className="relative rounded-[2rem] border border-white/[0.06] bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-purple-500/10 p-12 sm:p-16 backdrop-blur-xl overflow-hidden">
+              <div className="relative rounded-[2rem] border border-white/[0.06] bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-purple-500/10 p-8 sm:p-12 md:p-16 backdrop-blur-xl overflow-hidden">
                 {/* Background glow */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-orange-500/10 rounded-full blur-[80px] -z-0" />
 
                 <div className="relative z-10">
                   <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
-                    Ready to reclaim your creative feed?
+                    Start Creating Social Media Carousels with KodaPost — Free
                   </h2>
                   <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto">
-                    Join indie creators building the future of social media today.
+                    Join indie creators using KodaPost to build authentic, nostalgic social media content that stands out from the algorithm.
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1014,7 +1161,7 @@ export function SplashScreen({
                     <span className="text-base font-bold tracking-tight text-white/80">KodaPost</span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
-                    Transform your everyday photos into stunning nostalgic social media carousels. Vintage camera styles, retro film filters, and Koda-powered text overlays &mdash; designed for creators who value authenticity over algorithms.
+                    KodaPost transforms your everyday photos into stunning nostalgic social media carousels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays &mdash; the content creation tool designed for indie brands who value authenticity over algorithms.
                   </p>
                 </div>
 
