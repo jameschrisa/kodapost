@@ -228,6 +228,7 @@ export default function Home() {
   const [reviewView, setReviewView] = useState<"grid" | "timeline">("grid");
   const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false);
   const [tourPending, setTourPending] = useState(false);
+  const [tourMode, setTourMode] = useState(false);
 
   // Multi-draft state
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
@@ -706,17 +707,24 @@ export default function Home() {
   const handleOpenTour = useCallback(() => {
     setSplashDismissed(true);
     setSplashForced(false);
+    setTourMode(true);
     // Pre-populate a demo project so every workflow screen renders meaningful UI
     setProject(createDemoProject());
     setStep("upload");
     setTourPending(true);
   }, []);
 
-  /** Called when the tour closes — discard demo project, return to clean upload screen */
+  /** Called when the tour closes — discard demo project, return to splash for unauthenticated users */
   const handleTourClose = useCallback(() => {
+    setTourMode(false);
     setProject(createEmptyProject());
     setStep("upload");
-  }, []);
+    // If the user isn't signed in, return them to the splash/landing page
+    if (!isSignedIn) {
+      setSplashDismissed(false);
+      setSplashForced(true);
+    }
+  }, [isSignedIn]);
 
   /** Navigate the app to the screen required by a given tour step, then pause for animation */
   const navigateForTourStep = useCallback(
@@ -1045,8 +1053,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Auth guard — redirect unauthenticated users who bypassed splash */}
-      {splashDismissed && authLoaded && !isSignedIn && isClerkEnabled && (
+      {/* Auth guard — redirect unauthenticated users who bypassed splash (skip during tour) */}
+      {splashDismissed && authLoaded && !isSignedIn && isClerkEnabled && !tourMode && (
         <AuthRedirect />
       )}
 
