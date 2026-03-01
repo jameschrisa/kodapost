@@ -356,21 +356,13 @@ export function SplashScreen({
                     </Button>
                   </>
                 ) : isClerkEnabled ? (
-                  <>
-                    <Link
-                      href="/sign-in"
-                      className="hidden sm:inline-flex text-sm font-semibold text-white/70 hover:text-white transition-colors duration-200"
-                    >
-                      Log In
-                    </Link>
-                    <Button
-                      size="sm"
-                      asChild
-                      className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
-                    >
-                      <Link href="/sign-up">Launch App</Link>
-                    </Button>
-                  </>
+                  <Button
+                    size="sm"
+                    asChild
+                    className="rounded-xl bg-white/[0.08] hover:bg-white/[0.12] px-5 text-sm font-semibold text-white transition-all duration-200"
+                  >
+                    <Link href="/sign-in">Log In</Link>
+                  </Button>
                 ) : (
                   <Button
                     size="sm"
@@ -437,23 +429,13 @@ export function SplashScreen({
                         Open App
                       </Button>
                     ) : isClerkEnabled ? (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          asChild
-                          className="w-full text-sm font-semibold text-white/70 hover:text-white"
-                        >
-                          <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
-                        </Button>
-                        <Button
-                          size="sm"
-                          asChild
-                          className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 text-sm font-bold text-white shadow-lg shadow-orange-500/20"
-                        >
-                          <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)}>Launch App</Link>
-                        </Button>
-                      </>
+                      <Button
+                        size="sm"
+                        asChild
+                        className="w-full rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-sm font-semibold text-white"
+                      >
+                        <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                      </Button>
                     ) : (
                       <Button
                         size="sm"

@@ -20,12 +20,12 @@ export default function LegalLayout({
             <ArrowLeft className="h-4 w-4" />
             Back to KodaPost
           </Link>
-          <div className="ml-auto flex items-center gap-2">
+          <Link href="/" className="ml-auto flex items-center gap-2 transition-opacity hover:opacity-80">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <KodaPostIcon className="h-4 w-4" />
             </div>
             <span className="text-sm font-semibold">KodaPost</span>
-          </div>
+          </Link>
         </div>
       </header>
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">

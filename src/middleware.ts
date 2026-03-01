@@ -12,6 +12,7 @@ import type { NextRequest } from "next/server";
  * Public routes:
  *  - /              Home (splash screen is public; auth gate is client-side)
  *  - /about         About page
+ *  - /billing       Pricing page
  *  - /introduction  Informational page
  *  - /guide         Getting started guide
  *  - /legal/*       Legal pages (terms, privacy, data)
@@ -24,6 +25,7 @@ import type { NextRequest } from "next/server";
 const isPublicRoute = createRouteMatcher([
   "/",
   "/about",
+  "/billing",
   "/introduction",
   "/guide",
   "/legal(.*)",
