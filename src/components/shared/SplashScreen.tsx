@@ -26,10 +26,11 @@ import {
   Users,
 } from "lucide-react";
 import { IconBrandTelegram } from "@tabler/icons-react";
-import { KodaPostIcon } from "@/components/icons";
+import { KodaPostIcon, UserHexagonIcon } from "@/components/icons";
 import { springGentle } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
 import { isClerkEnabled, useClerkAuth } from "@/hooks/useClerkAuth";
+import { useUserInfo } from "@/hooks/useUserInfo";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -179,6 +180,7 @@ export function SplashScreen({
 }: SplashScreenProps) {
   const router = useRouter();
   const { isSignedIn } = useClerkAuth();
+  const userInfo = useUserInfo();
   const [visible, setVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -269,27 +271,34 @@ export function SplashScreen({
               {/* Nav links — hidden on mobile */}
               <nav className="hidden md:flex items-center gap-8">
                 {[
-                  { label: "KudoGo", href: "#how-it-works" },
-                  { label: "KudoPro", href: "#features" },
-                  { label: "Features", href: "#features" },
-                  { label: "Pricing", href: "/billing" },
-                ].map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={(e) => {
-                      if (link.href.startsWith("#")) {
+                  { label: "About", href: "/about", isPage: true },
+                  { label: "Features", href: "#features", isPage: false },
+                  { label: "Pricing", href: "/billing", isPage: true },
+                ].map((link) =>
+                  link.isPage ? (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      onClick={(e) => {
                         e.preventDefault();
                         containerRef.current
                           ?.querySelector(link.href)
                           ?.scrollIntoView({ behavior: "smooth" });
-                      }
-                    }}
-                    className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
-                  >
-                    {link.label}
-                  </a>
-                ))}
+                      }}
+                      className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
+                    >
+                      {link.label}
+                    </a>
+                  )
+                )}
               </nav>
 
               {/* Auth / CTA */}
@@ -302,6 +311,37 @@ export function SplashScreen({
                   >
                     <a href="https://go.kodapost.com">KodaGo</a>
                   </Button>
+                ) : isClerkEnabled && isSignedIn ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleGetStarted}
+                      className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-sm text-white/70 hover:bg-white/[0.08] hover:text-white transition-all duration-200"
+                    >
+                      {userInfo.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={userInfo.imageUrl}
+                          alt=""
+                          className="h-6 w-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-purple-400">
+                          <UserHexagonIcon className="h-4 w-4" />
+                        </div>
+                      )}
+                      <span className="hidden sm:inline pr-1 font-medium">
+                        {userInfo.firstName || "Account"}
+                      </span>
+                    </button>
+                    <Button
+                      size="sm"
+                      onClick={handleGetStarted}
+                      className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
+                    >
+                      Open App
+                    </Button>
+                  </>
                 ) : isClerkEnabled ? (
                   <>
                     <Link
@@ -335,8 +375,13 @@ export function SplashScreen({
               HERO SECTION
               ================================================================ */}
           <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-            {/* Dark gradient base */}
-            <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-zinc-950 to-black" />
+            {/* Background image — positioned from top to show the subject */}
+            <div
+              className="absolute inset-0 bg-cover bg-top bg-no-repeat"
+              style={{ backgroundImage: "url('/image_other/newbg.jpg?v=2')" }}
+            />
+            {/* Dark gradient overlay — keeps bottom dark for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/40 to-black" />
 
             {/* Dot grid overlay */}
             <div
@@ -511,9 +556,8 @@ export function SplashScreen({
                       </Button>
                       <Button
                         size="lg"
-                        variant="outline"
                         onClick={handleTour}
-                        className="rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-lg font-bold backdrop-blur-sm transition-all duration-300"
+                        className="rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-6 text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                       >
                         <Play className="h-4 w-4 mr-2" />
                         Take a Tour
@@ -530,9 +574,8 @@ export function SplashScreen({
                       </Button>
                       <Button
                         size="lg"
-                        variant="outline"
                         onClick={handleTour}
-                        className="rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white px-8 py-6 text-lg font-bold backdrop-blur-sm transition-all duration-300"
+                        className="rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-6 text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                       >
                         <Play className="h-4 w-4 mr-2" />
                         Take a Tour
@@ -552,17 +595,6 @@ export function SplashScreen({
                   </a>
                 )}
 
-                {/* Tour link — always available below main CTAs */}
-                {!isMobile && onOpenTour && (
-                  <button
-                    type="button"
-                    onClick={handleTour}
-                    className="text-sm text-white/35 hover:text-white/70 transition-colors duration-200 flex items-center gap-1.5"
-                  >
-                    <Play className="h-3 w-3" />
-                    Take a quick tour first
-                  </button>
-                )}
               </motion.div>
             </div>
 
@@ -862,7 +894,7 @@ export function SplashScreen({
                       { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
                       { icon: IconBrandTelegram, label: "Send to Koda via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
                       { icon: Sparkles, label: "Koda drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
-                      { icon: Camera, label: "Finalize on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
+                      { icon: Camera, label: "Review on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-4">
                         <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step.bg}`}>

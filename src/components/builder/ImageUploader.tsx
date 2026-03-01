@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { Upload, X, ImagePlus } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Image as ImageIcon, Layers, Upload, X, ImagePlus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +17,10 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { cardEntranceVariants } from "@/lib/motion";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import type { UploadedImage } from "@/lib/types";
+import { SlideCountSelector } from "@/components/shared/SlideCountSelector";
+import type { PostMode, UploadedImage } from "@/lib/types";
+
+type HeadlineMode = "all" | "first_only" | "none";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -97,10 +100,36 @@ interface LocalImage {
 
 interface ImageUploaderProps {
   onComplete: (images: UploadedImage[]) => void;
+  postMode?: PostMode;
+  onPostModeChange?: (mode: PostMode) => void;
+  existingImages?: UploadedImage[];
+  headlineMode?: HeadlineMode;
+  onHeadlineModeChange?: (mode: HeadlineMode) => void;
+  slideCount?: number;
+  onSlideCountChange?: (count: number) => void;
 }
 
-export function ImageUploader({ onComplete }: ImageUploaderProps) {
-  const [images, setImages] = useState<LocalImage[]>([]);
+export function ImageUploader({
+  onComplete,
+  postMode = "carousel",
+  onPostModeChange,
+  existingImages,
+  headlineMode = "all",
+  onHeadlineModeChange,
+  slideCount = 5,
+  onSlideCountChange,
+}: ImageUploaderProps) {
+  // Seed from existing project images when navigating back
+  const [images, setImages] = useState<LocalImage[]>(() => {
+    if (existingImages && existingImages.length > 0) {
+      return existingImages.map((img) => ({
+        id: img.id,
+        file: new File([], img.filename, { type: "image/jpeg" }),
+        previewUrl: img.url, // already a base64 data URI
+      }));
+    }
+    return [];
+  });
   const [dragActive, setDragActive] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -111,6 +140,18 @@ export function ImageUploader({ onComplete }: ImageUploaderProps) {
     currentFile: string;
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevImageCountRef = useRef(0);
+
+  // Auto-select "single" when only one image is loaded; restore to "carousel" when 2+
+  useEffect(() => {
+    const prev = prevImageCountRef.current;
+    prevImageCountRef.current = images.length;
+    if (images.length === 1 && postMode !== "single") {
+      onPostModeChange?.("single");
+    } else if (images.length >= 2 && prev === 1) {
+      onPostModeChange?.("carousel");
+    }
+  }, [images.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const processFiles = useCallback(async (files: FileList | File[]) => {
     const newErrors: string[] = [];
@@ -237,16 +278,20 @@ export function ImageUploader({ onComplete }: ImageUploaderProps) {
     setIsProcessing(true);
     try {
       // Convert blob URLs to base64 data URIs so they survive serialization
-      // to server actions and can be sent to external APIs
+      // to server actions and can be sent to external APIs.
+      // Images that are already base64 (from existing project) skip conversion.
       const { blobUrlToBase64 } = await import("@/lib/utils");
       const uploaded: UploadedImage[] = await Promise.all(
-        images.map(async (img) => ({
-          id: img.id,
-          url: await blobUrlToBase64(img.previewUrl),
-          filename: img.file.name,
-          uploadedAt: new Date().toISOString(),
-          usedInSlides: [],
-        }))
+        images.map(async (img) => {
+          const isAlreadyBase64 = img.previewUrl.startsWith("data:");
+          return {
+            id: img.id,
+            url: isAlreadyBase64 ? img.previewUrl : await blobUrlToBase64(img.previewUrl),
+            filename: img.file.name,
+            uploadedAt: new Date().toISOString(),
+            usedInSlides: [],
+          };
+        })
       );
       onComplete(uploaded);
     } catch (error) {
@@ -378,6 +423,102 @@ export function ImageUploader({ onComplete }: ImageUploaderProps) {
               ))}
             </AnimatePresence>
           </div>
+
+          {/* Post Type — fades in once images are displayed */}
+          <AnimatePresence>
+            {images.length > 0 && (
+              <motion.div
+                key="post-type"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Post Type</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-3">
+                      {([
+                        { mode: "single" as PostMode, label: "Single Post", description: "One image, one story", icon: ImageIcon },
+                        { mode: "carousel" as PostMode, label: "Carousel", description: "Multi-slide storytelling", icon: Layers },
+                      ]).map(({ mode, label, description, icon: Icon }) => {
+                        const isSelected = postMode === mode;
+                        const isDisabled = mode === "carousel" && images.length === 1;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            disabled={isDisabled}
+                            onClick={() => onPostModeChange?.(mode)}
+                            className={cn(
+                              "flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-all",
+                              isDisabled && "cursor-not-allowed opacity-40",
+                              !isDisabled && isSelected && "border-purple-500 bg-purple-500/10 shadow-sm",
+                              !isDisabled && !isSelected && "border-muted hover:border-muted-foreground/30 hover:bg-muted/50"
+                            )}
+                          >
+                            <Icon className={cn("h-6 w-6", isSelected && !isDisabled ? "text-purple-400" : "text-muted-foreground")} />
+                            <div>
+                              <p className={cn("text-sm font-medium", isSelected && !isDisabled ? "text-foreground" : "text-muted-foreground")}>{label}</p>
+                              <p className="text-xs text-muted-foreground">{description}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {images.length === 1 && (
+                      <p className="mt-2 text-center text-xs text-muted-foreground">Upload more images to create a carousel</p>
+                    )}
+
+                    {/* Text Overlays */}
+                    <div className="mt-4 pt-4 border-t space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">Text Overlays</p>
+                      </div>
+                      <div className="flex gap-1">
+                        {([
+                          { value: "all" as HeadlineMode, label: "All slides" },
+                          { value: "first_only" as HeadlineMode, label: "First slide only" },
+                          { value: "none" as HeadlineMode, label: "Off" },
+                        ]).map(({ value, label }) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => onHeadlineModeChange?.(value)}
+                            className={cn(
+                              "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                              headlineMode === value
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            )}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {headlineMode === "all" && `Headlines generated on all ${images.length} slide${images.length !== 1 ? "s" : ""}`}
+                        {headlineMode === "first_only" && "Title card on slide 1 — photos only after"}
+                        {headlineMode === "none" && "No headline text — images only"}
+                      </p>
+
+                      {/* Slide count (carousel only) */}
+                      {postMode === "carousel" && images.length > 1 && (
+                        <div className="mt-2">
+                          <SlideCountSelector
+                            value={slideCount}
+                            onChange={(count) => onSlideCountChange?.(count)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Button onClick={handleContinue} className="w-full" size="lg">
             Continue with {images.length} image{images.length !== 1 && "s"}

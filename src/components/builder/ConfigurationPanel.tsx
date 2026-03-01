@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowRight, Camera, FileSpreadsheet, Image as ImageIcon, ImagePlus, Layers, Loader2, Mic, MicOff, Palette, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Wand2, X } from "lucide-react";
+import { AlertCircle, ArrowRight, Camera, FileSpreadsheet, Loader2, Mic, MicOff, Palette, RotateCcw, Save, SlidersHorizontal, Sparkles, Trash2, Wand2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { staggerContainerVariants, staggerItemVariants, buttonTapScale } from "@/lib/motion";
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeInput } from "@/components/shared/ThemeInput";
-import { SlideCountSelector } from "@/components/shared/SlideCountSelector";
 import { CameraSelector } from "@/components/shared/CameraSelector";
 import { SaveProjectButton } from "@/components/shared/SaveProjectButton";
 import { FilterSelector } from "@/components/shared/FilterSelector";
@@ -20,24 +19,14 @@ import { CardHelpIcon } from "@/components/shared/CardHelpIcon";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { validateCarouselReadiness } from "@/lib/carousel-validator";
 import { generateCaption } from "@/app/actions";
-import { useLoadingStore } from "@/lib/stores/loading-store";
-import { DEFAULT_GLOBAL_OVERLAY_STYLE } from "@/lib/constants";
 import { PREDEFINED_FILTERS, CAMERA_FILTER_MAP, DEFAULT_FILTER_CONFIG } from "@/lib/filter-presets";
 import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-css";
 import Image from "next/image";
 import { loadFilterTemplates, saveFilterTemplates } from "@/lib/storage";
 import { cn, computeConfigHash } from "@/lib/utils";
-import type { CarouselProject, FilterTemplate, PredefinedFilterName, FilterConfig, PostMode } from "@/lib/types";
+import type { CarouselProject, FilterTemplate, PredefinedFilterName, FilterConfig } from "@/lib/types";
 
 interface ConfigurationPanelProps {
   project: CarouselProject;
@@ -57,20 +46,6 @@ export function ConfigurationPanel({
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasAttemptedGenerate, setHasAttemptedGenerate] = useState(false);
   const [csvImportOpen, setCsvImportOpen] = useState(false);
-  const [carouselWarningOpen, setCarouselWarningOpen] = useState(false);
-
-  // Headline mode — 3-way selector with backward-compat fallback from showHeadline boolean
-  const headlineMode: "all" | "first_only" | "none" =
-    project.globalOverlayStyle?.headlineMode ??
-    (project.globalOverlayStyle?.showHeadline === false ? "none" : "all");
-
-  function updateHeadlineMode(mode: "all" | "first_only" | "none") {
-    const gos = project.globalOverlayStyle ?? { ...DEFAULT_GLOBAL_OVERLAY_STYLE };
-    onUpdate({
-      ...project,
-      globalOverlayStyle: { ...gos, headlineMode: mode, showHeadline: mode !== "none" },
-    });
-  }
 
   // Filter template state
   const [savedTemplates, setSavedTemplates] = useState<FilterTemplate[]>([]);
@@ -170,7 +145,6 @@ export function ConfigurationPanel({
   // Caption generation state
   const [captionText, setCaptionText] = useState(project.caption ?? "");
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
-  const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } = useLoadingStore();
 
   // Sync caption text to project on changes
   useEffect(() => {
@@ -307,7 +281,6 @@ export function ConfigurationPanel({
       return;
     }
     setIsGeneratingCaption(true);
-    startGlobalLoading("caption", "Generating caption…");
     try {
       const audioCtx = project.audioClip?.source === "library" && project.audioClip.attribution
         ? {
@@ -336,7 +309,6 @@ export function ConfigurationPanel({
       }
     } finally {
       setIsGeneratingCaption(false);
-      stopGlobalLoading("caption");
     }
   }
 
@@ -444,126 +416,6 @@ export function ConfigurationPanel({
         </motion.div>
       )}
 
-      {/* 0. Post Mode */}
-      <motion.div variants={staggerItemVariants}>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">Post Type</CardTitle>
-            <CardHelpIcon title="Post Type">
-              Choose between a single image post or a multi-slide carousel.
-              Single posts use one image with optional text overlay and caption.
-              Carousels let you tell a story across multiple slides.
-            </CardHelpIcon>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3">
-            {([
-              { mode: "single" as PostMode, label: "Single Post", description: "One image, one story", icon: ImageIcon },
-              { mode: "carousel" as PostMode, label: "Carousel", description: "Multi-slide storytelling", icon: Layers },
-            ]).map(({ mode, label, description, icon: Icon }) => {
-              const isSelected = (project.postMode ?? "carousel") === mode;
-              return (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => {
-                    // Show warning when switching to carousel with ≤1 image
-                    if (mode === "carousel" && project.uploadedImages.length <= 1) {
-                      setCarouselWarningOpen(true);
-                      return;
-                    }
-                    updateField("postMode", mode);
-                    if (mode === "single") {
-                      updateField("slideCount", 1);
-                    } else if (project.slideCount < 2) {
-                      updateField("slideCount", 5);
-                    }
-                    // Auto-enable headline for carousel mode
-                    if (mode === "carousel" && headlineMode === "none") {
-                      updateHeadlineMode("all");
-                    }
-                  }}
-                  className={`relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-all ${
-                    isSelected
-                      ? "border-purple-500 bg-purple-500/10 shadow-sm"
-                      : "border-muted hover:border-muted-foreground/30 hover:bg-muted/50"
-                  }`}
-                >
-                  <Icon className={`h-6 w-6 ${isSelected ? "text-purple-400" : "text-muted-foreground"}`} />
-                  <div>
-                    <p className={`text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>{label}</p>
-                    <p className="text-xs text-muted-foreground">{description}</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Headlines mode */}
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Headlines</p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 h-7 text-xs"
-                  onClick={() => setCsvImportOpen(true)}
-                  title="Import your own headlines from a CSV file instead of using Koda-generated text."
-                >
-                  <FileSpreadsheet className="h-3 w-3" />
-                  Import
-                </Button>
-                {project.csvOverrides && (
-                  <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                    {project.csvOverrides.length} rows
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-1">
-              {([
-                { value: "all", label: "All slides" },
-                { value: "first_only", label: "First slide only" },
-                { value: "none", label: "Off" },
-              ] as const).map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => updateHeadlineMode(value)}
-                  className={cn(
-                    "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                    headlineMode === value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {headlineMode === "all" && "Headlines generated on every slide"}
-              {headlineMode === "first_only" && "Title card on slide 1 — photos only after"}
-              {headlineMode === "none" && "No headline text — images only"}
-            </p>
-          </div>
-
-          {/* Slide count (carousel only) */}
-          {(project.postMode ?? "carousel") === "carousel" && (
-            <div className="mt-4">
-              <SlideCountSelector
-                value={project.slideCount}
-                onChange={(count) => updateField("slideCount", count)}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      </motion.div>
-
       {/* 1. Your Story */}
       <motion.div variants={staggerItemVariants}>
       <Card>
@@ -634,7 +486,7 @@ export function ConfigurationPanel({
 
           {/* Vibe selector — replaces tags */}
           <div className="space-y-2">
-            <Label className="text-xs">Vibe</Label>
+            <Label className="text-sm font-medium">Vibe <span className="text-muted-foreground font-normal">(optional)</span></Label>
             <div className="flex flex-wrap gap-2">
               {([
                 { value: "relatable", label: "Relatable", emoji: "💬" },
@@ -642,6 +494,9 @@ export function ConfigurationPanel({
                 { value: "promotional", label: "Promotional", emoji: "📢" },
                 { value: "controversial", label: "Controversial", emoji: "🔥" },
                 { value: "observational", label: "Observational", emoji: "👀" },
+                { value: "educational", label: "Educational", emoji: "📚" },
+                { value: "storytelling", label: "Storytelling", emoji: "📖" },
+                { value: "poetic", label: "Poetic", emoji: "🪶" },
               ] as const).map(({ value, label, emoji }) => {
                 const isActive = project.keywords.includes(value);
                 return (
@@ -665,14 +520,90 @@ export function ConfigurationPanel({
                   </button>
                 );
               })}
+              {/* Custom vibe toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (project.captionStyle === "custom") {
+                    updateField("captionStyle", undefined);
+                    updateField("customCaptionStyle", undefined);
+                  } else {
+                    updateField("captionStyle", "custom");
+                  }
+                }}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                  project.captionStyle === "custom"
+                    ? "bg-purple-500/15 text-purple-400 border border-purple-500/40"
+                    : "bg-muted text-muted-foreground border border-transparent hover:bg-muted-foreground/10"
+                }`}
+              >
+                <span>🎨</span>
+                Custom
+              </button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Choose the tone of your story. This shapes how Koda crafts your caption and headlines.
-            </p>
+            {project.captionStyle === "custom" && (
+              <Input
+                placeholder="Describe your vibe, e.g. 'sarcastic Gen-Z energy' or 'calm and reflective'"
+                value={project.customCaptionStyle ?? ""}
+                onChange={(e) => updateField("customCaptionStyle", e.target.value)}
+                className="text-sm"
+              />
+            )}
+            {(() => {
+              const selected = project.keywords;
+              const conflicts: [string, string, string][] = [
+                ["promotional", "educational", "Promotional + Educational can read like an infomercial"],
+                ["promotional", "poetic", "Promotional + Poetic clash — hard sell vs. contemplative"],
+                ["controversial", "inspirational", "Controversial + Inspirational pull in opposite directions"],
+                ["controversial", "educational", "Controversial + Educational can come across as preachy"],
+                ["poetic", "controversial", "Poetic + Controversial — reflective tone vs. blunt provocation"],
+              ];
+              const pairings: Record<string, string> = {
+                "storytelling+inspirational": "Great combo — uplifting narrative arc",
+                "educational+observational": "Nice pairing — insightful \"did you know?\" posts",
+                "relatable+storytelling": "Strong match — personal anecdotes that connect",
+                "observational+poetic": "Beautiful combo — contemplative, atmospheric feel",
+                "relatable+controversial": "Bold pairing — personal takes that spark discussion",
+              };
+              const activeConflict = conflicts.find(
+                ([a, b]) => selected.includes(a) && selected.includes(b)
+              );
+              const sortedPair = selected.length === 2
+                ? [...selected].sort().join("+")
+                : null;
+              const activePairing = sortedPair ? pairings[sortedPair] : null;
+
+              if (activeConflict) {
+                return (
+                  <p className="text-xs text-amber-400">
+                    ⚠️ {activeConflict[2]}. Try picking just one.
+                  </p>
+                );
+              }
+              if (activePairing) {
+                return (
+                  <p className="text-xs text-emerald-400">
+                    ✓ {activePairing}
+                  </p>
+                );
+              }
+              if (selected.length > 2) {
+                return (
+                  <p className="text-xs text-amber-400">
+                    Pick 1–2 vibes for a focused tone. Too many can dilute the voice.
+                  </p>
+                );
+              }
+              return (
+                <p className="text-xs text-muted-foreground">
+                  Pick 1–2 vibes to shape how Koda crafts your caption and headlines.
+                </p>
+              );
+            })()}
           </div>
 
           {/* Create a caption button — centered, purple */}
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <Button
               variant="default"
               size="default"
@@ -692,6 +623,20 @@ export function ConfigurationPanel({
                 </>
               )}
             </Button>
+            {isGeneratingCaption && (
+              <div className="flex flex-col items-center gap-1.5 w-full max-w-xs">
+                <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
+                  <motion.div
+                    className="h-full w-[200%] rounded-full bg-gradient-to-r from-purple-500 via-fuchsia-400 to-purple-500"
+                    animate={{ x: ["-50%", "0%"] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground animate-pulse">
+                  {captionText.trim() ? "Refining headlines & caption…" : "Generating headlines & caption…"}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -718,8 +663,8 @@ export function ConfigurationPanel({
             placeholder="Write your own caption, or use 'Create a caption' in the Story card above..."
             value={captionText}
             onChange={(e) => setCaptionText(e.target.value)}
-            rows={3}
-            className="resize-none text-sm"
+            rows={6}
+            className="resize-y text-sm"
           />
           <div className="flex items-center justify-between mt-1.5">
             <p className={cn(
@@ -1163,57 +1108,6 @@ export function ConfigurationPanel({
         onImport={handleCSVImport}
       />
 
-      {/* Carousel Recommendation Dialog — shown when switching to carousel with ≤1 image */}
-      <Dialog open={carouselWarningOpen} onOpenChange={setCarouselWarningOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ImagePlus className="h-5 w-5 text-amber-500" />
-              More Images Recommended
-            </DialogTitle>
-            <DialogDescription>
-              You currently have {project.uploadedImages.length === 0 ? "no images" : "only 1 image"} uploaded.
-              For the best carousel storytelling experience, we recommend uploading at least <strong className="text-foreground">3 or more images</strong>.
-              More images allow each slide to have its own unique visual, creating a richer narrative.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
-            <p className="font-medium">Tip:</p>
-            <p className="mt-1">
-              Slides without an assigned image will require a headline text overlay.
-              Empty slides (no image and no headline) are not allowed.
-            </p>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCarouselWarningOpen(false);
-                if (onBack) onBack();
-              }}
-            >
-              Go Back & Upload More
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => {
-                setCarouselWarningOpen(false);
-                updateField("postMode", "carousel");
-                if (project.slideCount < 2) {
-                  updateField("slideCount", 5);
-                }
-                // Force headline on since carousel with few images needs text
-                if (headlineMode === "none") updateHeadlineMode("all");
-                toast.info("Switched to Carousel mode", {
-                  description: "Headlines are enabled. Slides without images will need headline text.",
-                });
-              }}
-            >
-              Continue Anyway
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   );
 }
