@@ -54,6 +54,9 @@ const config: Config = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		},
+  		fontSize: {
+  			sm: ['0.9rem', { lineHeight: '1.35rem' }],
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

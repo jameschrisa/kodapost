@@ -600,12 +600,13 @@ export function SplashScreen({
                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
               >
                 <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-[1.1]">
-                  Social Media that Feels Like{" "}
+                  Social Media that Feels{" "}
                   <br className="hidden sm:block" />
+                  <span className="whitespace-nowrap">Like{" "}
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
                     You.
-                  </span>{" "}
-                  Not an Algorithm.
+                  </span></span>{" "}
+                  <span className="whitespace-nowrap">Not an Algorithm.</span>
                 </h1>
               </motion.div>
 
