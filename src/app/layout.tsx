@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Inter,
   Montserrat,
@@ -103,18 +103,44 @@ const bebasNeue = Bebas_Neue({
 // runtime context, so we always use dynamic rendering.
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "KodaPost - Create Stunning Carousels",
-  description:
-    "Transform your photos into stunning social media carousels",
+export const viewport: Viewport = {
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
   ],
+};
+
+export const metadata: Metadata = {
+  title: "KodaPost - Create Stunning Carousels",
+  description:
+    "Transform your photos into stunning social media carousels",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "KodaPost",
+    startupImage: [
+      {
+        url: "/icons/apple-startup-1290x2796.png",
+        media:
+          "(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)",
+      },
+      {
+        url: "/icons/apple-startup-1179x2556.png",
+        media:
+          "(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)",
+      },
+      {
+        url: "/icons/apple-startup-1170x2532.png",
+        media:
+          "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)",
+      },
+      {
+        url: "/icons/apple-startup-750x1334.png",
+        media:
+          "(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)",
+      },
+    ],
   },
 };
 

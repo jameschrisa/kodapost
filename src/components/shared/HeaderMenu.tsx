@@ -196,12 +196,6 @@ export function HeaderMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          {/* Content Bot panel */}
-          <DropdownMenuItem onClick={onOpenContentBot}>
-            <Bot className="h-4 w-4" />
-            Content Bot
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           {/* Settings submenu */}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -209,6 +203,10 @@ export function HeaderMenu({
               Settings
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={onOpenContentBot}>
+                <Bot className="h-4 w-4" />
+                Content Bot
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onOpenSettings}>
                 <Settings className="h-4 w-4" />
                 Social Media
