@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useOnborda } from "onborda";
 import { Portal } from "@radix-ui/react-portal";
@@ -7,9 +8,22 @@ import { cn } from "@/lib/utils";
 import type { CardComponentProps } from "onborda";
 import { useTourContext } from "./TourContext";
 
-// Only step 0 is a portal-rendered centered modal.
-// All other steps target real DOM elements via Onborda's spotlight.
+// Step 0 always renders as a centered portal modal.
 const MODAL_STEP_INDICES = [0];
+
+// Mobile breakpoint (matches Tailwind sm)
+const MOBILE_BREAKPOINT = 640;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
 
 /** Shared card content — used inside both the Portal version and the inline version */
 function CardContent({
@@ -137,6 +151,7 @@ export function TourCard({
 }: CardComponentProps) {
   const { closeOnborda } = useOnborda();
   const tourCtx = useTourContext();
+  const isMobile = useIsMobile();
   const isModalStep = MODAL_STEP_INDICES.includes(currentStep);
 
   const handleNext = async () => {
@@ -149,15 +164,17 @@ export function TourCard({
     prevStep();
   };
 
-  if (isModalStep) {
-    // Portal-render at document body to escape Onborda's Framer Motion transform
-    // container — otherwise `fixed` positioning doesn't anchor to the viewport.
+  // Portal-centered: used for modal steps (step 0) and ALL steps on mobile
+  // to prevent Onborda's relative positioning from pushing the card off-screen.
+  if (isModalStep || isMobile) {
     return (
       <Portal>
-        {/* Dim overlay */}
-        <div className="fixed inset-0 z-[900] bg-black/65 pointer-events-none" />
+        {/* Dim overlay (only for explicit modal steps) */}
+        {isModalStep && (
+          <div className="fixed inset-0 z-[900] bg-black/65 pointer-events-none" />
+        )}
         {/* Centered card */}
-        <div className="fixed inset-0 z-[910] flex items-center justify-center pointer-events-none">
+        <div className="fixed inset-x-0 bottom-0 sm:inset-0 z-[910] flex items-end sm:items-center justify-center pointer-events-none px-4 pb-4 sm:p-0">
           <CardContent
             step={step}
             currentStep={currentStep}
@@ -171,7 +188,7 @@ export function TourCard({
     );
   }
 
-  // Non-modal steps: render inline inside Onborda's card container
+  // Non-modal steps on desktop: render inline inside Onborda's card container
   // (Onborda positions it relative to the highlighted element)
   return (
     <CardContent
