@@ -321,9 +321,20 @@ export function SplashScreen({
                 aria-label="Scroll to top"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 border border-white/[0.06]">
-                  <KodaPostIcon className="h-4 w-4 text-white" />
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <defs>
+                      <linearGradient id="brand-gradient-nav" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#fb923c" />
+                        <stop offset="50%" stopColor="#f97316" />
+                        <stop offset="100%" stopColor="#a855f7" />
+                      </linearGradient>
+                    </defs>
+                    <rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="url(#brand-gradient-nav)" />
+                    <line x1="8" y1="16" x2="16" y2="8" stroke="url(#brand-gradient-nav)" />
+                    <line x1="10.5" y1="18" x2="18" y2="10.5" stroke="url(#brand-gradient-nav)" />
+                  </svg>
                 </div>
-                <span className="text-base font-bold tracking-tight text-white">KodaPost</span>
+                <span className="text-base font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">KodaPost</span>
               </button>
 
               {/* Nav links — hidden on mobile */}
@@ -1149,10 +1160,10 @@ export function SplashScreen({
                 {/* Brand & description */}
                 <div className="sm:col-span-2 lg:col-span-2">
                   <div className="flex items-center gap-2.5 mb-4">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 border border-white/[0.06]">
-                      <KodaPostIcon className="h-3.5 w-3.5 text-white/80" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10 border border-orange-500/20">
+                      <KodaPostIcon className="h-3.5 w-3.5 text-orange-500" />
                     </div>
-                    <span className="text-base font-bold tracking-tight text-white/80">KodaPost</span>
+                    <span className="text-base font-bold tracking-tight text-orange-500">KodaPost</span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
                     KodaPost transforms your everyday photos into stunning nostalgic social media carousels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays &mdash; the content creation tool designed for indie brands who value authenticity over algorithms.
