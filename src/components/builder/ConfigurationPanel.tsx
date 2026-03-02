@@ -691,7 +691,7 @@ export function ConfigurationPanel({
 
       {/* 4. Stylize — tabbed: Camera / Filters / Fine-Tune */}
       <motion.div variants={staggerItemVariants}>
-      <Card>
+      <Card data-tour="tour-camera-filters">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -716,7 +716,7 @@ export function ConfigurationPanel({
         </CardHeader>
         <CardContent className="pt-0">
           <Tabs defaultValue="emulation" className="w-full">
-            <TabsList data-tour="tour-camera-filters" className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 overflow-x-auto max-w-full">
+            <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 overflow-x-auto max-w-full">
               <TabsTrigger
                 value="emulation"
                 className="gap-1.5 rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"

@@ -432,7 +432,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   }
 
   return (
-    <div className="space-y-6">
+    <div data-tour="tour-edit-panel" className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -799,7 +799,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
           {/* Inline text editing controls */}
           {selectedSlide && (
             <Tabs defaultValue="format" className="max-w-full sm:max-w-[500px] mx-auto">
-              <TabsList data-tour="tour-edit-panel" className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 mb-3">
+              <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 mb-3">
                 <TabsTrigger value="format" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Format</TabsTrigger>
                 <TabsTrigger value="content" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Content</TabsTrigger>
               </TabsList>

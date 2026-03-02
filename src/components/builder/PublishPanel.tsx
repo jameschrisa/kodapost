@@ -540,7 +540,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   }
 
   return (
-    <div className="space-y-6">
+    <div data-tour="tour-publish-panel" className="space-y-6">
       {onBack && (
         <Button variant="ghost" size="sm" onClick={onBack}>
           &larr; Back to Review
@@ -556,7 +556,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       {/* Platform selection */}
       <div className="space-y-2">
         <p className="text-sm font-medium">Platforms</p>
-        <div data-tour="tour-publish-panel" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PLATFORMS.map((platform) => {
             const isActive = selected.has(platform.key);
             const spec = PLATFORM_IMAGE_SPECS[platform.specKey];

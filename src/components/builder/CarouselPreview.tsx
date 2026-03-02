@@ -224,7 +224,7 @@ export function CarouselPreview({
   }, [project, onEdit]);
 
   return (
-    <div className="space-y-6">
+    <div data-tour="tour-finalize-panel" className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ export function CarouselPreview({
         </TabsList>
 
         <TabsContent value="platform" className="mt-3">
-          <div data-tour="tour-finalize-panel" className="flex gap-1 flex-wrap">
+          <div className="flex gap-1 flex-wrap">
             {(["tiktok", "youtube_shorts", "instagram", "x", "linkedin"] as PreviewPlatform[]).map((platform) => {
               const config = PLATFORM_PREVIEW_CONFIG[platform];
               return (
