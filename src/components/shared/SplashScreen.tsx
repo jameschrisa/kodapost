@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
@@ -250,10 +250,8 @@ export function SplashScreen({
   const [visible, setVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [indieCardsExpanded, setIndieCardsExpanded] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Parallax for hero orbs based on scroll
-  const { scrollY } = useScroll({ container: containerRef });
+  // Use window scroll for native mobile scrolling (no fixed container)
+  const { scrollY } = useScroll();
   const orbY = useTransform(scrollY, [0, 600], [0, -120]);
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
 
@@ -312,8 +310,7 @@ export function SplashScreen({
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, filter: "blur(12px)", scale: 1.02 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          ref={containerRef}
-          className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden"
+          className="relative z-50 min-h-screen overflow-x-hidden"
         >
           {/* ================================================================
               STICKY NAV BAR
@@ -323,7 +320,7 @@ export function SplashScreen({
               {/* Brand — tap to scroll to top */}
               <button
                 type="button"
-                onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="flex items-center gap-2.5 cursor-pointer"
                 aria-label="Scroll to top"
               >
@@ -364,8 +361,8 @@ export function SplashScreen({
                       href={link.href}
                       onClick={(e) => {
                         e.preventDefault();
-                        containerRef.current
-                          ?.querySelector(link.href)
+                        document
+                          .querySelector(link.href)
                           ?.scrollIntoView({ behavior: "smooth" });
                       }}
                       className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
@@ -473,8 +470,8 @@ export function SplashScreen({
                         onClick={(e) => {
                           e.preventDefault();
                           setMobileMenuOpen(false);
-                          containerRef.current
-                            ?.querySelector(link.href)
+                          document
+                            .querySelector(link.href)
                             ?.scrollIntoView({ behavior: "smooth" });
                         }}
                         className="block rounded-lg px-3 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
@@ -1184,8 +1181,8 @@ export function SplashScreen({
                         href="#how-it-works"
                         onClick={(e) => {
                           e.preventDefault();
-                          containerRef.current
-                            ?.querySelector("#how-it-works")
+                          document
+                            .querySelector("#how-it-works")
                             ?.scrollIntoView({ behavior: "smooth" });
                         }}
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
@@ -1199,8 +1196,8 @@ export function SplashScreen({
                         href="#features"
                         onClick={(e) => {
                           e.preventDefault();
-                          containerRef.current
-                            ?.querySelector("#features")
+                          document
+                            .querySelector("#features")
                             ?.scrollIntoView({ behavior: "smooth" });
                         }}
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"

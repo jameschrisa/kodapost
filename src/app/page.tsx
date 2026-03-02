@@ -933,8 +933,8 @@ export default function Home() {
         <TourStarter pending={tourPending} onStarted={() => setTourPending(false)} onClose={handleTourClose} />
         {/* Hidden full-screen target for modal-style tour steps */}
         <div data-tour="tour-modal" className="fixed inset-0 pointer-events-none z-[-1]" />
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* Splash Screen */}
+    <>
+      {/* Splash Screen — uses normal document flow for native mobile scroll */}
       {!splashDismissed && (
         <SplashScreen
           forceShow={splashForced}
@@ -947,6 +947,7 @@ export default function Home() {
         />
       )}
 
+    <div className={`flex min-h-screen flex-col bg-background${!splashDismissed ? " hidden" : ""}`}>
       {/* Header */}
       <header className="border-b">
         <div className="mx-auto flex max-w-5xl items-center gap-2 sm:gap-4 px-4 py-3 sm:py-4 sm:px-6">
@@ -1357,6 +1358,7 @@ export default function Home() {
         onOpenProfile={() => setProfileOpen(true)}
       />
     </div>
+    </>
       </Onborda>
     </OnbordaProvider>
     </TourContext.Provider>
