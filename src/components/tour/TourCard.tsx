@@ -167,14 +167,24 @@ export function TourCard({
   // Portal-centered: used for modal steps (step 0) and ALL steps on mobile
   // to prevent Onborda's relative positioning from pushing the card off-screen.
   if (isModalStep || isMobile) {
+    // Modal steps (Welcome) center vertically on all screens.
+    // Non-modal mobile steps anchor to the bottom so the spotlight stays visible.
+    const centerVertically = isModalStep;
     return (
       <Portal>
         {/* Dim overlay (only for explicit modal steps) */}
         {isModalStep && (
           <div className="fixed inset-0 z-[900] bg-black/65 pointer-events-none" />
         )}
-        {/* Centered card */}
-        <div className="fixed inset-x-0 bottom-0 sm:inset-0 z-[910] flex items-end sm:items-center justify-center pointer-events-none px-4 pb-4 sm:p-0">
+        {/* Card container */}
+        <div
+          className={cn(
+            "fixed inset-x-0 z-[910] flex justify-center pointer-events-none px-4",
+            centerVertically
+              ? "inset-0 items-center"
+              : "bottom-0 items-end pb-4"
+          )}
+        >
           <CardContent
             step={step}
             currentStep={currentStep}

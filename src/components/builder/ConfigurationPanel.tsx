@@ -418,8 +418,8 @@ export function ConfigurationPanel({
 
       {/* 1. Your Story */}
       <motion.div variants={staggerItemVariants}>
-      <Card>
-        <CardHeader data-tour="tour-story-card">
+      <Card data-tour="tour-story-card">
+        <CardHeader>
           <div className="flex items-center gap-2">
               <CardTitle className="text-base">Your Story</CardTitle>
               <CardHelpIcon title="Your Story">
