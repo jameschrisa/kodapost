@@ -195,23 +195,40 @@ export function HeaderMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          {/* Theme toggle */}
-          <DropdownMenuItem
-            onClick={() => setTheme(isDark ? "light" : "dark")}
-          >
-            {isDark ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-            {mounted ? (isDark ? "Light Mode" : "Dark Mode") : "Toggle Theme"}
-          </DropdownMenuItem>
           {/* Content Bot panel */}
           <DropdownMenuItem onClick={onOpenContentBot}>
             <Bot className="h-4 w-4" />
             Content Bot
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          {/* Settings submenu */}
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Settings className="h-4 w-4" />
+              Settings
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={onOpenSettings}>
+                <Settings className="h-4 w-4" />
+                Social Media
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onOpenAdvancedSettings}>
+                <Activity className="h-4 w-4" />
+                Advanced
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+              >
+                {isDark ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                {mounted ? (isDark ? "Light Mode" : "Dark Mode") : "Toggle Theme"}
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           {/* Help submenu */}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -242,14 +259,6 @@ export function HeaderMenu({
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
-          <DropdownMenuItem onClick={onOpenSettings}>
-            <Settings className="h-4 w-4" />
-            Social Media Settings
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onOpenAdvancedSettings}>
-            <Activity className="h-4 w-4" />
-            Advanced Settings
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onResetApp}>
             <RefreshCw className="h-4 w-4" />
