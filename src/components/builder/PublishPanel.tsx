@@ -19,6 +19,7 @@ import {
   Plus,
   RotateCcw,
   Send,
+  Shield,
   Youtube,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ import { useVideoGenerator } from "@/hooks/useVideoGenerator";
 import { DEFAULT_VIDEO_SETTINGS } from "@/lib/constants";
 import { logActivity } from "@/lib/activity-log";
 import { useLoadingStore } from "@/lib/stores/loading-store";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import type { CarouselProject, OAuthConnection, Platform } from "@/lib/types";
 
 export const PLATFORMS: {
@@ -119,6 +121,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [includeAttribution, setIncludeAttribution] = useState(true);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [enableWatermark, setEnableWatermark] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Video generator hook
@@ -131,6 +134,8 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   } = useVideoGenerator();
 
   const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } = useLoadingStore();
+  const { canAccessFeature } = useUserPlan();
+  const hasProvenance = canAccessFeature("creator_provenance");
 
   // Pre-select platforms from saved settings
   useEffect(() => {
@@ -192,7 +197,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
     try {
       // 1. Composite images for this platform
-      const result = await compositeSlideImages(readySlides, [platform], project.filterConfig);
+      const provenanceConfig = hasProvenance
+        ? { creatorName: "Creator", enableWatermark }
+        : undefined;
+      const result = await compositeSlideImages(readySlides, [platform], project.filterConfig, provenanceConfig);
 
       if (!result.success) {
         toast.error("Post failed", { description: result.error });
@@ -255,7 +263,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       const platforms = Array.from(selected);
 
       // 1. Composite images on the server (Sharp + SVG overlays)
-      const result = await compositeSlideImages(readySlides, platforms, project.filterConfig);
+      const provenanceConfig = hasProvenance
+        ? { creatorName: "Creator", enableWatermark }
+        : undefined;
+      const result = await compositeSlideImages(readySlides, platforms, project.filterConfig, provenanceConfig);
 
       if (!result.success) {
         toast.error("Export failed", { description: result.error });
@@ -791,6 +802,30 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
               </div>
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Creator Provenance — watermark toggle (Standard + Pro only) */}
+      {selected.size > 0 && hasProvenance && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-emerald-400" />
+            <p className="text-sm font-medium">Creator Provenance</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Your name, timestamp, and a unique image fingerprint are embedded into every export.
+          </p>
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={enableWatermark}
+              onChange={(e) => setEnableWatermark(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-muted-foreground/30 accent-emerald-500"
+            />
+            <span className="text-xs text-muted-foreground">
+              Add visible watermark
+            </span>
+          </label>
         </div>
       )}
 

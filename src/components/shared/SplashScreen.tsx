@@ -123,6 +123,13 @@ const FEATURES = [
     style: "card" as const,
   },
   {
+    icon: Shield,
+    title: "Creator Provenance",
+    description: "Every export embeds your name, timestamp, and a unique image fingerprint into the file metadata. Add a visible watermark for instant attribution. Prove you made it first.",
+    span: "",
+    style: "card" as const,
+  },
+  {
     icon: Calendar,
     title: "Content Calendar",
     description: "Schedule your social media carousels, track your creative output, and stay consistent without the burnout.",
@@ -885,7 +892,7 @@ export function SplashScreen({
                       Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. KodaPost is the assistant, never the artist.
                     </p>
                     <p>
-                      We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&apos;s why every KodaPost social media carousel is a collaboration between you and your AI-powered creative assistant.
+                      We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&apos;s why every KodaPost social media carousel is a collaboration between you and your AI-powered creative assistant. Creator Provenance goes further, embedding your authorship directly into every export so your work stays yours.
                     </p>
                   </div>
                 </motion.div>

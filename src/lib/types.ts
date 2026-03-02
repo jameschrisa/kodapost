@@ -230,6 +230,24 @@ export interface CarouselSlide {
 }
 
 // -----------------------------------------------------------------------------
+// Provenance Types
+// -----------------------------------------------------------------------------
+
+/** Provenance metadata embedded into exported images */
+export interface ProvenanceData {
+  /** SHA-256 hex digest of the final image buffer */
+  imageHash: string;
+  /** Creator name embedded in EXIF Artist field */
+  creatorName: string;
+  /** ISO timestamp of when the image was exported */
+  createdAt: string;
+  /** Whether a visible watermark was composited onto the image */
+  watermarkApplied: boolean;
+  /** Software identifier embedded in EXIF */
+  softwareVersion: string;
+}
+
+// -----------------------------------------------------------------------------
 // Image Source Strategy Types
 // -----------------------------------------------------------------------------
 
@@ -498,6 +516,10 @@ export interface CarouselProject {
   projectName?: string;
   /** Video generation settings for reel export */
   videoSettings?: VideoSettings;
+  /** Whether creator provenance metadata is embedded on export */
+  provenanceEnabled?: boolean;
+  /** Whether a visible watermark is composited onto exports */
+  provenanceWatermark?: boolean;
 }
 
 // -----------------------------------------------------------------------------

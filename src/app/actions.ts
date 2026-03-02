@@ -18,6 +18,11 @@ import {
 } from "@/lib/image-source-calculator";
 import { handleAPIError, parseDataUri } from "@/lib/utils";
 import { applyCameraFilters } from "@/lib/camera-filters-sharp";
+import {
+  computeImageHash,
+  generateProvenanceExif,
+  generateWatermarkSVG,
+} from "@/lib/provenance";
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -576,6 +581,7 @@ interface CompositeResult {
   slideIndex: number;
   imageBase64: string;
   format: "jpeg" | "png";
+  imageHash?: string;
 }
 
 const PLATFORM_SPEC_MAP: Record<string, keyof typeof PLATFORM_IMAGE_SPECS> = {
@@ -594,7 +600,8 @@ const PLATFORM_SPEC_MAP: Record<string, keyof typeof PLATFORM_IMAGE_SPECS> = {
 export async function compositeSlideImages(
   slides: CarouselSlide[],
   platforms: string[],
-  filterConfig?: FilterConfig
+  filterConfig?: FilterConfig,
+  provenanceConfig?: { creatorName: string; enableWatermark: boolean }
 ): Promise<ActionResult<CompositeResult[]>> {
   try {
     const results: CompositeResult[] = [];
@@ -695,13 +702,47 @@ export async function compositeSlideImages(
             }
           }
 
-          // 4. Encode to the platform's format
+          // 4b. Composite watermark if provenance is enabled
+          if (provenanceConfig?.enableWatermark) {
+            const watermarkText = `Made with KodaPost by ${provenanceConfig.creatorName}`;
+            const safeArea = PLATFORM_SAFE_AREA[platform];
+            const watermarkSvg = generateWatermarkSVG(
+              watermarkText,
+              spec.width,
+              spec.height,
+              { safeArea }
+            );
+            const watermarkBuffer = Buffer.from(watermarkSvg);
+            pipeline = pipeline.composite([
+              { input: watermarkBuffer, top: 0, left: 0 },
+            ]);
+          }
+
+          // 5. Encode to the platform's format
           let outputBuffer: Buffer;
           if (format === "png") {
-            // PNG uses compressionLevel (0-9), not quality
             outputBuffer = await pipeline.png({ compressionLevel: 6 }).toBuffer();
           } else {
             outputBuffer = await pipeline.jpeg({ quality: spec.quality }).toBuffer();
+          }
+
+          // 6. Embed provenance EXIF metadata and compute hash
+          let imageHash: string | undefined;
+          if (provenanceConfig) {
+            imageHash = computeImageHash(outputBuffer);
+            const createdAt = new Date().toISOString();
+            const exifData = generateProvenanceExif(
+              provenanceConfig.creatorName,
+              imageHash,
+              createdAt
+            );
+            // Re-encode with EXIF metadata (JPEG only — PNG doesn't support EXIF via Sharp)
+            if (format === "jpeg") {
+              outputBuffer = await sharp(outputBuffer)
+                .withMetadata({ exif: { IFD0: exifData } })
+                .jpeg({ quality: spec.quality })
+                .toBuffer();
+            }
           }
 
           results.push({
@@ -709,6 +750,7 @@ export async function compositeSlideImages(
             slideIndex: i,
             imageBase64: outputBuffer.toString("base64"),
             format,
+            imageHash,
           });
         } catch (err) {
           console.error(

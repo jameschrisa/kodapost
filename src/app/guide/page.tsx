@@ -13,6 +13,7 @@ const sections = [
   { id: "create-on-telegram", title: "Create on Telegram" },
   { id: "the-flow", title: "The Flow" },
   { id: "tips", title: "Tips for Great Posts" },
+  { id: "creator-provenance", title: "Creator Provenance" },
   { id: "commands", title: "Commands Reference" },
 ];
 
@@ -227,6 +228,56 @@ export default function GuidePage() {
             same source material.
           </li>
         </ul>
+
+        <h2 id="creator-provenance">Creator Provenance</h2>
+        <p>
+          Every image you export from KodaPost carries proof that you made it.
+          Creator Provenance embeds authorship data directly into your image files
+          so your work stays attributed to you, even after it leaves your device.
+        </p>
+        <h3>What Gets Embedded</h3>
+        <p>
+          When you export with Creator Provenance enabled, KodaPost writes the
+          following into each image&apos;s EXIF metadata:
+        </p>
+        <ul>
+          <li>
+            <strong>Artist</strong> &mdash; Your creator name.
+          </li>
+          <li>
+            <strong>Copyright</strong> &mdash; &ldquo;Made with KodaPost by
+            [your name]&rdquo;.
+          </li>
+          <li>
+            <strong>Software</strong> &mdash; &ldquo;KodaPost&rdquo;.
+          </li>
+          <li>
+            <strong>Image fingerprint</strong> &mdash; A unique SHA-256 hash of
+            the image, recorded in the ImageDescription field alongside the
+            creation timestamp.
+          </li>
+        </ul>
+        <h3>Visible Watermark</h3>
+        <p>
+          Optionally, you can add a small semi-transparent watermark in the
+          bottom-right corner of each exported image. The watermark reads
+          &ldquo;Made with KodaPost by [your name]&rdquo; and is designed to be
+          subtle but readable.
+        </p>
+        <h3>How to Verify</h3>
+        <p>
+          You can check the embedded metadata using any photo viewer or EXIF
+          tool. On macOS, right-click an image and select &ldquo;Get Info.&rdquo;
+          On Windows, right-click and choose &ldquo;Properties &gt;
+          Details.&rdquo; Online tools like exifdata.com also work.
+        </p>
+        <h3>Availability</h3>
+        <p>
+          Creator Provenance is available on the Creator Mode (Standard) and
+          Monster Mode (Pro) plans. Coming soon: C2PA Content Credentials for
+          tamper-evident provenance that works with platforms like Adobe Content
+          Authenticity and Google Search.
+        </p>
 
         <h2 id="commands">Commands Reference</h2>
         <h3>Telegram Bot Commands</h3>

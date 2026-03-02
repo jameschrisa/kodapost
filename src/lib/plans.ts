@@ -43,6 +43,8 @@ export interface PlanConfig {
   multilingualSupport: boolean;
   /** Whether priority support is available */
   prioritySupport: boolean;
+  /** Whether creator provenance (EXIF metadata, watermark, hashing) is available */
+  creatorProvenance: boolean;
 }
 
 export const PLAN_CONFIGS: Record<PlanTier, PlanConfig> = {
@@ -57,6 +59,7 @@ export const PLAN_CONFIGS: Record<PlanTier, PlanConfig> = {
     directPublish: false,
     multilingualSupport: false,
     prioritySupport: false,
+    creatorProvenance: false,
   },
   standard: {
     displayName: "Creator Mode",
@@ -69,6 +72,7 @@ export const PLAN_CONFIGS: Record<PlanTier, PlanConfig> = {
     directPublish: true,
     multilingualSupport: true,
     prioritySupport: false,
+    creatorProvenance: true,
   },
   pro: {
     displayName: "Monster Mode",
@@ -81,6 +85,7 @@ export const PLAN_CONFIGS: Record<PlanTier, PlanConfig> = {
     directPublish: true,
     multilingualSupport: true,
     prioritySupport: true,
+    creatorProvenance: true,
   },
 };
 
@@ -93,7 +98,8 @@ export type GatedFeature =
   | "music_library"
   | "direct_publish"
   | "multilingual_support"
-  | "priority_support";
+  | "priority_support"
+  | "creator_provenance";
 
 const FEATURE_TO_CONFIG_KEY: Record<GatedFeature, keyof PlanConfig> = {
   video_export: "videoExport",
@@ -101,6 +107,7 @@ const FEATURE_TO_CONFIG_KEY: Record<GatedFeature, keyof PlanConfig> = {
   direct_publish: "directPublish",
   multilingual_support: "multilingualSupport",
   priority_support: "prioritySupport",
+  creator_provenance: "creatorProvenance",
 };
 
 // -----------------------------------------------------------------------------
