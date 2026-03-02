@@ -729,7 +729,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
               onTouchMove={handleTouchMove}
               onTouchEnd={handleDragMouseUp}
               className={cn(
-                "relative w-full max-w-full sm:max-w-[500px] overflow-hidden rounded-lg bg-black shadow-lg select-none",
+                "relative w-full max-w-full sm:max-w-[500px] overflow-hidden rounded-lg bg-black shadow-lg select-none touch-none",
                 platformConfig.aspectClass,
                 isDragging ? "cursor-grabbing" : "cursor-move"
               )}
