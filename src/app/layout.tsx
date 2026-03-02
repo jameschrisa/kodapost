@@ -107,6 +107,10 @@ export const metadata: Metadata = {
   title: "KodaPost - Create Stunning Carousels",
   description:
     "Transform your photos into stunning social media carousels",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({
