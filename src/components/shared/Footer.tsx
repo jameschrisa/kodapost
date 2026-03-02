@@ -9,7 +9,6 @@ import {
   Shield,
   FileText,
   Database,
-  ChevronDown,
 } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -136,75 +135,58 @@ export function Footer({
           </div>
         </div>
 
-        {/* Mobile: compact collapsible footer */}
-        <div className="sm:hidden space-y-0 divide-y divide-border">
-          <details className="group">
-            <summary className="flex items-center justify-between py-3 cursor-pointer text-sm font-semibold">
-              Legal
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
-            </summary>
-            <ul className="space-y-2 pb-3">
+        {/* Mobile: two-column compact footer */}
+        <div className="sm:hidden grid grid-cols-2 gap-6">
+          {/* Legal */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Legal</h3>
+            <ul className="space-y-1.5">
               <li>
-                <Link href="/legal/privacy" className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Shield className="h-3.5 w-3.5" />
-                  Privacy Policy
+                <Link href="/legal/privacy" className="text-sm text-muted-foreground">
+                  Privacy
                 </Link>
               </li>
               <li>
-                <Link href="/legal/terms" className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <FileText className="h-3.5 w-3.5" />
-                  Terms of Use
+                <Link href="/legal/terms" className="text-sm text-muted-foreground">
+                  Terms
                 </Link>
               </li>
               <li>
-                <Link href="/legal/data" className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Database className="h-3.5 w-3.5" />
+                <Link href="/legal/data" className="text-sm text-muted-foreground">
                   Data Policy
                 </Link>
               </li>
             </ul>
-          </details>
+          </div>
 
-          <details className="group">
-            <summary className="flex items-center justify-between py-3 cursor-pointer text-sm font-semibold">
-              App
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
-            </summary>
-            <ul className="space-y-2 pb-3">
+          {/* App */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Product</h3>
+            <ul className="space-y-1.5">
               <li>
-                <button type="button" onClick={onOpenHelp} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <HelpCircle className="h-3.5 w-3.5" />
-                  Help & FAQ
+                <button type="button" onClick={onOpenHelp} className="text-sm text-muted-foreground">
+                  Help
                 </button>
               </li>
               <li>
-                <button type="button" onClick={onOpenProfile} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CircleUser className="h-3.5 w-3.5" />
-                  Account
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={onOpenSettings} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Settings className="h-3.5 w-3.5" />
+                <button type="button" onClick={onOpenSettings} className="text-sm text-muted-foreground">
                   Settings
                 </button>
               </li>
               <li>
-                <Link href="/guide" className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <BookOpen className="h-3.5 w-3.5" />
+                <Link href="/guide" className="text-sm text-muted-foreground">
                   Guide
                 </Link>
               </li>
               {isActualAdmin && (
                 <li>
-                  <Link href="/admin" className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Shield className="h-3.5 w-3.5" />
+                  <Link href="/admin" className="text-sm text-muted-foreground">
                     Admin
                   </Link>
                 </li>
               )}
             </ul>
-          </details>
+          </div>
         </div>
 
         {/* Bottom bar */}
