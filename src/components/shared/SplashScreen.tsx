@@ -151,19 +151,19 @@ const INDIE_CREATOR_CARDS: Array<{ icon: typeof Clock; title: string; descriptio
   {
     icon: Clock,
     title: "Batch-Create a Week of Posts in One Sitting",
-    description: "Upload product photos once, KodaPost generates a full week of on-brand carousels — styled, captioned, and ready to publish.",
+    description: "Upload product photos once, KodaPost generates a full week of on-brand carousels: styled, captioned, and ready to publish.",
     color: "amber",
   },
   {
     icon: Palette,
     title: "Consistent Brand Aesthetic Without a Designer",
-    description: "Lock in camera profile, film filter, fonts, and color palette — every carousel matches your brand automatically.",
+    description: "Lock in camera profile, film filter, fonts, and color palette so every carousel matches your brand automatically.",
     color: "violet",
   },
   {
     icon: Share2,
     title: "Publish to Every Platform from One Tool",
-    description: "Export optimized carousels for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X — no reformatting required.",
+    description: "Export optimized carousels for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X, with no reformatting required.",
     color: "blue",
   },
   {
@@ -175,7 +175,7 @@ const INDIE_CREATOR_CARDS: Array<{ icon: typeof Clock; title: string; descriptio
   {
     icon: Sparkles,
     title: "AI Captions That Sound Like You, Not a Robot",
-    description: "KodaPost writes scroll-stopping captions you edit and approve — no generic AI slop, just your voice amplified.",
+    description: "KodaPost writes scroll-stopping captions you edit and approve. No generic AI slop, just your voice amplified.",
     color: "fuchsia",
   },
   {
@@ -646,7 +646,7 @@ export function SplashScreen({
                 </p>
                 {quote.author && (
                   <p className="mt-2 text-xs font-medium text-white/40">
-                    &mdash; {quote.author}
+                    &ndash; {quote.author}
                   </p>
                 )}
               </motion.div>
@@ -799,7 +799,7 @@ export function SplashScreen({
                   KodaPost Features
                 </h2>
                 <p className="mt-3 text-white/40 max-w-lg">
-                  Everything indie creators need to turn everyday photos into scroll-stopping social media carousels — no design experience required.
+                  Everything indie creators need to turn everyday photos into scroll-stopping social media carousels, no design experience required.
                 </p>
               </motion.div>
 
@@ -879,13 +879,13 @@ export function SplashScreen({
                   </h2>
                   <div className="space-y-4 text-white/45 text-sm leading-relaxed">
                     <p>
-                      KodaPost is built on the belief that the best creative tools keep humans in the loop. KodaPost never takes over &mdash; it works alongside you, handling the tedious parts so you can focus on what matters: your story.
+                      KodaPost is built on the belief that the best creative tools keep humans in the loop. KodaPost never takes over. It works alongside you, handling the tedious parts so you can focus on what matters: your story.
                     </p>
                     <p>
                       Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. KodaPost is the assistant, never the artist.
                     </p>
                     <p>
-                      We believe authentic content comes from real people making real choices &mdash; not from fully automated pipelines. That&apos;s why every KodaPost social media carousel is a collaboration between you and your AI-powered creative assistant.
+                      We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&apos;s why every KodaPost social media carousel is a collaboration between you and your AI-powered creative assistant.
                     </p>
                   </div>
                 </motion.div>
@@ -941,7 +941,7 @@ export function SplashScreen({
                   <span className="text-white/40">Small Brands &amp; Content Creators</span>
                 </h2>
                 <p className="mt-4 text-white/40 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-                  You handle the creative vision — KodaPost handles the production work. Batch-create carousels, maintain a consistent brand aesthetic, and publish everywhere from one tool.
+                  You handle the creative vision and KodaPost handles the production work. Batch-create carousels, maintain a consistent brand aesthetic, and publish everywhere from one tool.
                 </p>
               </motion.div>
 
@@ -1066,7 +1066,7 @@ export function SplashScreen({
                   </h2>
                   <div className="space-y-4 text-white/45 text-sm leading-relaxed">
                     <p>
-                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft &mdash; all while you&apos;re still on the go.
+                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft, all while you&apos;re still on the go.
                     </p>
                     <p>
                       No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
@@ -1119,7 +1119,7 @@ export function SplashScreen({
 
                 <div className="relative z-10">
                   <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
-                    Start Creating Social Media Carousels with KodaPost — Free
+                    Start Creating Social Media Carousels with KodaPost, Free
                   </h2>
                   <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto">
                     Join indie creators using KodaPost to build authentic, nostalgic social media content that stands out from the algorithm.
@@ -1166,7 +1166,7 @@ export function SplashScreen({
                     <span className="text-base font-bold tracking-tight text-orange-500">KodaPost</span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
-                    KodaPost transforms your everyday photos into stunning nostalgic social media carousels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays &mdash; the content creation tool designed for indie brands who value authenticity over algorithms.
+                    KodaPost transforms your everyday photos into stunning nostalgic social media carousels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays. The content creation tool designed for indie brands who value authenticity over algorithms.
                   </p>
                 </div>
 
