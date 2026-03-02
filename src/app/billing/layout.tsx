@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Billing & Plan — KodaPost",
-  description: "Manage your KodaPost subscription and payment method.",
+  title: "Plans and Pricing — KodaPost",
+  description: "Choose the right KodaPost plan for your creative workflow.",
 };
 
 export default function BillingLayout({ children }: { children: React.ReactNode }) {

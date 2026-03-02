@@ -137,11 +137,11 @@ export function HeaderMenu({
               Profile
             </DropdownMenuItem>
 
-            {/* Billing & Plan */}
+            {/* Plans and Pricing */}
             <DropdownMenuItem asChild>
               <Link href="/billing" className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
-                <span className="flex-1">Billing &amp; Plan</span>
+                <span className="flex-1">Plans and Pricing</span>
                 <span className="text-[10px] font-semibold text-purple-400">
                   {role.isAdmin ? "Admin" : userPlan.config.displayName}
                 </span>

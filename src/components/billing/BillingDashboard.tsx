@@ -143,10 +143,10 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
     <div className="mx-auto max-w-4xl space-y-10 px-4 py-10">
 
       {/* ── Page header ── */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Billing &amp; Plan</h1>
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-white">Plans and Pricing</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Manage your KodaPost subscription and payment method.
+          Choose the right plan for your creative workflow.
         </p>
       </div>
 
@@ -165,25 +165,34 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
         </div>
       )}
 
-      {/* ── Current plan summary (non-admin) ── */}
-      {!role.isAdmin && (
+      {/* ── Plan comparison ── */}
+      <div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PLAN_TIER_ORDER.map((tier) => (
+            <PlanCard
+              key={tier}
+              tier={tier}
+              config={PLAN_CONFIGS[tier]}
+              isCurrentPlan={userPlan.tier === tier}
+              stripePriceId={STRIPE_PRICE_IDS[tier]}
+              onUpgrade={handleUpgrade}
+              onManage={handlePortal}
+              loading={checkoutLoading === tier || portalLoading}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Current plan summary (non-admin, paid users) ── */}
+      {!role.isAdmin && userPlan.isPaid && (
         <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500 mb-1">Current Plan</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500 mb-1">Your Subscription</p>
             <div className="flex items-center gap-3">
               <span className="text-xl font-bold text-white">{userPlan.config.displayName}</span>
               {billingStatus?.subscriptionStatus && STATUS_LABELS[billingStatus.subscriptionStatus] && (
                 <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] font-semibold", STATUS_LABELS[billingStatus.subscriptionStatus].className)}>
                   {STATUS_LABELS[billingStatus.subscriptionStatus].label}
-                </span>
-              )}
-              {userPlan.isTrial && (
-                <span className="rounded-full bg-blue-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-blue-400">
-                  {userPlan.isTrialExpired
-                    ? "Trial Expired"
-                    : userPlan.trialDaysRemaining !== null
-                    ? `${userPlan.trialDaysRemaining}d left`
-                    : "Trial"}
                 </span>
               )}
             </div>
@@ -200,45 +209,20 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
             )}
-            {userPlan.isPaid && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePortal}
-                disabled={portalLoading}
-                className="gap-1.5"
-              >
-                {portalLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ExternalLink className="h-4 w-4" />
-                )}
-                Manage Subscription
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Plan comparison ── */}
-      {!role.isAdmin && (
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-500 mb-4">
-            Choose a Plan
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {PLAN_TIER_ORDER.map((tier) => (
-              <PlanCard
-                key={tier}
-                tier={tier}
-                config={PLAN_CONFIGS[tier]}
-                isCurrentPlan={userPlan.tier === tier}
-                stripePriceId={STRIPE_PRICE_IDS[tier]}
-                onUpgrade={handleUpgrade}
-                onManage={handlePortal}
-                loading={checkoutLoading === tier || portalLoading}
-              />
-            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePortal}
+              disabled={portalLoading}
+              className="gap-1.5"
+            >
+              {portalLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ExternalLink className="h-4 w-4" />
+              )}
+              Manage Subscription
+            </Button>
           </div>
         </div>
       )}
