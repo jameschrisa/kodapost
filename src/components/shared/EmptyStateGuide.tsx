@@ -8,7 +8,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Camera, ImagePlus, Sparkles, Upload } from "lucide-react";
+import { Camera, ImagePlus, Sparkles, Upload, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { staggerContainerVariants, staggerItemVariants } from "@/lib/motion";
 
@@ -64,7 +64,16 @@ const ONBOARDING_STEPS = [
   },
 ];
 
-export function EmptyStateGuide() {
+interface EmptyStateGuideProps {
+  onDismiss?: () => void;
+}
+
+export function EmptyStateGuide({ onDismiss }: EmptyStateGuideProps) {
+  const handleDismiss = () => {
+    markGuideSeen();
+    onDismiss?.();
+  };
+
   return (
     <motion.div
       variants={staggerContainerVariants}
@@ -73,16 +82,26 @@ export function EmptyStateGuide() {
       className="mb-6"
     >
       <motion.div variants={staggerItemVariants}>
-        <Card className="border-dashed border-muted-foreground/20">
+        <Card className="relative border-dashed border-muted-foreground/20">
+          {/* Dismiss X button */}
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="absolute right-3 top-3 shrink-0 rounded-md p-1 text-muted-foreground/50 transition-colors hover:text-foreground"
+            aria-label="Dismiss getting started guide"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
           <CardContent className="p-6">
             <div className="text-center mb-5">
-              <div className="inline-flex items-center gap-2 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-400 mb-3">
-                <ImagePlus className="h-3.5 w-3.5" />
+              <h3 className="inline-flex items-center gap-2 text-lg font-semibold mb-2">
+                <ImagePlus className="h-5 w-5 text-purple-400" />
                 Getting Started
-              </div>
-              <h3 className="text-base font-semibold">
-                Create your first carousel in 3 easy steps
               </h3>
+              <p className="text-base font-semibold">
+                Create your first carousel in 3 easy steps
+              </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Transform your photos into stunning social media content.
               </p>
@@ -113,10 +132,19 @@ export function EmptyStateGuide() {
               ))}
             </div>
 
-            <p className="text-center text-xs text-muted-foreground mt-4">
-              <span className="font-medium text-foreground">Quick tip:</span>{" "}
-              Upload 3-5 high-quality photos for the best results.
-            </p>
+            <div className="text-center mt-4">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">Quick tip:</span>{" "}
+                Upload 3-5 high-quality photos for the best results.
+              </p>
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="mt-2 text-xs text-muted-foreground/70 hover:text-foreground transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
           </CardContent>
         </Card>
       </motion.div>

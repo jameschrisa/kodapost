@@ -98,28 +98,30 @@ export function AssistantBanner() {
                   </div>
 
                   {/* Actions row */}
-                  <div className="mt-4 flex items-center gap-4 pl-0 sm:pl-[52px]">
-                    <Button
-                      size="sm"
-                      onClick={handleEnable}
-                      className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100"
-                    >
-                      <AutomationIcon className="h-3.5 w-3.5" />
-                      Enable
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={handleDismiss}
-                      className="text-sm text-purple-300/70 hover:text-white transition-colors"
-                    >
-                      Not now
-                    </button>
+                  <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pl-0 sm:pl-[52px]">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        size="sm"
+                        onClick={handleEnable}
+                        className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100"
+                      >
+                        <AutomationIcon className="h-3.5 w-3.5" />
+                        Enable
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={handleDismiss}
+                        className="text-sm text-purple-300/70 hover:text-white transition-colors"
+                      >
+                        Not now
+                      </button>
+                    </div>
                     <span className="text-[11px] text-purple-400/50">
                       You can enable this later in Settings
                     </span>
                     <Link
                       href="/guide"
-                      className="ml-auto flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors"
+                      className="flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors sm:ml-auto"
                     >
                       <BookOpen className="h-3.5 w-3.5" />
                       Learn How
@@ -159,26 +161,28 @@ export function AssistantBanner() {
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-4 flex items-center gap-4 pl-0 sm:pl-[52px]">
-                    <Button
-                      size="sm"
-                      onClick={handleGotIt}
-                      className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100"
-                    >
-                      Got it
-                    </Button>
-                    <a
-                      href="https://t.me/kodacontentbot"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      Open Telegram
-                    </a>
+                  <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pl-0 sm:pl-[52px]">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        size="sm"
+                        onClick={handleGotIt}
+                        className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100"
+                      >
+                        Got it
+                      </Button>
+                      <a
+                        href="https://t.me/kodacontentbot"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Open Telegram
+                      </a>
+                    </div>
                     <Link
                       href="/guide"
-                      className="ml-auto flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors"
+                      className="flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors sm:ml-auto"
                     >
                       <BookOpen className="h-3.5 w-3.5" />
                       Learn How

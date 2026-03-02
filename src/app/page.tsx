@@ -1008,6 +1008,11 @@ export default function Home() {
       <ContentBotPanel open={contentBotOpen} onOpenChange={setContentBotOpen} />
       <AdvancedSettingsDialog open={advancedSettingsOpen} onOpenChange={setAdvancedSettingsOpen} />
 
+      {/* Assistant banner — shown when preference not yet set */}
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 pt-4">
+        <AssistantBanner />
+      </div>
+
       {/* App mode tabs — Create Post / Content Calendar */}
       <div className="border-b">
         <div className="mx-auto flex max-w-5xl items-center gap-1 px-4 sm:px-6">
@@ -1076,9 +1081,6 @@ export default function Home() {
 
       {/* Main content */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-8 sm:px-6">
-        {/* Assistant banner — shown when preference not yet set */}
-        <AssistantBanner />
-
         {/* Trial status banner */}
         <TrialBanner />
 
@@ -1112,7 +1114,7 @@ export default function Home() {
                 {/* Onboarding guide for first-time users */}
                 {showOnboarding && draftList.length === 0 && (
                   <motion.div variants={staggerItemVariants}>
-                    <EmptyStateGuide />
+                    <EmptyStateGuide onDismiss={() => setShowOnboarding(false)} />
                   </motion.div>
                 )}
 
