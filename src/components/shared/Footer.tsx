@@ -9,6 +9,7 @@ import {
   Shield,
   FileText,
   Database,
+  ChevronDown,
 } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -28,8 +29,9 @@ export function Footer({
 
   return (
     <footer className="border-t bg-muted/30 mt-8">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto max-w-5xl px-4 py-4 sm:py-8 sm:px-6">
+        {/* Desktop: grid layout, Mobile: collapsible sections */}
+        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Legal links */}
           <div>
             <h3 className="text-sm font-semibold mb-3">Legal</h3>
@@ -134,8 +136,79 @@ export function Footer({
           </div>
         </div>
 
+        {/* Mobile: compact collapsible footer */}
+        <div className="sm:hidden space-y-0 divide-y divide-border">
+          <details className="group">
+            <summary className="flex items-center justify-between py-3 cursor-pointer text-sm font-semibold">
+              Legal
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            </summary>
+            <ul className="space-y-2 pb-3">
+              <li>
+                <Link href="/legal/privacy" className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Shield className="h-3.5 w-3.5" />
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/terms" className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileText className="h-3.5 w-3.5" />
+                  Terms of Use
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/data" className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Database className="h-3.5 w-3.5" />
+                  Data Policy
+                </Link>
+              </li>
+            </ul>
+          </details>
+
+          <details className="group">
+            <summary className="flex items-center justify-between py-3 cursor-pointer text-sm font-semibold">
+              App
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            </summary>
+            <ul className="space-y-2 pb-3">
+              <li>
+                <button type="button" onClick={onOpenHelp} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  Help & FAQ
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={onOpenProfile} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CircleUser className="h-3.5 w-3.5" />
+                  Account
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={onOpenSettings} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Settings className="h-3.5 w-3.5" />
+                  Settings
+                </button>
+              </li>
+              <li>
+                <Link href="/guide" className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  Guide
+                </Link>
+              </li>
+              {isActualAdmin && (
+                <li>
+                  <Link href="/admin" className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Shield className="h-3.5 w-3.5" />
+                    Admin
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </details>
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-8 border-t pt-4">
+        <div className="mt-4 sm:mt-8 border-t pt-3 sm:pt-4">
           <p className="text-xs text-muted-foreground text-center">
             &copy; {new Date().getFullYear()} KodaPost. All rights
             reserved.

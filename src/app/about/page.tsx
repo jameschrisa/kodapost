@@ -64,7 +64,7 @@ const VALUES = [
     icon: Fingerprint,
     title: "Creators Own Their Voice",
     description:
-      "AI generates options. You make the decisions. Your audience follows you for your perspective — we protect that.",
+      "AI generates options. You make the decisions. Your audience follows you for your perspective, and we protect that.",
     style: "accent" as const,
     span: "md:col-span-2",
   },
@@ -88,7 +88,7 @@ const VALUES = [
     icon: Heart,
     title: "Great Content Is Human Content",
     description:
-      "The best posts have fingerprints on them — imperfect, opinionated, real. We're here to polish, not to homogenize.",
+      "The best posts have fingerprints on them: imperfect, opinionated, real. We're here to polish, not to homogenize.",
     style: "glass" as const,
     span: "md:col-span-2",
   },
@@ -112,14 +112,14 @@ const STEPS = [
   {
     icon: Palette,
     title: "You Review & Refine",
-    description: "Edit text, adjust styling, crop images, tweak filters — until it feels right.",
+    description: "Edit text, adjust styling, crop images, and tweak filters until it feels right.",
     accent: "from-amber-500 to-orange-600",
     glowColor: "hsl(30 95% 55% / 0.25)",
   },
   {
     icon: Share2,
     title: "Publish Directly",
-    description: "To Instagram, Telegram, and more — or export on your own schedule.",
+    description: "To Instagram, Telegram, and more, or export on your own schedule.",
     accent: "from-emerald-500 to-teal-600",
     glowColor: "hsl(175 80% 50% / 0.25)",
   },
@@ -199,7 +199,7 @@ export default function AboutPage() {
             </span>
             <br />
             <span className="text-white">
-              Amplified — Not Automated.
+              Amplified. Not Automated.
             </span>
           </motion.h1>
 
@@ -210,7 +210,7 @@ export default function AboutPage() {
             className="mx-auto mt-6 max-w-2xl text-lg text-white/45"
           >
             We build tools that handle the tedious parts of content publishing
-            so you can focus on the work that actually matters — telling your
+            so you can focus on the work that actually matters: telling your
             story, your way.
           </motion.p>
         </div>
@@ -241,7 +241,7 @@ export default function AboutPage() {
             </p>
             <p className="mt-4 text-white/45 leading-relaxed">
               Meanwhile, fully automated AI tools promise to &ldquo;do it all
-              for you&rdquo; — and strip out the one thing that makes your
+              for you&rdquo; and strip out the one thing that makes your
               content yours: <span className="text-white font-medium">you</span>.
             </p>
           </div>
@@ -296,9 +296,9 @@ export default function AboutPage() {
 
           <p className="mx-auto mt-5 max-w-2xl text-white/45 leading-relaxed">
             KodaPost exists to keep you in control. We handle the tedious,
-            time-consuming parts of content publishing — formatting,
-            captioning, cross-platform adaptation — so you can focus on telling
-            your story, your way.
+            time-consuming parts of content publishing: formatting,
+            captioning, and cross-platform adaptation, so you can focus on
+            telling your story, your way.
           </p>
 
           {/* Quote card */}
@@ -487,7 +487,7 @@ export default function AboutPage() {
               Questions? Let&rsquo;s Talk.
             </h2>
             <p className="mx-auto mt-4 max-w-md text-white/45">
-              Feedback, partnership ideas, or just want to say hi — we&rsquo;d
+              Feedback, partnership ideas, or just want to say hi? We&rsquo;d
               love to hear from you.
             </p>
 
