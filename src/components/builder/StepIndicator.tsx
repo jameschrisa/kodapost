@@ -1,8 +1,8 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
-import { Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { Check, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { springBouncy } from "@/lib/motion";
 import { CloudUploadIcon } from "@/components/icons/animated/cloud-upload";
@@ -68,9 +68,6 @@ function LoopingIcon({
     return () => {
       cancelAnimationFrame(frameId);
       clearInterval(interval);
-      // Don't call stopAnimation() here — during unmount the motion elements
-      // may already be destroyed, which causes controls.start() to throw.
-      // The animation naturally stops when the component unmounts.
     };
   }, [isActive]);
 
@@ -84,11 +81,12 @@ function LoopingIcon({
 
 export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) {
   const currentIndex = STEPS.findIndex((s) => s.key === currentStep);
+  const nextStep = currentIndex < STEPS.length - 1 ? STEPS[currentIndex + 1] : null;
 
   return (
     <nav data-tour="step-indicator" aria-label="Progress" className="w-full">
-      {/* Horizontal on sm+, vertical on mobile */}
-      <ol className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-0">
+      {/* ── Desktop: full horizontal stepper (unchanged) ── */}
+      <ol className="hidden sm:flex sm:items-center sm:gap-0">
         {STEPS.map((step, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
@@ -96,11 +94,10 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
 
           return (
             <Fragment key={step.key}>
-              {/* Connector line between steps (top-level sibling, not nested) */}
+              {/* Connector line between steps */}
               {index > 0 && (
-                <li aria-hidden="true" className="hidden sm:block sm:flex-1">
+                <li aria-hidden="true" className="sm:flex-1">
                   <div className="h-0.5 w-full relative bg-border">
-                    {/* Animated fill overlay */}
                     <motion.div
                       className="absolute inset-0 bg-primary origin-left"
                       initial={{ scaleX: 0 }}
@@ -176,6 +173,71 @@ export function StepIndicator({ currentStep, onStepClick }: StepIndicatorProps) 
           );
         })}
       </ol>
+
+      {/* ── Mobile: compact current + next step strip ── */}
+      <div className="sm:hidden">
+        {/* Progress bar */}
+        <div className="h-1 w-full rounded-full bg-border mb-3 overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentIndex + 1) / STEPS.length) * 100}%` }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          {/* Current step */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 12 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-2.5"
+            >
+              <div
+                className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-primary"
+              >
+                <LoopingIcon
+                  AnimatedIcon={STEPS[currentIndex].AnimatedIcon}
+                  isActive={true}
+                  size={14}
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Step {currentIndex + 1} of {STEPS.length}
+                </span>
+                <span className="text-sm font-semibold text-primary">
+                  {STEPS[currentIndex].label}
+                </span>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Next step indicator */}
+          {nextStep && (
+            <div className="flex items-center gap-1.5 text-muted-foreground/60">
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-xs">
+                {nextStep.label}
+              </span>
+            </div>
+          )}
+
+          {/* Final step: no "next" */}
+          {!nextStep && (
+            <div className="flex items-center gap-1.5 text-emerald-500/70">
+              <Check className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">
+                Final step
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
     </nav>
   );
 }
