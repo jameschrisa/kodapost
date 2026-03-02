@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 };
 
 const NAV_LINKS = [
-  { label: "About", href: "/about" },
   { label: "Features", href: "/#features" },
   { label: "Pricing", href: "/billing" },
+  { label: "About", href: "/about" },
+  { label: "Support", href: "/support" },
 ];
 
 export default function AboutLayout({

@@ -334,15 +334,16 @@ export function SplashScreen({
                     <line x1="10.5" y1="18" x2="18" y2="10.5" stroke="url(#brand-gradient-nav)" />
                   </svg>
                 </div>
-                <span className="text-base font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">KodaPost</span>
+                <span className="text-base font-bold tracking-tight text-white">KodaPost</span>
               </button>
 
               {/* Nav links — hidden on mobile */}
               <nav className="hidden md:flex items-center gap-8">
                 {[
-                  { label: "About", href: "/about", isPage: true },
                   { label: "Features", href: "#features", isPage: false },
                   { label: "Pricing", href: "/billing", isPage: true },
+                  { label: "About", href: "/about", isPage: true },
+                  { label: "Support", href: "/support", isPage: true },
                 ].map((link) =>
                   link.isPage ? (
                     <Link
@@ -446,9 +447,10 @@ export function SplashScreen({
               >
                 <nav className="max-w-5xl mx-auto flex flex-col gap-1 px-6 py-4">
                   {[
-                    { label: "About", href: "/about", isPage: true },
                     { label: "Features", href: "#features", isPage: false },
                     { label: "Pricing", href: "/billing", isPage: true },
+                    { label: "About", href: "/about", isPage: true },
+                    { label: "Support", href: "/support", isPage: true },
                   ].map((link) =>
                     link.isPage ? (
                       <Link

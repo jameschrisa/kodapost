@@ -1,7 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { PageTransition } from "@/components/shared/PageTransition";
+
+export const metadata: Metadata = {
+  title: "Support - KodaPost",
+  description:
+    "Get help with KodaPost. Browse FAQs, read the user guide, or contact our support team.",
+};
+
+const NAV_LINKS = [
+  { label: "Features", href: "/#features" },
+  { label: "Pricing", href: "/billing" },
+  { label: "About", href: "/about" },
+  { label: "Support", href: "/support" },
+];
 
 export default function SupportLayout({
   children,
@@ -9,26 +22,40 @@ export default function SupportLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4 sm:px-6 lg:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to KodaPost
-          </Link>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <KodaPostIcon className="h-4 w-4" />
+    <div className="min-h-screen bg-zinc-950">
+      <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl">
+        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-3.5">
+          {/* Brand — links home */}
+          <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 border border-white/[0.06]">
+              <KodaPostIcon className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-semibold">KodaPost</span>
-          </div>
+            <span className="text-base font-bold tracking-tight text-white">KodaPost</span>
+          </Link>
+
+          {/* Nav links */}
+          <nav className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`text-sm font-medium transition-colors duration-200 ${
+                  link.href === "/support"
+                    ? "text-white"
+                    : "text-white/50 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Spacer to balance layout on mobile when nav is hidden */}
+          <div className="w-8 md:hidden" />
         </div>
       </header>
       <PageTransition>
-        <main className="legal-content mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <main className="w-full">
           {children}
         </main>
       </PageTransition>

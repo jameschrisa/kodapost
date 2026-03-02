@@ -13,6 +13,7 @@ import type { NextRequest } from "next/server";
  *  - /              Home (splash screen is public; auth gate is client-side)
  *  - /about         About page
  *  - /billing       Pricing page
+ *  - /support       Support & contact page
  *  - /introduction  Informational page
  *  - /guide         Getting started guide
  *  - /legal/*       Legal pages (terms, privacy, data)
@@ -26,6 +27,7 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/about",
   "/billing",
+  "/support",
   "/introduction",
   "/guide",
   "/legal(.*)",
@@ -40,6 +42,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/telegram(.*)",
   "/api/preview(.*)",
   "/api/webhooks(.*)",
+  "/api/contact",
   "/api/health(.*)",
 ]);
 
