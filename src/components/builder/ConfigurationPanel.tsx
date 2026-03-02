@@ -430,6 +430,23 @@ export function ConfigurationPanel({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Audio transcription preview — shown above textarea when recording */}
+          {isRecording && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                    Listening...
+                  </span>
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground rounded-md border-2 border-purple-500 bg-muted px-3 py-2 min-h-[2rem]">
+                {transcription || "Speak into your microphone..."}
+              </p>
+            </div>
+          )}
+
           {/* Story textarea with inline mic button */}
           <ThemeInput
             value={project.theme}
@@ -451,35 +468,26 @@ export function ConfigurationPanel({
             }
           />
 
-          {/* Audio transcription preview */}
-          {(transcription || isRecording) && (
+          {/* Transcription result — shown below textarea when not recording */}
+          {transcription && !isRecording && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-xs text-muted-foreground">
-                  {isRecording ? (
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                      Listening...
-                    </span>
-                  ) : (
-                    "Transcription"
-                  )}
+                  Transcription
                 </Label>
-                {transcription && !isRecording && (
-                  <button
-                    type="button"
-                    className="text-xs text-muted-foreground hover:text-destructive"
-                    onClick={() => {
-                      setTranscription("");
-                      onUpdate({ ...project, storyTranscription: undefined });
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-destructive"
+                  onClick={() => {
+                    setTranscription("");
+                    onUpdate({ ...project, storyTranscription: undefined });
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
               <p className="text-xs text-muted-foreground bg-muted rounded-md px-3 py-2 min-h-[2rem]">
-                {transcription || "Speak into your microphone..."}
+                {transcription}
               </p>
             </div>
           )}

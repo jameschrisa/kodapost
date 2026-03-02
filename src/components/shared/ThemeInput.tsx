@@ -29,7 +29,7 @@ export function ThemeInput({ value, onChange, trailingAction }: ThemeInputProps)
           placeholder="Describe the moment, scene, or feeling you want to share. E.g., 'Early morning coffee at a rooftop café in Manila — golden hour light, city skyline, quiet gratitude.'"
           maxLength={MAX_LENGTH}
           rows={3}
-          className="resize-none text-sm pr-12"
+          className="resize-none text-sm pr-12 min-h-[6rem] sm:min-h-0"
         />
         {/* Inline trailing action (mic button) */}
         {trailingAction && (

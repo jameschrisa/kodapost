@@ -441,8 +441,8 @@ export function ImageUploader({
                   <CardContent>
                     <div className="grid grid-cols-2 gap-3">
                       {([
-                        { mode: "single" as PostMode, label: "Single Post", description: "One image, one story", icon: ImageIcon },
                         { mode: "carousel" as PostMode, label: "Carousel", description: "Multi-slide storytelling", icon: Layers },
+                        { mode: "single" as PostMode, label: "Single Post", description: "One image, one story", icon: ImageIcon },
                       ]).map(({ mode, label, description, icon: Icon }) => {
                         const isSelected = postMode === mode;
                         const isDisabled = mode === "carousel" && images.length === 1;
@@ -499,7 +499,7 @@ export function ImageUploader({
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {headlineMode === "all" && `Headlines generated on all ${images.length} slide${images.length !== 1 ? "s" : ""}`}
+                        {headlineMode === "all" && `Headlines generated on all ${slideCount} slide${slideCount !== 1 ? "s" : ""}`}
                         {headlineMode === "first_only" && "Title card on slide 1 — photos only after"}
                         {headlineMode === "none" && "No headline text — images only"}
                       </p>
