@@ -4,14 +4,16 @@ import { TableOfContents } from "@/components/legal/TableOfContents";
 export const metadata: Metadata = {
   title: "Getting Started Guide - KodaPost",
   description:
-    "Learn how to create carousel posts with KodaPost — in the app or directly from Telegram.",
+    "Learn how to create carousel posts with KodaPost, in the app or directly from Telegram.",
 };
 
 const sections = [
   { id: "overview", title: "Overview" },
+  { id: "quick-start", title: "Quick Start Guide" },
   { id: "create-in-app", title: "Create in the App" },
   { id: "create-on-telegram", title: "Create on Telegram" },
   { id: "the-flow", title: "The Flow" },
+  { id: "settings", title: "Settings" },
   { id: "tips", title: "Tips for Great Posts" },
   { id: "creator-provenance", title: "Creator Provenance" },
   { id: "commands", title: "Commands Reference" },
@@ -23,24 +25,25 @@ export default function GuidePage() {
       <article className="prose prose-neutral dark:prose-invert max-w-none">
         <h1>Getting Started</h1>
         <p className="border-l-4 border-foreground/20 pl-4 text-muted-foreground !mt-2">
-          Everything you need to create beautiful carousel posts — in the app or
+          Everything you need to create beautiful carousel posts, in the app or
           on Telegram.
         </p>
 
         <h2 id="overview">Overview</h2>
         <p>
           KodaPost turns your photos into polished, ready-to-post social media
-          carousels. You bring the photos and the story — the app handles
+          carousels. You bring the photos and the story; the app handles
           the layout, text overlays, captions, and formatting.
         </p>
         <p>There are two ways to create:</p>
         <ul>
           <li>
-            <strong>In the app</strong> &mdash; Use the step-by-step builder to
-            configure everything visually.
+            <strong>In the app</strong> &ndash; Use the five-step builder to
+            configure everything visually: Upload, Craft, Design, Review, and
+            Publish.
           </li>
           <li>
-            <strong>On Telegram</strong> &mdash; Message{" "}
+            <strong>On Telegram</strong> &ndash; Message{" "}
             <strong>@kodacontentbot</strong> and create carousels through a
             guided conversation. The Production Assistant walks you through
             each step.
@@ -48,40 +51,50 @@ export default function GuidePage() {
         </ul>
         <p>Both methods follow the same flow and produce the same results.</p>
 
+        <h2 id="quick-start">Quick Start Guide</h2>
+        <p>
+          New to KodaPost? The{" "}
+          <a href="/quickstart">Quick Start Guide</a> walks you through each
+          step with visual mockups so you can follow along. Create your first
+          carousel in about 5 minutes.
+        </p>
+
         <h2 id="create-in-app">Create in the App</h2>
         <p>
-          The builder gives you full control over every step. Upload your photos,
-          write your story, pick vibes, adjust slide count, and generate your
-          carousel.
+          The builder walks you through five steps. Each step has its own
+          screen with controls tailored to that part of the process.
         </p>
         <ol>
           <li>
-            <strong>Upload photos</strong> &mdash; Drag and drop or tap the
-            upload area. Supports JPEG, PNG, WebP, and HEIC.
+            <strong>Upload</strong> &ndash; Drag and drop photos into the
+            upload area, or tap to browse. Supports JPEG, PNG, WebP, and HEIC
+            (HEIC files convert to JPEG automatically). You can upload 1 to 10
+            photos and reorder them by dragging thumbnails.
           </li>
           <li>
-            <strong>Write your story</strong> &mdash; Describe the moment, the
-            feeling, or what happened. This becomes the foundation for your text
-            overlays and caption.
+            <strong>Craft</strong> &ndash; Describe your carousel theme (the
+            story or concept), choose a camera emulation filter (Kodak Gold,
+            Fuji Velvia, Polaroid, and more), and add vibe keywords like
+            &ldquo;relatable&rdquo; or &ldquo;nostalgic&rdquo; to shape the
+            tone. Koda generates text overlays and a caption from these inputs.
           </li>
           <li>
-            <strong>Pick vibes</strong> &mdash; Choose a tone (relatable,
-            inspirational, promotional, controversial, or observational) to shape
-            how the caption reads.
+            <strong>Design</strong> &ndash; Fine-tune each slide visually.
+            Edit text overlays directly on the preview, change fonts, adjust
+            text position and color, and toggle text on or off per slide.
+            Navigate slides using the thumbnail strip at the bottom.
           </li>
           <li>
-            <strong>Generate caption</strong> &mdash; Tap &ldquo;Generate
-            Caption from Story&rdquo; to create a caption based on your story
-            and vibes. Edit it however you like.
+            <strong>Review</strong> &ndash; Preview all your slides in a
+            carousel grid. Switch between platform tabs (Instagram, TikTok,
+            LinkedIn, etc.) to see format differences. Optionally add an audio
+            track for video-format exports.
           </li>
           <li>
-            <strong>Generate carousel</strong> &mdash; Hit the generate button
-            to build your slides with text overlays, camera filters, and
-            platform-specific formatting.
-          </li>
-          <li>
-            <strong>Preview and download</strong> &mdash; Review your slides,
-            make edits, and download or publish.
+            <strong>Publish</strong> &ndash; Select connected social media
+            platforms and tap Post Now to publish, or export a ZIP for manual
+            posting. Toggle Creator Provenance to embed authorship metadata
+            and an optional watermark in each exported image.
           </li>
         </ol>
 
@@ -116,31 +129,31 @@ export default function GuidePage() {
             Tap <strong>Start</strong> to begin.
           </li>
           <li>
-            <strong>Send your photos</strong> &mdash; Drop 1&ndash;10 images
+            <strong>Send your photos</strong> &ndash; Drop 1 to 10 images
             into the chat.
           </li>
           <li>
-            <strong>Tell your story</strong> &mdash; The bot will ask what the
+            <strong>Tell your story</strong> &ndash; The bot will ask what the
             post is about. Just type naturally.
           </li>
           <li>
-            <strong>Pick vibes</strong> &mdash; Type a vibe like
+            <strong>Pick vibes</strong> &ndash; Type a vibe like
             &ldquo;relatable&rdquo; or &ldquo;inspirational&rdquo;, or say
             &ldquo;skip&rdquo; to use defaults.
           </li>
           <li>
-            <strong>Review caption</strong> &mdash; The bot generates a caption.
+            <strong>Review caption</strong> &ndash; The bot generates a caption.
             You can approve it, type a new one, or say
             &ldquo;rewrite&rdquo; for a fresh take.
           </li>
           <li>
-            <strong>Generate</strong> &mdash; Say &ldquo;generate&rdquo; and the
+            <strong>Generate</strong> &ndash; Say &ldquo;generate&rdquo; and the
             bot will build your carousel and send you a preview link.
           </li>
         </ol>
         <p>
           The preview link lets you view all your slides, copy the caption, and
-          download the images — all from your phone.
+          download the images, all from your phone.
         </p>
 
         <h2 id="the-flow">The Flow</h2>
@@ -159,53 +172,72 @@ export default function GuidePage() {
           <tbody>
             <tr>
               <td>
-                <strong>1. Photos</strong>
+                <strong>1. Upload</strong>
               </td>
-              <td>Upload 1&ndash;10 images</td>
+              <td>Drag and drop 1 to 10 photos</td>
               <td>Images are analyzed for composition, mood, and color</td>
             </tr>
             <tr>
               <td>
-                <strong>2. Story</strong>
+                <strong>2. Craft</strong>
               </td>
-              <td>Describe the moment or theme</td>
+              <td>Describe the theme, pick a camera filter, add vibes</td>
               <td>
-                Your words become the foundation for text overlays and captions
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>3. Vibes</strong>
-              </td>
-              <td>Pick a tone</td>
-              <td>Shapes the voice and style of your caption</td>
-            </tr>
-            <tr>
-              <td>
-                <strong>4. Caption</strong>
-              </td>
-              <td>Review, edit, or write your own</td>
-              <td>
-                Koda generates a caption from your story, or you write it yourself
+                Koda generates text overlays and a caption from your inputs
               </td>
             </tr>
             <tr>
               <td>
-                <strong>5. Generate</strong>
+                <strong>3. Design</strong>
               </td>
-              <td>Approve and build</td>
+              <td>Edit text, change fonts, adjust position and color</td>
+              <td>Each slide is styled individually with live preview</td>
+            </tr>
+            <tr>
               <td>
-                Slides are composited with text overlays, filters, and
-                platform-specific formatting
+                <strong>4. Review</strong>
+              </td>
+              <td>Preview the carousel grid, switch platform tabs</td>
+              <td>
+                Format differences are shown per platform; audio can be added
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>5. Publish</strong>
+              </td>
+              <td>Select platforms, post or export</td>
+              <td>
+                Carousel is published or exported as a ZIP with optional
+                provenance metadata
               </td>
             </tr>
           </tbody>
         </table>
 
+        <h2 id="settings">Settings</h2>
+        <p>
+          App settings are organized under the menu. Open <strong>Menu &gt;
+          Settings</strong> to find:
+        </p>
+        <ul>
+          <li>
+            <strong>Social Media</strong> &ndash; Connect and manage your
+            social media accounts for direct publishing.
+          </li>
+          <li>
+            <strong>Advanced</strong> &ndash; Configure AI generation
+            parameters, export options, and creator provenance settings.
+          </li>
+          <li>
+            <strong>Theme</strong> &ndash; Toggle between Light and Dark mode.
+          </li>
+        </ul>
+
         <h2 id="tips">Tips for Great Posts</h2>
         <ul>
           <li>
-            <strong>Use 3&ndash;6 photos</strong> for the best carousel
+            <strong>Use 3 to 6 photos</strong> for the best carousel
             experience. Too few feels sparse, too many can overwhelm.
           </li>
           <li>
@@ -214,7 +246,7 @@ export default function GuidePage() {
             produces better results than &ldquo;nature photos.&rdquo;
           </li>
           <li>
-            <strong>Mix your shots</strong> &mdash; include a wide shot, a
+            <strong>Mix your shots</strong> &ndash; include a wide shot, a
             close-up, and a detail shot for visual variety across slides.
           </li>
           <li>
@@ -242,17 +274,17 @@ export default function GuidePage() {
         </p>
         <ul>
           <li>
-            <strong>Artist</strong> &mdash; Your creator name.
+            <strong>Artist</strong> &ndash; Your creator name.
           </li>
           <li>
-            <strong>Copyright</strong> &mdash; &ldquo;Made with KodaPost by
+            <strong>Copyright</strong> &ndash; &ldquo;Made with KodaPost by
             [your name]&rdquo;.
           </li>
           <li>
-            <strong>Software</strong> &mdash; &ldquo;KodaPost&rdquo;.
+            <strong>Software</strong> &ndash; &ldquo;KodaPost&rdquo;.
           </li>
           <li>
-            <strong>Image fingerprint</strong> &mdash; A unique SHA-256 hash of
+            <strong>Image fingerprint</strong> &ndash; A unique SHA-256 hash of
             the image, recorded in the ImageDescription field alongside the
             creation timestamp.
           </li>

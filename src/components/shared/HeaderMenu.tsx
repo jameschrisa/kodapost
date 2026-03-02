@@ -26,6 +26,7 @@ import {
   Shield,
   Sun,
   User,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { UserHexagonIcon } from "@/components/icons";
@@ -249,6 +250,12 @@ export function HeaderMenu({
                 <Link href="/guide" className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
                   User Guide
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/quickstart" className="flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Quick Start
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

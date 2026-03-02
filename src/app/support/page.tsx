@@ -16,6 +16,7 @@ import {
   Loader2,
   ArrowRight,
   Sparkles,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,18 @@ const FAQ_DATA: FAQItem[] = [
     question: "Is there a mobile app?",
     answer:
       "KodaPost is a web app that works on all modern browsers including mobile. For a fully native mobile experience, you can also create carousels via the @kodacontentbot Telegram bot.",
+  },
+  {
+    category: "Getting Started",
+    question: "What is Creator Provenance?",
+    answer:
+      "Creator Provenance embeds authorship data directly into your exported images. When enabled, KodaPost writes your creator name, copyright notice, software tag, and a SHA-256 image fingerprint into EXIF metadata. You can also add a visible watermark. It is available on Creator Mode (Standard) and Monster Mode (Pro) plans.",
+  },
+  {
+    category: "Getting Started",
+    question: "Is there a Quick Start Guide?",
+    answer:
+      "Yes! The Quick Start Guide walks you through each of the 5 workflow steps (Upload, Craft, Design, Review, Publish) with visual mockups so you can follow along. Visit /quickstart or open Menu > Help > Quick Start in the app.",
   },
   // Uploads & Formats
   {
@@ -140,6 +153,12 @@ const FAQ_DATA: FAQItem[] = [
     question: "Can I publish to multiple platforms at once?",
     answer:
       "Yes. In the Publish step, select all the platforms you want to post to, then click Post Now. KodaPost publishes sequentially and shows a success confirmation for each platform.",
+  },
+  {
+    category: "Publishing",
+    question: "What metadata is embedded in exported images?",
+    answer:
+      "When Creator Provenance is enabled, each exported image includes EXIF metadata: Artist (your creator name), Copyright (\"Made with KodaPost by [your name]\"), Software (\"KodaPost\"), and an ImageDescription field containing a SHA-256 fingerprint of the image and the creation timestamp. You can verify this with any EXIF viewer.",
   },
   // Accounts & Billing
   {
@@ -440,7 +459,7 @@ export default function SupportPage() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
           >
             {/* FAQ link */}
             <motion.a
@@ -502,6 +521,27 @@ export default function SupportPage() {
               </div>
               <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
             </motion.button>
+
+            {/* Quick Start link */}
+            <motion.div variants={staggerChild}>
+              <Link
+                href="/quickstart"
+                className="group flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
+                  <Zap className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
+                    Quick Start Guide
+                  </h3>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    Visual walkthrough in 5 steps
+                  </p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </section>
