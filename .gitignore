@@ -44,3 +44,6 @@ local.db
 
 # internal docs (not deployed, not tracked)
 /docs/
+
+# local-only generated files (never committed)
+/local/

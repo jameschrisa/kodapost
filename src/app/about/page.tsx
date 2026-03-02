@@ -17,6 +17,7 @@ import {
   MessageCircle,
   Fingerprint,
   Mail,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -461,6 +462,66 @@ export default function AboutPage() {
             Indie team, shipping daily
           </div>
         </motion.div>
+      </section>
+
+      {/* ═══ 6b. PHILOSOPHY ═══ */}
+      <section className="relative px-6 py-28 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/image_other/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid md:grid-cols-2 gap-12 items-center"
+          >
+            {/* Text content */}
+            <motion.div variants={staggerChild}>
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
+                <Camera className="h-3.5 w-3.5" />
+                KodaPost Philosophy
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
+                You Create.{" "}
+                <span className="text-white/40">KodaPost Assists.</span>
+              </h2>
+              <div className="space-y-4 text-white/45 text-sm leading-relaxed">
+                <p>
+                  KodaPost is built on the belief that the best creative tools keep humans in the loop. KodaPost never takes over. It works alongside you, handling the tedious parts so you can focus on what matters: your story.
+                </p>
+                <p>
+                  Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. KodaPost is the assistant, never the artist.
+                </p>
+                <p>
+                  We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&rsquo;s why every KodaPost social media carousel is a collaboration between you and your AI-powered creative assistant. Creator Provenance goes further, embedding your authorship directly into every export so your work stays yours.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Visual — workflow steps */}
+            <motion.div variants={staggerChild} className="relative">
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden">
+                <div className="space-y-5">
+                  {[
+                    { label: "You upload your photos", icon: ImagePlus, color: "text-violet-400", bg: "bg-violet-500/10" },
+                    { label: "KodaPost suggests captions & styles", icon: Sparkles, color: "text-amber-400", bg: "bg-amber-500/10" },
+                    { label: "You review, edit, and approve", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+                    { label: "Publish on your terms", icon: Share2, color: "text-blue-400", bg: "bg-blue-500/10" },
+                  ].map((step, i) => (
+                    <div key={step.label} className="flex items-center gap-4">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${step.bg}`}>
+                        <step.icon className={`h-5 w-5 ${step.color}`} />
+                      </div>
+                      <div className="flex-1 flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="text-sm font-medium text-white/70">{step.label}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
       </section>
 
       {/* ═══ 7. GET IN TOUCH (CTA) ═══ */}

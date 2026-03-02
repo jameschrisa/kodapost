@@ -231,6 +231,155 @@ const staggerChild = {
 };
 
 // ---------------------------------------------------------------------------
+// Who It's For — Target Segment Tabs
+// ---------------------------------------------------------------------------
+
+const SEGMENTS = [
+  {
+    id: "creators" as const,
+    label: "Content Creators",
+    color: "purple",
+    tagBg: "bg-purple-500/10",
+    tagText: "text-purple-400",
+    activeBg: "bg-purple-500",
+    headline: "Turn your photo library into a content engine.",
+    description: "You already have the eye. KodaPost handles the production work so you can post consistently without burning out.",
+    points: [
+      { title: "Batch-Create a Week of Posts", text: "Upload once, get a full week of styled, captioned carousels ready to publish." },
+      { title: "AI Captions in Your Voice", text: "KodaPost writes scroll-stopping copy you edit and approve. Your voice, amplified." },
+      { title: "Publish Everywhere at Once", text: "Export optimized for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X." },
+      { title: "Content Calendar", text: "Schedule carousels, track output, and stay consistent without the burnout." },
+    ],
+  },
+  {
+    id: "brands" as const,
+    label: "Indie Brands",
+    color: "amber",
+    tagBg: "bg-amber-500/10",
+    tagText: "text-amber-400",
+    activeBg: "bg-amber-500",
+    headline: "Professional content on a bootstrapped budget.",
+    description: "Replace your graphic designer, copywriter, and scheduling tool with one app that keeps your brand looking polished on every platform.",
+    points: [
+      { title: "Locked-In Brand Aesthetic", text: "Set your camera profile, film filter, fonts, and colors once. Every carousel matches automatically." },
+      { title: "Multi-Platform, No Reformatting", text: "One export covers every social channel with the right dimensions and aspect ratio." },
+      { title: "Creator Provenance", text: "Every export embeds your brand, timestamp, and a unique fingerprint. Prove you made it first." },
+      { title: "Stand Out from Canva Templates", text: "Vintage camera profiles and retro filters give your brand a visual differentiator competitors can't copy." },
+    ],
+  },
+  {
+    id: "artists" as const,
+    label: "Artists",
+    color: "fuchsia",
+    tagBg: "bg-fuchsia-500/10",
+    tagText: "text-fuchsia-400",
+    activeBg: "bg-fuchsia-500",
+    headline: "Your art deserves better than stock templates.",
+    description: "KodaPost's vintage aesthetic and human-in-the-loop approach means your portfolio carousels feel as intentional as the work itself.",
+    points: [
+      { title: "10 Vintage Camera Profiles", text: "Sony Mavica, Polaroid 600, Kodak EasyShare and more. Your work, through an iconic lens." },
+      { title: "Retro Film Filters", text: "1977, Earlybird, Lo-Fi, Nashville. Every pixel processed to feel like it came from film." },
+      { title: "Nano-Casts", text: "Turn your carousel into a short-form audio story. Add a voiceover to walk viewers through your process." },
+      { title: "You Stay in Control", text: "Every caption, crop, and filter is a suggestion you accept, modify, or reject. The assistant, never the artist." },
+    ],
+  },
+];
+
+function WhoItsForSection() {
+  const [activeTab, setActiveTab] = useState<"creators" | "brands" | "artists">("creators");
+  const segment = SEGMENTS.find((s) => s.id === activeTab)!;
+
+  return (
+    <section id="who-its-for" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/image_other/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+      <div className="max-w-5xl mx-auto">
+        <motion.div
+          variants={sectionReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          className="mb-10"
+        >
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
+            <Users className="h-3.5 w-3.5" />
+            Who It&apos;s For
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Built for People Who{" "}
+            <span className="text-white/40">Make Things.</span>
+          </h2>
+          <p className="mt-3 text-white/40 max-w-lg">
+            Whether you&apos;re growing an audience, launching a brand, or sharing your art, KodaPost fits your workflow.
+          </p>
+        </motion.div>
+
+        {/* Tab buttons */}
+        <div className="flex gap-2 mb-8 flex-wrap">
+          {SEGMENTS.map((seg) => (
+            <button
+              key={seg.id}
+              type="button"
+              onClick={() => setActiveTab(seg.id)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                activeTab === seg.id
+                  ? `${seg.activeBg} text-white shadow-lg`
+                  : "bg-white/[0.05] text-white/50 hover:bg-white/[0.08] hover:text-white/70"
+              }`}
+            >
+              {seg.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={segment.id}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: easeOutExpo }}
+            className="grid md:grid-cols-2 gap-10 items-start"
+          >
+            {/* Left — headline + description */}
+            <div>
+              <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${segment.tagBg} ${segment.tagText} text-xs font-bold uppercase tracking-widest mb-4`}>
+                {segment.label}
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-4">
+                {segment.headline}
+              </h3>
+              <p className="text-white/45 text-sm leading-relaxed">
+                {segment.description}
+              </p>
+            </div>
+
+            {/* Right — value points */}
+            <div className="space-y-4">
+              {segment.points.map((point, i) => (
+                <div
+                  key={point.title}
+                  className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 backdrop-blur-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-[10px] font-bold text-white/30">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{point.title}</p>
+                      <p className="mt-1 text-xs text-white/40 leading-relaxed">{point.text}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -789,7 +938,7 @@ export function SplashScreen({
           {/* ================================================================
               FEATURES — Bento Grid
               ================================================================ */}
-          <section id="features" className="relative py-16 sm:py-28 px-6 bg-zinc-900 scroll-mt-16">
+          <section id="features" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.88), rgba(9,9,11,0.92), rgba(24,24,27,0.88)), url('/image_other/blurcolor.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
             {/* Subtle gradient accent */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] -z-0" />
 
@@ -863,66 +1012,9 @@ export function SplashScreen({
           </section>
 
           {/* ================================================================
-              HUMAN-IN-THE-LOOP PHILOSOPHY
+              WHO IT'S FOR — Target Segment Tabs
               ================================================================ */}
-          <section id="philosophy" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/image_other/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
-            <div className="max-w-5xl mx-auto">
-              <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                className="grid md:grid-cols-2 gap-12 items-center"
-              >
-                {/* Text content */}
-                <motion.div variants={staggerChild}>
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
-                    <Users className="h-3.5 w-3.5" />
-                    KodaPost Philosophy
-                  </span>
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
-                    You Create.{" "}
-                    <span className="text-white/40">KodaPost Assists.</span>
-                  </h2>
-                  <div className="space-y-4 text-white/45 text-sm leading-relaxed">
-                    <p>
-                      KodaPost is built on the belief that the best creative tools keep humans in the loop. KodaPost never takes over. It works alongside you, handling the tedious parts so you can focus on what matters: your story.
-                    </p>
-                    <p>
-                      Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. KodaPost is the assistant, never the artist.
-                    </p>
-                    <p>
-                      We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&apos;s why every KodaPost social media carousel is a collaboration between you and your AI-powered creative assistant. Creator Provenance goes further, embedding your authorship directly into every export so your work stays yours.
-                    </p>
-                  </div>
-                </motion.div>
-
-                {/* Visual / image placeholder */}
-                <motion.div variants={staggerChild} className="relative">
-                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden">
-                    <div className="space-y-5">
-                      {[
-                        { label: "You upload your photos", icon: ImagePlus, color: "text-violet-400", bg: "bg-violet-500/10" },
-                        { label: "KodaPost suggests captions & styles", icon: Sparkles, color: "text-amber-400", bg: "bg-amber-500/10" },
-                        { label: "You review, edit, and approve", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-                        { label: "Publish on your terms", icon: Share2, color: "text-blue-400", bg: "bg-blue-500/10" },
-                      ].map((step, i) => (
-                        <div key={step.label} className="flex items-center gap-4">
-                          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${step.bg}`}>
-                            <step.icon className={`h-5 w-5 ${step.color}`} />
-                          </div>
-                          <div className="flex-1 flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
-                            <span className="text-sm font-medium text-white/70">{step.label}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            </div>
-          </section>
+          <WhoItsForSection />
 
           {/* ================================================================
               BUILT FOR INDIE CREATORS
@@ -1105,7 +1197,7 @@ export function SplashScreen({
                   </div>
 
                   {/* Add to Home Screen CTA */}
-                  <div className="mt-10 rounded-xl border border-white/[0.08] bg-white/[0.03] p-5">
+                  <div className="mt-10 rounded-xl border border-purple-500/30 bg-purple-950/60 p-5 shadow-[0_0_20px_rgba(124,58,237,0.15)]">
                     <div className="flex items-start gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
                         <Download className="h-[18px] w-[18px] text-purple-400" />
