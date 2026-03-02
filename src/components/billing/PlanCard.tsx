@@ -15,7 +15,8 @@ const FEATURES: FeatureRow[] = [
   { label: "Video Export", key: "videoExport" },
   { label: "Music Library", key: "musicLibrary" },
   { label: "Direct Publish", key: "directPublish" },
-  { label: "Multi-language (Asian Edition)", key: "multilingualSupport", comingSoon: true },
+  { label: "Brand Watermarking & Digital Footprint", key: "creatorProvenance" },
+  { label: "Multi-language*", key: "multilingualSupport", comingSoon: true },
   { label: "Priority Support", key: "prioritySupport" },
 ];
 
@@ -138,6 +139,11 @@ export function PlanCard({
           );
         })}
       </ul>
+      {config.multilingualSupport && (
+        <p className="text-[10px] text-zinc-500">
+          *Korean, Japanese, Chinese, Spanish
+        </p>
+      )}
 
       {/* CTA */}
       <div className="mt-1">
