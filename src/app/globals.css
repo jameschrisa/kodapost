@@ -73,7 +73,6 @@
 
   html {
     background-color: hsl(var(--background));
-    overscroll-behavior-y: none;
   }
 
   body {
@@ -82,7 +81,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease, color 0.3s ease;
-    overscroll-behavior-y: none;
   }
 
   /* Smooth transitions for all interactive elements */
@@ -95,11 +93,14 @@
     @apply transition-colors duration-200;
   }
 
-  /* Legal pages — smooth scroll and anchor offset for sticky header */
-  html {
-    scroll-behavior: smooth;
+  /* Smooth scroll only for anchor navigation, and respect reduced-motion */
+  @media (prefers-reduced-motion: no-preference) {
+    html:has(:target) {
+      scroll-behavior: smooth;
+    }
   }
 
+  /* Legal pages — anchor offset for sticky header */
   .legal-content [id] {
     scroll-margin-top: 6rem;
   }
