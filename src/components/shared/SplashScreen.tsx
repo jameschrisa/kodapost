@@ -28,6 +28,9 @@ import {
   Users,
   Menu,
   X,
+  Share,
+  PlusSquare,
+  Download,
 } from "lucide-react";
 import { IconBrandTelegram } from "@tabler/icons-react";
 import { KodaPostIcon, UserHexagonIcon } from "@/components/icons";
@@ -1099,6 +1102,31 @@ export function SplashScreen({
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Add to Home Screen CTA */}
+                  <div className="mt-10 rounded-xl border border-white/[0.08] bg-white/[0.03] p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+                        <Download className="h-[18px] w-[18px] text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-white">Install KodaPost on Your Phone</h3>
+                        <p className="mt-1 text-xs text-white/40 leading-relaxed">
+                          Add KodaPost to your home screen for instant, full-screen access — no app store needed.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-2.5 pl-12">
+                      <div className="flex items-center gap-2.5 text-xs text-white/50">
+                        <Share className="h-3.5 w-3.5 shrink-0 text-blue-400" />
+                        <span><strong className="text-white/70">iPhone:</strong> Tap <span className="text-white/70">Share</span> then <span className="text-white/70">Add to Home Screen</span></span>
+                      </div>
+                      <div className="flex items-center gap-2.5 text-xs text-white/50">
+                        <PlusSquare className="h-3.5 w-3.5 shrink-0 text-green-400" />
+                        <span><strong className="text-white/70">Android:</strong> Tap <span className="text-white/70">Menu (&#8942;)</span> then <span className="text-white/70">Add to Home screen</span></span>
+                      </div>
+                    </div>
                   </div>
 
                 </motion.div>
