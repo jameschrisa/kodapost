@@ -99,11 +99,10 @@ export function AssistantBanner() {
 
                   {/* Actions row */}
                   <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pl-0 sm:pl-[52px]">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-end sm:justify-start gap-3">
                       <Button
-                        size="sm"
                         onClick={handleEnable}
-                        className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100"
+                        className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100 h-9 px-4 text-sm sm:h-8 sm:px-3 sm:text-xs"
                       >
                         <AutomationIcon className="h-3.5 w-3.5" />
                         Enable
@@ -121,7 +120,7 @@ export function AssistantBanner() {
                     </span>
                     <Link
                       href="/guide"
-                      className="flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors sm:ml-auto"
+                      className="flex items-center justify-center sm:justify-start gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors sm:ml-auto"
                     >
                       <BookOpen className="h-3.5 w-3.5" />
                       Learn How
@@ -162,11 +161,10 @@ export function AssistantBanner() {
 
                   {/* Actions */}
                   <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pl-0 sm:pl-[52px]">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-end sm:justify-start gap-3">
                       <Button
-                        size="sm"
                         onClick={handleGotIt}
-                        className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100"
+                        className="gap-1.5 bg-white text-purple-950 hover:bg-purple-100 h-9 px-4 text-sm sm:h-8 sm:px-3 sm:text-xs"
                       >
                         Got it
                       </Button>
@@ -182,7 +180,7 @@ export function AssistantBanner() {
                     </div>
                     <Link
                       href="/guide"
-                      className="flex items-center gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors sm:ml-auto"
+                      className="flex items-center justify-center sm:justify-start gap-1.5 text-sm text-purple-300/70 hover:text-white transition-colors sm:ml-auto"
                     >
                       <BookOpen className="h-3.5 w-3.5" />
                       Learn How
