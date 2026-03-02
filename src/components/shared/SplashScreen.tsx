@@ -131,42 +131,58 @@ const FEATURES = [
   },
 ];
 
-const INDIE_CREATOR_CARDS = [
+const COLOR_CLASSES = {
+  amber:   { glow: "bg-amber-500",   glowTouch: "bg-amber-500/5",   bg: "bg-amber-500/10",   text: "text-amber-400"   },
+  violet:  { glow: "bg-violet-500",  glowTouch: "bg-violet-500/5",  bg: "bg-violet-500/10",  text: "text-violet-400"  },
+  blue:    { glow: "bg-blue-500",    glowTouch: "bg-blue-500/5",    bg: "bg-blue-500/10",    text: "text-blue-400"    },
+  emerald: { glow: "bg-emerald-500", glowTouch: "bg-emerald-500/5", bg: "bg-emerald-500/10", text: "text-emerald-400" },
+  fuchsia: { glow: "bg-fuchsia-500", glowTouch: "bg-fuchsia-500/5", bg: "bg-fuchsia-500/10", text: "text-fuchsia-400" },
+  orange:  { glow: "bg-orange-500",  glowTouch: "bg-orange-500/5",  bg: "bg-orange-500/10",  text: "text-orange-400"  },
+} as const;
+
+type AccentColor = keyof typeof COLOR_CLASSES;
+
+function glowClasses(color: AccentColor): string {
+  const c = COLOR_CLASSES[color];
+  return `${c.glowTouch} [@media(hover:hover)]:${c.glow}/0 [@media(hover:hover)]:group-hover:${c.glow}/10`;
+}
+
+const INDIE_CREATOR_CARDS: Array<{ icon: typeof Clock; title: string; description: string; color: AccentColor }> = [
   {
     icon: Clock,
     title: "Batch-Create a Week of Posts in One Sitting",
     description: "Upload product photos once, KodaPost generates a full week of on-brand carousels — styled, captioned, and ready to publish.",
-    color: "amber" as const,
+    color: "amber",
   },
   {
     icon: Palette,
     title: "Consistent Brand Aesthetic Without a Designer",
     description: "Lock in camera profile, film filter, fonts, and color palette — every carousel matches your brand automatically.",
-    color: "violet" as const,
+    color: "violet",
   },
   {
     icon: Share2,
     title: "Publish to Every Platform from One Tool",
     description: "Export optimized carousels for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X — no reformatting required.",
-    color: "blue" as const,
+    color: "blue",
   },
   {
     icon: Shield,
     title: "Professional Results on a Bootstrapped Budget",
     description: "Replace graphic designer, copywriter, and scheduling tool with one app. KodaPost does the heavy lifting so your budget goes further.",
-    color: "emerald" as const,
+    color: "emerald",
   },
   {
     icon: Sparkles,
     title: "AI Captions That Sound Like You, Not a Robot",
     description: "KodaPost writes scroll-stopping captions you edit and approve — no generic AI slop, just your voice amplified.",
-    color: "fuchsia" as const,
+    color: "fuchsia",
   },
   {
     icon: Camera,
     title: "Stand Out with a Vintage Aesthetic Nobody Else Has",
     description: "Retro film filters and vintage camera profiles give your brand a visual differentiator vs sterile Canva templates.",
-    color: "orange" as const,
+    color: "orange",
   },
 ];
 
@@ -263,11 +279,8 @@ export function SplashScreen({
     return undefined;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Use first quote for SSR, then pick a random one after mount to avoid hydration mismatch.
-  const [quote, setQuote] = useState(QUOTES[0]);
-  useEffect(() => {
-    setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-  }, []);
+  // Deterministic quote selection — rotates daily, avoids SSR/hydration mismatch flash.
+  const [quote] = useState(() => QUOTES[new Date().getDate() % QUOTES.length]);
 
   const handleDismiss = () => setVisible(false);
 
@@ -456,25 +469,25 @@ export function SplashScreen({
                   <div className="mt-2 pt-3 border-t border-white/[0.06] flex flex-col gap-2">
                     {isClerkEnabled && isSignedIn ? (
                       <Button
-                        size="sm"
+                        size="lg"
                         onClick={() => { setMobileMenuOpen(false); handleGetStarted(); }}
-                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 text-sm font-bold text-white shadow-lg shadow-orange-500/20"
+                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 py-3 text-base font-bold text-white shadow-lg shadow-orange-500/20"
                       >
                         Open App
                       </Button>
                     ) : isClerkEnabled ? (
                       <Button
-                        size="sm"
+                        size="lg"
                         asChild
-                        className="w-full rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-sm font-semibold text-white"
+                        className="w-full rounded-xl bg-white/[0.08] hover:bg-white/[0.12] py-3 text-base font-semibold text-white"
                       >
                         <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
                       </Button>
                     ) : (
                       <Button
-                        size="sm"
+                        size="lg"
                         onClick={() => { setMobileMenuOpen(false); handleGetStarted(); }}
-                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 text-sm font-bold text-white shadow-lg shadow-orange-500/20"
+                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 py-3 text-base font-bold text-white shadow-lg shadow-orange-500/20"
                       >
                         Launch App
                       </Button>
@@ -633,13 +646,13 @@ export function SplashScreen({
                 transition={{ duration: 0.5, delay: 1.4, ease: "easeOut" }}
                 className="mt-4 flex flex-col items-center gap-5"
               >
-                <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto px-4 sm:px-0">
                   {isClerkEnabled ? (
                     <>
                       <Button
                         size="lg"
                         asChild
-                        className="rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-6 text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
                       >
                         <Link href="/sign-up">
                           Start Creating Free
@@ -648,7 +661,7 @@ export function SplashScreen({
                       <Button
                         size="lg"
                         onClick={handleTour}
-                        className="rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-6 text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                       >
                         <Play className="h-4 w-4 mr-2" />
                         Take a Tour
@@ -659,14 +672,14 @@ export function SplashScreen({
                       <Button
                         size="lg"
                         onClick={handleGetStarted}
-                        className="rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-6 text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
                       >
                         Start Creating Free
                       </Button>
                       <Button
                         size="lg"
                         onClick={handleTour}
-                        className="rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-6 text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                       >
                         <Play className="h-4 w-4 mr-2" />
                         Take a Tour
@@ -732,11 +745,7 @@ export function SplashScreen({
                     className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500"
                   >
                     {/* Glow — subtle always-on for touch, hover-enhanced for pointer */}
-                    <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${
-                      step.glow === "violet" ? "bg-violet-500/5 [@media(hover:hover)]:bg-violet-500/0 [@media(hover:hover)]:group-hover:bg-violet-500/10" :
-                      step.glow === "fuchsia" ? "bg-fuchsia-500/5 [@media(hover:hover)]:bg-fuchsia-500/0 [@media(hover:hover)]:group-hover:bg-fuchsia-500/10" :
-                      "bg-amber-500/5 [@media(hover:hover)]:bg-amber-500/0 [@media(hover:hover)]:group-hover:bg-amber-500/10"
-                    }`} />
+                    <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${glowClasses(step.glow as AccentColor)}`} />
 
                     <div className="relative z-10">
                       {/* Step number */}
@@ -799,7 +808,7 @@ export function SplashScreen({
                         : feature.style === "dark"
                         ? "bg-zinc-800/80 border border-white/[0.06] p-8"
                         : "bg-white/[0.03] border border-white/[0.06] p-8 [@media(hover:hover)]:hover:border-white/10"
-                    } ${feature.span ? "border-l-2 border-l-purple-500/20 md:border-l-0 md:border-l-transparent" : ""}`}
+                    } ${feature.span ? "border-l-2 border-l-purple-500/20 md:border-l-0" : ""}`}
                   >
                     {feature.style !== "accent" && (
                       <div className="absolute -bottom-10 -right-10 h-48 w-48 bg-purple-500/[0.03] [@media(hover:hover)]:bg-purple-500/0 [@media(hover:hover)]:group-hover:bg-purple-500/5 rounded-full blur-3xl transition-all duration-700" />
@@ -812,9 +821,7 @@ export function SplashScreen({
                       }`}>
                         <feature.icon className="h-5 w-5" />
                       </div>
-                      <h3 className={`text-xl font-bold mb-2 ${
-                        feature.style === "accent" ? "text-white" : "text-white"
-                      }`}>
+                      <h3 className="text-xl font-bold mb-2 text-white">
                         {feature.title}
                       </h3>
                       <p className={`text-sm leading-relaxed ${
@@ -944,24 +951,10 @@ export function SplashScreen({
                       }`}
                     >
                       {/* Glow — always-on at low opacity on touch, hover-enhanced on pointer devices */}
-                      <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${
-                        card.color === "amber" ? "bg-amber-500/5 [@media(hover:hover)]:bg-amber-500/0 [@media(hover:hover)]:group-hover:bg-amber-500/10" :
-                        card.color === "violet" ? "bg-violet-500/5 [@media(hover:hover)]:bg-violet-500/0 [@media(hover:hover)]:group-hover:bg-violet-500/10" :
-                        card.color === "blue" ? "bg-blue-500/5 [@media(hover:hover)]:bg-blue-500/0 [@media(hover:hover)]:group-hover:bg-blue-500/10" :
-                        card.color === "emerald" ? "bg-emerald-500/5 [@media(hover:hover)]:bg-emerald-500/0 [@media(hover:hover)]:group-hover:bg-emerald-500/10" :
-                        card.color === "fuchsia" ? "bg-fuchsia-500/5 [@media(hover:hover)]:bg-fuchsia-500/0 [@media(hover:hover)]:group-hover:bg-fuchsia-500/10" :
-                        "bg-orange-500/5 [@media(hover:hover)]:bg-orange-500/0 [@media(hover:hover)]:group-hover:bg-orange-500/10"
-                      }`} />
+                      <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${glowClasses(card.color)}`} />
 
                       <div className="relative z-10">
-                        <div className={`h-11 w-11 rounded-xl flex items-center justify-center mb-5 ${
-                          card.color === "amber" ? "bg-amber-500/10 text-amber-400" :
-                          card.color === "violet" ? "bg-violet-500/10 text-violet-400" :
-                          card.color === "blue" ? "bg-blue-500/10 text-blue-400" :
-                          card.color === "emerald" ? "bg-emerald-500/10 text-emerald-400" :
-                          card.color === "fuchsia" ? "bg-fuchsia-500/10 text-fuchsia-400" :
-                          "bg-orange-500/10 text-orange-400"
-                        }`}>
+                        <div className={`h-11 w-11 rounded-xl flex items-center justify-center mb-5 ${COLOR_CLASSES[card.color].bg} ${COLOR_CLASSES[card.color].text}`}>
                           <Icon className="h-5 w-5" />
                         </div>
                         <h3 className="text-base sm:text-lg font-bold text-white mb-2">{card.title}</h3>
@@ -983,7 +976,7 @@ export function SplashScreen({
                   <button
                     type="button"
                     onClick={() => setIndieCardsExpanded(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/[0.08] bg-white/[0.04] text-sm font-medium text-white/60 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border border-white/[0.08] bg-white/[0.04] text-base font-medium text-white/60 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
                   >
                     See all benefits
                     <ChevronDown className="h-4 w-4" />
@@ -1120,12 +1113,12 @@ export function SplashScreen({
                     Join indie creators using KodaPost to build authentic, nostalgic social media content that stands out from the algorithm.
                   </p>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-4 sm:px-0">
                     {isClerkEnabled ? (
                       <Button
                         size="lg"
                         asChild
-                        className="rounded-2xl bg-orange-500 hover:bg-orange-400 px-12 py-6 text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto rounded-2xl bg-orange-500 hover:bg-orange-400 px-8 sm:px-12 py-5 sm:py-6 text-base sm:text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
                       >
                         <Link href="/sign-up">
                           Get Started Now
@@ -1135,7 +1128,7 @@ export function SplashScreen({
                       <Button
                         size="lg"
                         onClick={handleGetStarted}
-                        className="rounded-2xl bg-orange-500 hover:bg-orange-400 px-12 py-6 text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto rounded-2xl bg-orange-500 hover:bg-orange-400 px-8 sm:px-12 py-5 sm:py-6 text-base sm:text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
                       >
                         Get Started Now
                       </Button>

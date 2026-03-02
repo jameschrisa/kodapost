@@ -799,9 +799,9 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
           {/* Inline text editing controls */}
           {selectedSlide && (
             <Tabs defaultValue="format" className="max-w-full sm:max-w-[500px] mx-auto">
-              <TabsList data-tour="tour-edit-panel" className="w-full mb-3">
-                <TabsTrigger value="format" className="flex-1">Format</TabsTrigger>
-                <TabsTrigger value="content" className="flex-1">Content</TabsTrigger>
+              <TabsList data-tour="tour-edit-panel" className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 mb-3">
+                <TabsTrigger value="format" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Format</TabsTrigger>
+                <TabsTrigger value="content" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Content</TabsTrigger>
               </TabsList>
 
               {/* Format tab: styling controls */}

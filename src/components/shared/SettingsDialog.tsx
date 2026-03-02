@@ -600,11 +600,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </DialogHeader>
 
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="w-full">
-              <TabsTrigger value="general" className="flex-1">
+            <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
+              <TabsTrigger value="general" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">
                 General
               </TabsTrigger>
-              <TabsTrigger value="accounts" className="flex-1">
+              <TabsTrigger value="accounts" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">
                 Accounts
               </TabsTrigger>
             </TabsList>

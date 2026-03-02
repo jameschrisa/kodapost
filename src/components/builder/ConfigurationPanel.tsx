@@ -606,8 +606,8 @@ export function ConfigurationPanel({
           <div className="flex flex-col items-center gap-2">
             <Button
               variant="default"
-              size="default"
-              className="gap-2 bg-purple-500 hover:bg-purple-600 text-white"
+              size="lg"
+              className="gap-2 text-base bg-purple-500 hover:bg-purple-600 text-white"
               onClick={handleGenerateCaption}
               disabled={isGeneratingCaption || !project.theme}
             >
@@ -719,21 +719,21 @@ export function ConfigurationPanel({
             <TabsList data-tour="tour-camera-filters" className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 overflow-x-auto max-w-full">
               <TabsTrigger
                 value="emulation"
-                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+                className="gap-1.5 rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
               >
                 <Camera className="h-3.5 w-3.5" />
                 Emulation
               </TabsTrigger>
               <TabsTrigger
                 value="filters"
-                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+                className="gap-1.5 rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
               >
                 <Palette className="h-3.5 w-3.5" />
                 Filters
               </TabsTrigger>
               <TabsTrigger
                 value="fine-tune"
-                className="gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
+                className="gap-1.5 rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none"
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Fine-Tune

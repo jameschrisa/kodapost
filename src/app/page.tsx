@@ -6,7 +6,7 @@ import { TourCard } from "@/components/tour/TourCard";
 import { appTourSteps } from "@/components/tour/tourSteps";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Download, Send } from "lucide-react";
+import { ArrowRight, Download, Send } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { useClerkAuth } from "@/hooks/useClerkAuth";
 import { AnimatePresence, motion } from "framer-motion";
@@ -1095,7 +1095,7 @@ export default function Home() {
               exit="exit"
             >
               <motion.div
-                className="mx-auto max-w-2xl"
+                className="mx-auto max-w-4xl"
                 variants={staggerContainerVariants}
                 initial="hidden"
                 animate="visible"
@@ -1169,7 +1169,7 @@ export default function Home() {
               exit="exit"
             >
               <motion.div
-                className="mx-auto max-w-2xl"
+                className="mx-auto max-w-4xl"
                 variants={staggerContainerVariants}
                 initial="hidden"
                 animate="visible"
@@ -1268,15 +1268,15 @@ export default function Home() {
                 {/* View toggle: Grid / Timeline */}
                 <motion.div variants={staggerItemVariants} className="mt-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5">
+                    <div className="inline-flex gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
                       <button
                         type="button"
                         onClick={() => setReviewView("grid")}
                         className={cn(
-                          "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                          "rounded-full px-5 py-2 text-sm font-medium transition-all",
                           reviewView === "grid"
-                            ? "bg-background text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-purple-500 text-white"
+                            : "bg-transparent text-muted-foreground hover:text-foreground"
                         )}
                       >
                         Grid
@@ -1285,10 +1285,10 @@ export default function Home() {
                         type="button"
                         onClick={() => setReviewView("timeline")}
                         className={cn(
-                          "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                          "rounded-full px-5 py-2 text-sm font-medium transition-all",
                           reviewView === "timeline"
-                            ? "bg-background text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-purple-500 text-white"
+                            : "bg-transparent text-muted-foreground hover:text-foreground"
                         )}
                       >
                         Timeline
@@ -1314,20 +1314,16 @@ export default function Home() {
                   {/* Navigation buttons for timeline view */}
                   {reviewView === "timeline" && (
                     <div className="flex justify-between mt-4">
-                      <button
-                        type="button"
-                        onClick={handleBack}
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
+                      <Button variant="ghost" size="sm" onClick={handleBack}>
                         &larr; Back
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
                         onClick={handlePublish}
-                        className="rounded-md bg-purple-500 px-4 py-2 text-sm font-medium text-white hover:bg-purple-600 transition-colors"
+                        className="gap-2"
                       >
-                        Continue to Publish &rarr;
-                      </button>
+                        Continue to Publish
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
                     </div>
                   )}
                 </motion.div>
@@ -1344,7 +1340,7 @@ export default function Home() {
               animate="center"
               exit="exit"
             >
-              <div className="mx-auto max-w-2xl">
+              <div className="mx-auto max-w-4xl">
                 <PublishPanel project={project} onComplete={handleComplete} onBack={handleBack} />
               </div>
             </motion.div>

@@ -280,9 +280,9 @@ export function CarouselPreview({
 
       {/* Platform Preview / Device Preview tabs */}
       <Tabs value={previewTab} onValueChange={(v) => setPreviewTab(v as "platform" | "device")}>
-        <TabsList>
-          <TabsTrigger value="platform">Platform Preview</TabsTrigger>
-          <TabsTrigger value="device">Device Preview</TabsTrigger>
+        <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5">
+          <TabsTrigger value="platform" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Platform Preview</TabsTrigger>
+          <TabsTrigger value="device" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Device Preview</TabsTrigger>
         </TabsList>
 
         <TabsContent value="platform" className="mt-3">
