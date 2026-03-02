@@ -865,7 +865,7 @@ export function SplashScreen({
           {/* ================================================================
               HUMAN-IN-THE-LOOP PHILOSOPHY
               ================================================================ */}
-          <section id="philosophy" className="relative py-16 sm:py-28 px-6 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-900 scroll-mt-16">
+          <section id="philosophy" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/image_other/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
             <div className="max-w-5xl mx-auto">
               <motion.div
                 variants={staggerContainer}

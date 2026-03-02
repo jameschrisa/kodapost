@@ -132,8 +132,15 @@ export default function AboutPage() {
     <div className="overflow-hidden">
       {/* ═══ 1. HERO ═══ */}
       <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden px-6 py-32">
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-zinc-950 to-black" />
+        {/* Background image with gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.8), rgba(9,9,11,0.9), rgba(0,0,0,1)), url('/image_other/aboutbg.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
 
         {/* Dot grid */}
         <div
