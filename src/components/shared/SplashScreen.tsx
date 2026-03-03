@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
@@ -317,10 +318,12 @@ function WhoItsForSection() {
               <p className="text-white/45 text-sm leading-relaxed">
                 {segment.description}
               </p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={segment.image}
                 alt={segment.label}
+                width={1080}
+                height={650}
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="mt-6 w-full rounded-xl object-cover shadow-lg shadow-black/30"
               />
             </div>

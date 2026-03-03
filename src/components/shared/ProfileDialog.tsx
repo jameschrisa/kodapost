@@ -61,11 +61,11 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm"
           >
             {/* Close button — large & visible */}
-            <div className="absolute right-4 top-4 z-10">
+            <div className="absolute right-4 top-12 sm:top-4 z-10">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border bg-background shadow-md transition-colors hover:bg-muted"
+                className="flex h-12 w-12 sm:h-10 sm:w-10 items-center justify-center rounded-full border bg-background shadow-md transition-colors hover:bg-muted"
               >
                 <X className="h-5 w-5" />
                 <span className="sr-only">Close</span>

@@ -114,6 +114,30 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   const grabOffsetRef = useRef<{ x: number; y: number } | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
+  // -- Dynamic scale from container width for WYSIWYG consistency --
+  const [previewWidth, setPreviewWidth] = useState(500);
+  const [thumbWidth, setThumbWidth] = useState(80);
+  const thumbRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const targets: { el: Element; setter: (w: number) => void }[] = [];
+    if (previewContainerRef.current) targets.push({ el: previewContainerRef.current, setter: setPreviewWidth });
+    if (thumbRef.current) targets.push({ el: thumbRef.current, setter: setThumbWidth });
+    if (targets.length === 0) return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width;
+        if (w > 0) {
+          const match = targets.find((t) => t.el === entry.target);
+          if (match) match.setter(w);
+        }
+      }
+    });
+    targets.forEach((t) => ro.observe(t.el));
+    return () => ro.disconnect();
+  }, [selectedIndex]);
+
   // -- Global style toolbar --
   const gos = project.globalOverlayStyle ?? DEFAULT_GLOBAL_OVERLAY_STYLE;
   const [globalToolbarOpen, setGlobalToolbarOpen] = useState(false);
@@ -137,8 +161,9 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   );
   const platformConfig = PLATFORM_PREVIEW_CONFIG[previewPlatform];
 
-  // Scale for the large preview (500px / 1080px ≈ 0.46)
-  const previewScale = 0.46;
+  // Scale derived from actual container width for WYSIWYG consistency
+  const previewScale = previewWidth / 1080;
+  const thumbScale = thumbWidth / 1080;
 
   // ── Load slide state when selection changes ──
   useEffect(() => {
@@ -668,7 +693,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                   : "border-transparent hover:border-muted-foreground/30"
               )}
             >
-              <div className={cn("relative bg-black", platformConfig.aspectClass)}>
+              <div ref={idx === 0 ? thumbRef : undefined} className={cn("relative bg-black", platformConfig.aspectClass)}>
                 {slide.imageUrl && (
                   <div className="relative h-full w-full overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -691,7 +716,7 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                   />
                 )}
                 {slide.textOverlay && (
-                  <SlideTextOverlay overlay={slide.textOverlay} scale={0.15} />
+                  <SlideTextOverlay overlay={slide.textOverlay} scale={thumbScale} />
                 )}
               </div>
               <div className="absolute bottom-0.5 left-0.5 rounded bg-black/60 px-1 text-[9px] font-bold text-white">

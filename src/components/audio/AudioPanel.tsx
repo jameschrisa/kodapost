@@ -276,14 +276,23 @@ export function AudioPanel({
   // Apply staged clip to storyboard
   const handleApplyToStoryboard = useCallback(() => {
     if (!stagedClip) return;
-    onAudioChange(stagedClip);
-    logActivity("audio_added", `Applied ${stagedClip.source === "recording" ? "voice recording" : stagedClip.source === "upload" ? "uploaded audio" : `"${stagedClip.name}"`} to storyboard`);
-    setIsApplied(true);
-    setTrimStart(stagedClip.trimStart ?? 0);
-    setTrimEnd(stagedClip.trimEnd);
-    toast.success("Track applied to storyboard", {
-      description: `"${stagedClip.name}" is now synced to your slides.`,
-    });
+    try {
+      console.warn("[audio] applying clip to storyboard:", stagedClip.name);
+      onAudioChange(stagedClip);
+      logActivity("audio_added", `Applied ${stagedClip.source === "recording" ? "voice recording" : stagedClip.source === "upload" ? "uploaded audio" : `"${stagedClip.name}"`} to storyboard`);
+      setIsApplied(true);
+      setTrimStart(stagedClip.trimStart ?? 0);
+      setTrimEnd(stagedClip.trimEnd);
+      console.warn("[audio] clip applied successfully");
+      toast.success("Track applied to storyboard", {
+        description: `"${stagedClip.name}" is now synced to your slides.`,
+      });
+    } catch (err) {
+      console.error("[audio] failed to apply clip:", err);
+      toast.error("Failed to apply track", {
+        description: "Please try again.",
+      });
+    }
   }, [stagedClip, onAudioChange]);
 
   // Remove audio (both staged and applied)

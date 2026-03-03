@@ -80,7 +80,7 @@ export function HeaderMenu({
     [userInfo.firstName, userInfo.lastName].filter(Boolean).join(" ") || "User";
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2">
       {/* ── Profile Dropdown (signed-in users) ── */}
       <SignedIn>
         <DropdownMenu>
@@ -89,7 +89,7 @@ export function HeaderMenu({
               variant="ghost"
               size="icon"
               aria-label="Profile menu"
-              className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+              className="h-11 w-11 sm:h-9 sm:w-9 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
             >
               {userInfo.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -191,7 +191,7 @@ export function HeaderMenu({
       {/* ── App Menu (hamburger) ── */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Menu" data-tour="header-settings">
+          <Button variant="ghost" size="icon" aria-label="Menu" data-tour="header-settings" className="h-11 w-11 sm:h-9 sm:w-9">
             <Menu className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>

@@ -383,8 +383,13 @@ export default function Home() {
     if (!hydrated) return;
 
     // Legacy localStorage save (fast, synchronous)
-    saveProject(project);
-    saveStep(step);
+    try {
+      saveProject(project);
+      saveStep(step);
+    } catch (e) {
+      // QuotaExceededError — silently skip rather than clearing project state
+      console.warn("[auto-save] localStorage save failed, skipping:", e);
+    }
     setLastSavedAt(Date.now());
 
     // Persist images to IndexedDB when they change (async, non-blocking)
