@@ -253,7 +253,7 @@ function WhoItsForSection() {
   const segment = SEGMENTS.find((s) => s.id === activeTab)!;
 
   return (
-    <section id="who-its-for" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/image_other/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+    <section id="who-its-for" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/assets/landing/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="max-w-5xl mx-auto">
         <motion.div
           variants={sectionReveal}
@@ -634,7 +634,7 @@ export function SplashScreen({
             {/* Background image — positioned from top to show the subject */}
             <div
               className="absolute inset-0 bg-cover bg-top bg-no-repeat"
-              style={{ backgroundImage: "url('/image_other/newbg.jpg?v=2')" }}
+              style={{ backgroundImage: "url('/assets/landing/newbg.jpg?v=2')" }}
             />
             {/* Dark gradient overlay — keeps bottom dark for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/40 to-black" />
@@ -900,7 +900,7 @@ export function SplashScreen({
           {/* ================================================================
               FEATURES — Bento Grid
               ================================================================ */}
-          <section id="features" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.65), rgba(9,9,11,0.70), rgba(24,24,27,0.65)), url('/image_other/blurcolor.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+          <section id="features" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.65), rgba(9,9,11,0.70), rgba(24,24,27,0.65)), url('/assets/landing/blurcolor.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
             {/* Subtle gradient accent */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] -z-0" />
 

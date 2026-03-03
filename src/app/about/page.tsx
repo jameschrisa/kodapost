@@ -137,7 +137,7 @@ export default function AboutPage() {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.8), rgba(9,9,11,0.9), rgba(0,0,0,1)), url('/image_other/aboutbg.jpg')",
+            backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.8), rgba(9,9,11,0.9), rgba(0,0,0,1)), url('/assets/landing/aboutbg.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -465,7 +465,7 @@ export default function AboutPage() {
       </section>
 
       {/* ═══ 6b. PHILOSOPHY ═══ */}
-      <section className="relative px-6 py-28 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/image_other/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+      <section className="relative px-6 py-28 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/assets/landing/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
         <div className="max-w-5xl mx-auto">
           <motion.div
             variants={staggerContainer}

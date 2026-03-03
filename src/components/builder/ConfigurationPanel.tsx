@@ -798,7 +798,7 @@ export function ConfigurationPanel({
               <div className="mx-auto max-w-sm overflow-hidden rounded-lg border">
                 <div className="relative aspect-[3/2] w-full bg-black">
                   <Image
-                    src="/image_other/sample_image.jpg"
+                    src="/assets/landing/sample_image.jpg"
                     alt="Filter preview"
                     fill
                     sizes="384px"
