@@ -186,7 +186,13 @@ function DesignMockup() {
   return (
     <div className="p-5 space-y-4">
       {/* Slide preview with text overlay */}
-      <div className="relative rounded-xl bg-gradient-to-br from-white/6 to-white/2 aspect-[4/5] overflow-hidden">
+      <div className="relative rounded-xl overflow-hidden aspect-[4/5]">
+        <img
+          src="/assets/quickstart/slide-main.jpg"
+          alt="Slide preview"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
         <div className="absolute inset-0 flex items-end p-4">
           <div className="w-full space-y-1">
             <div className="h-4 w-3/4 rounded bg-white/20" />
@@ -195,7 +201,7 @@ function DesignMockup() {
         </div>
         {/* Drag handle indicator */}
         <div className="absolute top-3 right-3">
-          <GripVertical className="h-4 w-4 text-white/15" />
+          <GripVertical className="h-4 w-4 text-white/30" />
         </div>
       </div>
 
@@ -223,12 +229,18 @@ function DesignMockup() {
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className={`h-10 w-10 shrink-0 rounded-md ${
+            className={`h-10 w-10 shrink-0 rounded-md overflow-hidden ${
               i === 1
-                ? "ring-2 ring-purple-500 bg-white/8"
-                : "bg-white/[0.04] border border-white/[0.06]"
+                ? "ring-2 ring-purple-500"
+                : "border border-white/[0.06]"
             }`}
-          />
+          >
+            <img
+              src={`/assets/quickstart/thumb-${i}.jpg`}
+              alt={`Slide ${i}`}
+              className="h-full w-full object-cover"
+            />
+          </div>
         ))}
       </div>
 
@@ -267,15 +279,24 @@ function ReviewMockup() {
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
-            className={`aspect-square rounded-lg ${
+            className={`aspect-square rounded-lg overflow-hidden ${
               i <= 5
-                ? "bg-gradient-to-br from-white/6 to-white/3"
-                : "border border-dashed border-white/8"
-            } flex items-center justify-center`}
+                ? "relative"
+                : "border border-dashed border-white/8 flex items-center justify-center"
+            }`}
           >
-            {i <= 5 && (
-              <span className="text-[10px] font-medium text-white/20">{i}</span>
-            )}
+            {i <= 5 ? (
+              <>
+                <img
+                  src={`/assets/quickstart/grid-${i}.jpg`}
+                  alt={`Slide ${i}`}
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-white/40 bg-black/20">
+                  {i}
+                </span>
+              </>
+            ) : null}
           </div>
         ))}
       </div>
