@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import {
   Camera,
-  ChevronDown,
-  Clock,
   Sparkles,
   Share2,
   ImagePlus,
@@ -31,6 +29,9 @@ import {
   Share,
   PlusSquare,
   Download,
+  Fingerprint,
+  Lock,
+  ScanEye,
 } from "lucide-react";
 import { IconBrandTelegram } from "@tabler/icons-react";
 import { KodaPostIcon, UserHexagonIcon } from "@/components/icons";
@@ -157,44 +158,6 @@ function glowClasses(color: AccentColor): string {
   return `${c.glowTouch} [@media(hover:hover)]:${c.glow}/0 [@media(hover:hover)]:group-hover:${c.glow}/10`;
 }
 
-const INDIE_CREATOR_CARDS: Array<{ icon: typeof Clock; title: string; description: string; color: AccentColor }> = [
-  {
-    icon: Clock,
-    title: "Batch-Create a Week of Posts in One Sitting",
-    description: "Upload product photos once, KodaPost generates a full week of on-brand carousels: styled, captioned, and ready to publish.",
-    color: "amber",
-  },
-  {
-    icon: Palette,
-    title: "Consistent Brand Aesthetic Without a Designer",
-    description: "Lock in camera profile, film filter, fonts, and color palette so every carousel matches your brand automatically.",
-    color: "violet",
-  },
-  {
-    icon: Share2,
-    title: "Publish to Every Platform from One Tool",
-    description: "Export optimized carousels for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X, with no reformatting required.",
-    color: "blue",
-  },
-  {
-    icon: Shield,
-    title: "Professional Results on a Bootstrapped Budget",
-    description: "Replace graphic designer, copywriter, and scheduling tool with one app. KodaPost does the heavy lifting so your budget goes further.",
-    color: "emerald",
-  },
-  {
-    icon: Sparkles,
-    title: "AI Captions That Sound Like You, Not a Robot",
-    description: "KodaPost writes scroll-stopping captions you edit and approve. No generic AI slop, just your voice amplified.",
-    color: "fuchsia",
-  },
-  {
-    icon: Camera,
-    title: "Stand Out with a Vintage Aesthetic Nobody Else Has",
-    description: "Retro film filters and vintage camera profiles give your brand a visual differentiator vs sterile Canva templates.",
-    color: "orange",
-  },
-];
 
 const SESSION_KEY = "kodapost:splash-shown";
 
@@ -258,8 +221,8 @@ const SEGMENTS = [
     tagBg: "bg-amber-500/10",
     tagText: "text-amber-400",
     activeBg: "bg-amber-500",
-    headline: "Professional content on a bootstrapped budget.",
-    description: "Replace your graphic designer, copywriter, and scheduling tool with one app that keeps your brand looking polished on every platform.",
+    headline: "Your brand voice, amplified across every platform.",
+    description: "KodaPost gives your small team the same polished, consistent content output as brands ten times your size, without losing the authenticity that makes you different.",
     points: [
       { title: "Locked-In Brand Aesthetic", text: "Set your camera profile, film filter, fonts, and colors once. Every carousel matches automatically." },
       { title: "Multi-Platform, No Reformatting", text: "One export covers every social channel with the right dimensions and aspect ratio." },
@@ -401,7 +364,6 @@ export function SplashScreen({
   const userInfo = useUserInfo();
   const [visible, setVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [indieCardsExpanded, setIndieCardsExpanded] = useState(false);
   // Use window scroll for native mobile scrolling (no fixed container)
   const { scrollY } = useScroll();
   const orbY = useTransform(scrollY, [0, 600], [0, -120]);
@@ -1017,11 +979,11 @@ export function SplashScreen({
           <WhoItsForSection />
 
           {/* ================================================================
-              BUILT FOR INDIE CREATORS
+              CREATOR PROVENANCE — IP Protection
               ================================================================ */}
-          <section id="indie-creators" className="relative py-16 sm:py-28 px-6 bg-gradient-to-b from-zinc-900 to-black scroll-mt-16">
+          <section id="creator-provenance" className="relative py-16 sm:py-28 px-6 bg-gradient-to-b from-zinc-900 to-black scroll-mt-16">
             {/* Background glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] -z-0" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] -z-0" />
 
             <div className="max-w-5xl mx-auto relative z-10">
               <motion.div
@@ -1031,16 +993,16 @@ export function SplashScreen({
                 viewport={{ once: true, amount: 0.3 }}
                 className="text-center mb-16"
               >
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-widest mb-6">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Built for Indie Creators
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
+                  <Fingerprint className="h-3.5 w-3.5" />
+                  Creator Provenance
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  KodaPost: The Carousel Maker for{" "}
-                  <span className="text-white/40">Small Brands &amp; Content Creators</span>
+                  Your Work Is Yours.{" "}
+                  <span className="text-white/40">Prove It.</span>
                 </h2>
                 <p className="mt-4 text-white/40 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-                  You handle the creative vision and KodaPost handles the production work. Batch-create carousels, maintain a consistent brand aesthetic, and publish everywhere from one tool.
+                  Social media is flooded with AI-generated slop and wholesale copies of original work. KodaPost doesn&apos;t just help you create — it helps you prove you created it first.
                 </p>
               </motion.div>
 
@@ -1049,51 +1011,69 @@ export function SplashScreen({
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.1 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid md:grid-cols-2 gap-8"
               >
-                {INDIE_CREATOR_CARDS.map((card, i) => {
-                  const Icon = card.icon;
-                  return (
-                    <motion.div
-                      key={card.title}
-                      variants={staggerChild}
-                      className={`group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500 ${
-                        i >= 3 && !indieCardsExpanded ? "hidden md:block" : ""
-                      }`}
-                    >
-                      {/* Glow — always-on at low opacity on touch, hover-enhanced on pointer devices */}
-                      <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${glowClasses(card.color)}`} />
+                {/* Left — main provenance card */}
+                <motion.div
+                  variants={staggerChild}
+                  className="group relative rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 p-8 sm:p-10 text-white overflow-hidden"
+                >
+                  <div className="absolute -bottom-10 -right-10 h-48 w-48 bg-white/5 rounded-full blur-3xl" />
+                  <div className="relative z-10">
+                    <div className="h-12 w-12 rounded-xl flex items-center justify-center mb-6 bg-white/20">
+                      <Fingerprint className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3">Digital Fingerprint on Every Export</h3>
+                    <p className="text-white/80 text-sm leading-relaxed">
+                      Every carousel you export from KodaPost embeds your name, a timestamp, and a unique image fingerprint directly into the file metadata. If someone copies your work, you have the receipt.
+                    </p>
+                  </div>
+                </motion.div>
 
-                      <div className="relative z-10">
-                        <div className={`h-11 w-11 rounded-xl flex items-center justify-center mb-5 ${COLOR_CLASSES[card.color].bg} ${COLOR_CLASSES[card.color].text}`}>
-                          <Icon className="h-5 w-5" />
+                {/* Right — supporting points */}
+                <div className="space-y-5">
+                  {[
+                    {
+                      icon: Shield,
+                      title: "Protect Your Art from AI Scraping",
+                      text: "Your original photos and designs are your IP. Creator Provenance creates a verifiable chain of authorship that stands up when your content gets reposted, scraped, or fed into AI training sets.",
+                      color: "emerald",
+                    },
+                    {
+                      icon: ScanEye,
+                      title: "Visible Watermarking",
+                      text: "Add a branded watermark to your carousels so attribution is instant and visible. Your audience knows it's yours before they even read the caption.",
+                      color: "blue",
+                    },
+                    {
+                      icon: Lock,
+                      title: "Own Your Creative Identity",
+                      text: "In an era where AI-generated content is indistinguishable from human work, provenance is your proof of authenticity. KodaPost empowers creators, artists, and brands to claim what's theirs.",
+                      color: "violet",
+                    },
+                  ].map((point) => {
+                    const Icon = point.icon;
+                    return (
+                      <motion.div
+                        key={point.title}
+                        variants={staggerChild}
+                        className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500"
+                      >
+                        <div className={`absolute -top-16 -right-16 h-32 w-32 rounded-full blur-3xl transition-all duration-700 ${glowClasses(point.color as AccentColor)}`} />
+                        <div className="relative z-10 flex items-start gap-4">
+                          <div className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center ${COLOR_CLASSES[point.color as AccentColor].bg} ${COLOR_CLASSES[point.color as AccentColor].text}`}>
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-base font-bold text-white mb-1">{point.title}</h3>
+                            <p className="text-sm leading-relaxed text-white/40">{point.text}</p>
+                          </div>
                         </div>
-                        <h3 className="text-base sm:text-lg font-bold text-white mb-2">{card.title}</h3>
-                        <p className="text-sm leading-relaxed text-white/40">{card.description}</p>
-                      </div>
-
-                      {/* Decorative icon ghost */}
-                      <div className="absolute top-6 right-6 opacity-[0.04] [@media(hover:hover)]:group-hover:opacity-[0.08] transition-opacity duration-500">
-                        <Icon className="h-16 w-16" />
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-
-              {/* Expand toggle — mobile only */}
-              {!indieCardsExpanded && (
-                <div className="mt-6 text-center md:hidden">
-                  <button
-                    type="button"
-                    onClick={() => setIndieCardsExpanded(true)}
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border border-white/[0.08] bg-white/[0.04] text-base font-medium text-white/60 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
-                  >
-                    See all benefits
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              )}
+              </motion.div>
             </div>
           </section>
 
