@@ -22,6 +22,7 @@ import {
   computeImageHash,
   generateProvenanceExif,
   generateWatermarkSVG,
+  applyLogoWatermark,
 } from "@/lib/provenance";
 
 // -----------------------------------------------------------------------------
@@ -601,7 +602,14 @@ export async function compositeSlideImages(
   slides: CarouselSlide[],
   platforms: string[],
   filterConfig?: FilterConfig,
-  provenanceConfig?: { creatorName: string; enableWatermark: boolean }
+  provenanceConfig?: {
+    creatorName: string;
+    watermarkMode: "text" | "logo" | "hidden" | "logo_and_hidden";
+    logoBase64?: string;
+    logoPosition?: string;
+    logoOpacity?: number;
+    logoScale?: number;
+  }
 ): Promise<ActionResult<CompositeResult[]>> {
   try {
     const results: CompositeResult[] = [];
@@ -702,20 +710,42 @@ export async function compositeSlideImages(
             }
           }
 
-          // 4b. Composite watermark if provenance is enabled
-          if (provenanceConfig?.enableWatermark) {
-            const watermarkText = `Made with KodaPost by ${provenanceConfig.creatorName}`;
+          // 4b. Composite watermark based on provenance mode
+          if (provenanceConfig) {
+            const mode = provenanceConfig.watermarkMode;
             const safeArea = PLATFORM_SAFE_AREA[platform];
-            const watermarkSvg = generateWatermarkSVG(
-              watermarkText,
-              spec.width,
-              spec.height,
-              { safeArea }
-            );
-            const watermarkBuffer = Buffer.from(watermarkSvg);
-            pipeline = pipeline.composite([
-              { input: watermarkBuffer, top: 0, left: 0 },
-            ]);
+
+            if (mode === "text") {
+              const watermarkText = `Made with KodaPost by ${provenanceConfig.creatorName}`;
+              const watermarkSvg = generateWatermarkSVG(
+                watermarkText,
+                spec.width,
+                spec.height,
+                { safeArea }
+              );
+              const watermarkBuffer = Buffer.from(watermarkSvg);
+              pipeline = pipeline.composite([
+                { input: watermarkBuffer, top: 0, left: 0 },
+              ]);
+            } else if (
+              (mode === "logo" || mode === "logo_and_hidden") &&
+              provenanceConfig.logoBase64
+            ) {
+              const logoBuffer = Buffer.from(provenanceConfig.logoBase64, "base64");
+              pipeline = await applyLogoWatermark(
+                pipeline,
+                logoBuffer,
+                spec.width,
+                spec.height,
+                {
+                  position: provenanceConfig.logoPosition ?? "southeast",
+                  opacity: provenanceConfig.logoOpacity ?? 0.3,
+                  scale: provenanceConfig.logoScale ?? 0.15,
+                  safeArea,
+                }
+              );
+            }
+            // "hidden" mode: no visible watermark (EXIF metadata still embedded below)
           }
 
           // 5. Encode to the platform's format

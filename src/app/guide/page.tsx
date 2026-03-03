@@ -16,6 +16,7 @@ const sections = [
   { id: "settings", title: "Settings" },
   { id: "tips", title: "Tips for Great Posts" },
   { id: "creator-provenance", title: "Creator Provenance" },
+  { id: "brand-logo-watermark", title: "Brand Logo Watermark" },
   { id: "commands", title: "Commands Reference" },
 ];
 
@@ -218,19 +219,23 @@ export default function GuidePage() {
         <h2 id="settings">Settings</h2>
         <p>
           App settings are organized under the menu. Open <strong>Menu &gt;
-          Settings</strong> to find:
+          Settings</strong> to find three tabs:
         </p>
         <ul>
           <li>
-            <strong>Social Media</strong> &ndash; Connect and manage your
-            social media accounts for direct publishing.
+            <strong>General</strong> &ndash; Toggle the Telegram Production
+            Assistant and other app-wide preferences.
           </li>
           <li>
-            <strong>Advanced</strong> &ndash; Configure AI generation
-            parameters, export options, and creator provenance settings.
+            <strong>Accounts</strong> &ndash; Connect and manage your
+            social media accounts for direct publishing. Use the Setup Wizard
+            for guided onboarding.
           </li>
           <li>
-            <strong>Theme</strong> &ndash; Toggle between Light and Dark mode.
+            <strong>Brand</strong> &ndash; Upload your brand logo, set your
+            brand name, and configure default watermark settings (mode,
+            position, opacity, and scale). These defaults are loaded
+            automatically in the Publish step and can be overridden per export.
           </li>
         </ul>
 
@@ -274,7 +279,7 @@ export default function GuidePage() {
         </p>
         <ul>
           <li>
-            <strong>Artist</strong> &ndash; Your creator name.
+            <strong>Artist</strong> &ndash; Your creator or brand name.
           </li>
           <li>
             <strong>Copyright</strong> &ndash; &ldquo;Made with KodaPost by
@@ -289,13 +294,32 @@ export default function GuidePage() {
             creation timestamp.
           </li>
         </ul>
-        <h3>Visible Watermark</h3>
+        <h3>Watermark Modes</h3>
         <p>
-          Optionally, you can add a small semi-transparent watermark in the
-          bottom-right corner of each exported image. The watermark reads
-          &ldquo;Made with KodaPost by [your name]&rdquo; and is designed to be
-          subtle but readable.
+          In the Publish step, choose how your watermark appears on exported
+          images. There are four modes:
         </p>
+        <ul>
+          <li>
+            <strong>Visible Text</strong> &ndash; A small semi-transparent line
+            reading &ldquo;Made with KodaPost by [your name]&rdquo; in the
+            bottom-right corner.
+          </li>
+          <li>
+            <strong>Brand Logo</strong> &ndash; Your uploaded PNG logo,
+            composited at a configurable position, opacity, and scale. See the
+            Brand Logo Watermark section below for setup details.
+          </li>
+          <li>
+            <strong>Hidden Only</strong> &ndash; No visible watermark. EXIF
+            metadata is still embedded for provenance tracking.
+          </li>
+          <li>
+            <strong>Logo + Hidden</strong> &ndash; Combines the visible logo
+            watermark with metadata embedding. The hidden digital fingerprint
+            (steganography) is coming in a future update.
+          </li>
+        </ul>
         <h3>How to Verify</h3>
         <p>
           You can check the embedded metadata using any photo viewer or EXIF
@@ -309,6 +333,118 @@ export default function GuidePage() {
           Monster Mode (Pro) plans. Coming soon: C2PA Content Credentials for
           tamper-evident provenance that works with platforms like Adobe Content
           Authenticity and Google Search.
+        </p>
+
+        <h2 id="brand-logo-watermark">Brand Logo Watermark</h2>
+        <p>
+          Brands and creators can upload a custom logo to use as a visible
+          watermark on every exported carousel slide. The logo is composited
+          directly onto the image at export time, so it appears on the final
+          file regardless of where it is shared.
+        </p>
+        <h3>Setting Up Your Brand Logo</h3>
+        <ol>
+          <li>
+            Open <strong>Menu &gt; Settings</strong> and select the{" "}
+            <strong>Brand</strong> tab.
+          </li>
+          <li>
+            Enter your <strong>Brand Name</strong>. This is used in text
+            watermarks and EXIF metadata. It defaults to your account name.
+          </li>
+          <li>
+            Click the upload area under <strong>Brand Logo</strong> and select a
+            PNG file. The image should have a transparent background for best
+            results. Requirements: 64 to 512 pixels wide, max 500 KB.
+          </li>
+          <li>
+            Choose your preferred defaults for <strong>Watermark Mode</strong>,{" "}
+            <strong>Position</strong>, <strong>Opacity</strong>, and{" "}
+            <strong>Scale</strong>.
+          </li>
+          <li>
+            Click <strong>Save Settings</strong>. Your logo and defaults are
+            stored locally and loaded automatically each time you export.
+          </li>
+        </ol>
+        <h3>Using the Logo at Export Time</h3>
+        <p>
+          In the Publish step, the Creator Provenance section shows your
+          configured watermark mode. If you have a logo uploaded, the
+          &ldquo;Brand Logo&rdquo; and &ldquo;Logo + Hidden&rdquo; modes become
+          available.
+        </p>
+        <p>
+          You can override the defaults per export. Adjust position, opacity,
+          and scale using the controls that appear when a logo mode is selected.
+          You can also upload a logo directly from the Publish step if you have
+          not set one up in Settings yet.
+        </p>
+        <h3>Logo Guidelines</h3>
+        <ul>
+          <li>
+            <strong>Format</strong> &ndash; PNG with transparency. Other formats
+            are not supported.
+          </li>
+          <li>
+            <strong>Dimensions</strong> &ndash; Between 64 and 512 pixels wide.
+            The height adjusts proportionally.
+          </li>
+          <li>
+            <strong>File size</strong> &ndash; 500 KB maximum.
+          </li>
+          <li>
+            <strong>Design tip</strong> &ndash; Use a white or light-colored
+            logo for best visibility on photo backgrounds. Avoid overly complex
+            artwork that becomes illegible at small sizes.
+          </li>
+        </ul>
+        <h3>Position Options</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Position</th>
+              <th>Where It Appears</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Bottom Right</td>
+              <td>
+                Lower-right corner (default). Best for most carousel formats.
+              </td>
+            </tr>
+            <tr>
+              <td>Bottom Left</td>
+              <td>Lower-left corner.</td>
+            </tr>
+            <tr>
+              <td>Top Right</td>
+              <td>Upper-right corner.</td>
+            </tr>
+            <tr>
+              <td>Top Left</td>
+              <td>Upper-left corner.</td>
+            </tr>
+            <tr>
+              <td>Center</td>
+              <td>
+                Centered on the image. Useful for proof sheets or draft
+                previews.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>Opacity and Scale</h3>
+        <p>
+          <strong>Opacity</strong> controls how transparent the logo appears.
+          The range is 10% to 80%. A value around 30% is subtle but readable.
+          Higher values make the watermark more prominent.
+        </p>
+        <p>
+          <strong>Scale</strong> controls the logo width as a percentage of the
+          image width. The range is 5% to 30%. At 15% (the default), a logo on
+          a 1080px-wide image renders at about 162px wide.
         </p>
 
         <h2 id="commands">Commands Reference</h2>

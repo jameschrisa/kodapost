@@ -445,6 +445,22 @@ export interface OAuthConnection {
   tokenExpiresAt?: string;
 }
 
+/** Brand watermark configuration for creator provenance */
+export interface BrandWatermarkSettings {
+  /** Base64 data URI of the uploaded logo (PNG with transparency) */
+  logoDataUri: string | null;
+  /** Watermark mode */
+  mode: "text" | "logo" | "hidden" | "logo_and_hidden";
+  /** Logo position on the image */
+  position: "southeast" | "southwest" | "northeast" | "northwest" | "center";
+  /** Logo opacity 0.1 - 0.8 */
+  opacity: number;
+  /** Logo scale as fraction of image width 0.05 - 0.30 */
+  scale: number;
+  /** Creator/brand name for text watermark and EXIF */
+  creatorName: string;
+}
+
 /** User-level settings persisted across sessions */
 export interface UserSettings {
   /** Configured social media accounts */
@@ -453,6 +469,8 @@ export interface UserSettings {
   defaultPlatforms: Platform[];
   /** OAuth connection states — server-authoritative, synced to client */
   oauthConnections?: OAuthConnection[];
+  /** Brand watermark configuration for creator provenance */
+  brandWatermark?: BrandWatermarkSettings;
 }
 
 // -----------------------------------------------------------------------------

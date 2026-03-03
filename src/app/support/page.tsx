@@ -64,7 +64,7 @@ const FAQ_DATA: FAQItem[] = [
     category: "Getting Started",
     question: "What is Creator Provenance?",
     answer:
-      "Creator Provenance embeds authorship data directly into your exported images. When enabled, KodaPost writes your creator name, copyright notice, software tag, and a SHA-256 image fingerprint into EXIF metadata. You can also add a visible watermark. It is available on Creator Mode (Standard) and Monster Mode (Pro) plans.",
+      "Creator Provenance embeds authorship data directly into your exported images. When enabled, KodaPost writes your creator name, copyright notice, software tag, and a SHA-256 image fingerprint into EXIF metadata. You can choose from four watermark modes: Visible Text, Brand Logo, Hidden Only, or Logo + Hidden. It is available on Creator Mode (Standard) and Monster Mode (Pro) plans.",
   },
   {
     category: "Getting Started",
@@ -158,7 +158,32 @@ const FAQ_DATA: FAQItem[] = [
     category: "Publishing",
     question: "What metadata is embedded in exported images?",
     answer:
-      "When Creator Provenance is enabled, each exported image includes EXIF metadata: Artist (your creator name), Copyright (\"Made with KodaPost by [your name]\"), Software (\"KodaPost\"), and an ImageDescription field containing a SHA-256 fingerprint of the image and the creation timestamp. You can verify this with any EXIF viewer.",
+      "When Creator Provenance is enabled, each exported image includes EXIF metadata: Artist (your creator or brand name), Copyright (\"Made with KodaPost by [your name]\"), Software (\"KodaPost\"), and an ImageDescription field containing a SHA-256 fingerprint of the image and the creation timestamp. This metadata is embedded regardless of which watermark mode you choose, including Hidden Only. You can verify it with any EXIF viewer.",
+  },
+  // Brand & Watermarks
+  {
+    category: "Brand & Watermarks",
+    question: "How do I upload a brand logo for watermarking?",
+    answer:
+      "Open Menu > Settings and select the Brand tab. Click the upload area under Brand Logo and choose a PNG file with a transparent background. The image must be between 64 and 512 pixels wide and under 500 KB. After uploading, configure your default position, opacity, and scale, then click Save Settings. You can also upload a logo directly from the Publish step.",
+  },
+  {
+    category: "Brand & Watermarks",
+    question: "What are the four watermark modes?",
+    answer:
+      "Visible Text places a small \"Made with KodaPost by [your name]\" line in the bottom-right corner. Brand Logo composites your uploaded PNG logo at a configurable position, opacity, and scale. Hidden Only embeds EXIF metadata with no visible mark. Logo + Hidden combines the logo watermark with metadata embedding.",
+  },
+  {
+    category: "Brand & Watermarks",
+    question: "What format should my brand logo be?",
+    answer:
+      "Use a PNG file with a transparent background. The image must be between 64 and 512 pixels wide, with a maximum file size of 500 KB. White or light-colored logos work best on photo backgrounds. Avoid overly complex artwork that becomes hard to read at small sizes.",
+  },
+  {
+    category: "Brand & Watermarks",
+    question: "Can I adjust the logo watermark per export?",
+    answer:
+      "Yes. Your defaults are loaded from Settings, but you can override position, opacity, and scale in the Publish step each time you export. Changes made in the Publish step are also saved back to your settings for next time.",
   },
   // Accounts & Billing
   {
@@ -212,6 +237,7 @@ const FAQ_CATEGORIES = [
   "Filters & Style",
   "AI Generation",
   "Publishing",
+  "Brand & Watermarks",
   "Accounts & Billing",
   "Troubleshooting",
 ];

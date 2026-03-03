@@ -11,6 +11,9 @@ import {
   Unlink,
   Loader2,
   CheckCircle2,
+  Shield,
+  Trash2,
+  Upload,
   Youtube,
   Wand2,
   Zap,
@@ -45,10 +48,12 @@ import {
 } from "@/components/shared/AssistantBanner";
 import { SocialAccountsWizard } from "@/components/shared/SocialAccountsWizard";
 import { cn } from "@/lib/utils";
+import { useUserInfo } from "@/hooks/useUserInfo";
 import type {
   SocialMediaAccount,
   OAuthConnection,
   Platform,
+  BrandWatermarkSettings,
 } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -355,6 +360,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [openCards, setOpenCards] = useState<Record<string, boolean>>({});
   // Wizard state
   const [wizardOpen, setWizardOpen] = useState(false);
+  // Brand watermark settings
+  const [brandWatermark, setBrandWatermark] = useState<BrandWatermarkSettings>({
+    logoDataUri: null,
+    mode: "text",
+    position: "southeast",
+    opacity: 0.3,
+    scale: 0.15,
+    creatorName: "",
+  });
+  const { firstName, lastName } = useUserInfo();
 
   // Load settings and OAuth status when dialog opens
   useEffect(() => {
@@ -363,6 +378,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       setAccounts(settings.socialAccounts);
       setTestStates({});
       setContentBotEnabled(isAssistantEnabled());
+      const defaultName = [firstName, lastName].filter(Boolean).join(" ") || "";
+      setBrandWatermark(settings.brandWatermark ?? {
+        logoDataUri: null,
+        mode: "text",
+        position: "southeast",
+        opacity: 0.3,
+        scale: 0.15,
+        creatorName: defaultName,
+      });
 
       // Fetch OAuth connection status from server
       setLoadingConnections(true);
@@ -398,7 +422,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         .catch(() => setConnections([]))
         .finally(() => setLoadingConnections(false));
     }
-  }, [open]);
+  }, [open, firstName, lastName]);
 
   // Refresh connection statuses after wizard closes
   useEffect(() => {
@@ -537,6 +561,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       socialAccounts: accounts,
       defaultPlatforms: activePlatforms,
       oauthConnections: connections,
+      brandWatermark,
     });
 
     toast.success("Settings saved", {
@@ -607,6 +632,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <TabsTrigger value="accounts" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">
                 Accounts
               </TabsTrigger>
+              <TabsTrigger value="brand" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">
+                Brand
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="general" className="mt-4">
@@ -666,6 +694,174 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 {/* Scrollable platform list */}
                 <div className="max-h-[55vh] overflow-y-auto pr-0.5">
                   {renderPlatforms(PLATFORMS)}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="brand" className="mt-4">
+              <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-0.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Shield className="h-4 w-4 text-emerald-400" />
+                  <p className="text-sm font-medium">Brand Watermark</p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Configure your brand logo and default watermark settings for exports.
+                </p>
+
+                {/* Brand Name */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="brand-name" className="text-xs">Brand Name</Label>
+                  <Input
+                    id="brand-name"
+                    value={brandWatermark.creatorName}
+                    onChange={(e) => setBrandWatermark({ ...brandWatermark, creatorName: e.target.value })}
+                    placeholder={[firstName, lastName].filter(Boolean).join(" ") || "Your Name"}
+                    className="h-8 text-sm"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Used in text watermarks and EXIF metadata</p>
+                </div>
+
+                {/* Brand Logo Upload */}
+                <div className="space-y-2">
+                  <Label className="text-xs">Brand Logo</Label>
+                  {brandWatermark.logoDataUri ? (
+                    <div className="flex items-center gap-3 rounded-lg border p-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={brandWatermark.logoDataUri}
+                        alt="Brand logo"
+                        className="h-12 w-12 rounded object-contain bg-muted/50 p-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium">Logo uploaded</p>
+                        <p className="text-[10px] text-muted-foreground">PNG with transparency</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-destructive hover:text-destructive gap-1"
+                        onClick={() => setBrandWatermark({ ...brandWatermark, logoDataUri: null })}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 p-6 hover:border-muted-foreground/50 transition-colors">
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Upload PNG logo (max 500KB, 64-512px wide)</p>
+                      <input
+                        type="file"
+                        accept="image/png"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 500 * 1024) {
+                            toast.error("Logo too large", { description: "Max file size is 500KB" });
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const dataUri = reader.result as string;
+                            const img = new Image();
+                            img.onload = () => {
+                              if (img.width < 64 || img.width > 512) {
+                                toast.error("Invalid dimensions", { description: "Logo must be 64-512px wide" });
+                                return;
+                              }
+                              setBrandWatermark({ ...brandWatermark, logoDataUri: dataUri });
+                              toast.success("Logo uploaded");
+                            };
+                            img.src = dataUri;
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Default Watermark Mode */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Default Watermark Mode</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { value: "text" as const, label: "Visible Text" },
+                      { value: "logo" as const, label: "Brand Logo" },
+                      { value: "hidden" as const, label: "Hidden Only" },
+                      { value: "logo_and_hidden" as const, label: "Logo + Hidden" },
+                    ]).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setBrandWatermark({ ...brandWatermark, mode: opt.value })}
+                        disabled={
+                          (opt.value === "logo" || opt.value === "logo_and_hidden") &&
+                          !brandWatermark.logoDataUri
+                        }
+                        className={cn(
+                          "rounded-md border px-3 py-1.5 text-xs font-medium transition-all",
+                          brandWatermark.mode === opt.value
+                            ? "border-emerald-400 bg-emerald-500/10 text-emerald-400"
+                            : "border-muted-foreground/20 hover:border-muted-foreground/40",
+                          (opt.value === "logo" || opt.value === "logo_and_hidden") &&
+                            !brandWatermark.logoDataUri &&
+                            "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Default Position */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Default Position</Label>
+                  <select
+                    value={brandWatermark.position}
+                    onChange={(e) => setBrandWatermark({ ...brandWatermark, position: e.target.value as BrandWatermarkSettings["position"] })}
+                    className="h-8 w-full rounded border border-muted-foreground/20 bg-transparent px-2 text-sm"
+                  >
+                    <option value="southeast">Bottom Right</option>
+                    <option value="southwest">Bottom Left</option>
+                    <option value="northeast">Top Right</option>
+                    <option value="northwest">Top Left</option>
+                    <option value="center">Center</option>
+                  </select>
+                </div>
+
+                {/* Default Opacity */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Default Opacity</Label>
+                    <span className="text-xs text-muted-foreground">{Math.round(brandWatermark.opacity * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="80"
+                    value={Math.round(brandWatermark.opacity * 100)}
+                    onChange={(e) => setBrandWatermark({ ...brandWatermark, opacity: parseInt(e.target.value) / 100 })}
+                    className="w-full accent-emerald-500"
+                  />
+                </div>
+
+                {/* Default Scale */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Default Scale</Label>
+                    <span className="text-xs text-muted-foreground">{Math.round(brandWatermark.scale * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="30"
+                    value={Math.round(brandWatermark.scale * 100)}
+                    onChange={(e) => setBrandWatermark({ ...brandWatermark, scale: parseInt(e.target.value) / 100 })}
+                    className="w-full accent-emerald-500"
+                  />
                 </div>
               </div>
             </TabsContent>

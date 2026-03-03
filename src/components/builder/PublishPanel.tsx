@@ -20,6 +20,8 @@ import {
   RotateCcw,
   Send,
   Shield,
+  Trash2,
+  Upload,
   Youtube,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,7 +32,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { PLATFORM_IMAGE_SPECS, PLATFORM_RULES, type PlatformRulesKey } from "@/lib/constants";
-import { loadSettings } from "@/lib/storage";
+import { loadSettings, saveSettings } from "@/lib/storage";
 import { compositeSlideImages } from "@/app/actions";
 import { trimAudioBlob, hasTrimApplied } from "@/lib/audio-utils";
 import { useVideoGenerator } from "@/hooks/useVideoGenerator";
@@ -38,7 +40,8 @@ import { DEFAULT_VIDEO_SETTINGS } from "@/lib/constants";
 import { logActivity } from "@/lib/activity-log";
 import { useLoadingStore } from "@/lib/stores/loading-store";
 import { useUserPlan } from "@/hooks/useUserPlan";
-import type { CarouselProject, OAuthConnection, Platform } from "@/lib/types";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import type { CarouselProject, OAuthConnection, Platform, BrandWatermarkSettings } from "@/lib/types";
 
 export const PLATFORMS: {
   key: Platform;
@@ -121,7 +124,8 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [includeAttribution, setIncludeAttribution] = useState(true);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [enableWatermark, setEnableWatermark] = useState(false);
+  const [watermarkMode, setWatermarkMode] = useState<BrandWatermarkSettings["mode"]>("text");
+  const [brandWatermark, setBrandWatermark] = useState<BrandWatermarkSettings | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Video generator hook
@@ -136,8 +140,12 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const { startLoading: startGlobalLoading, stopLoading: stopGlobalLoading } = useLoadingStore();
   const { canAccessFeature } = useUserPlan();
   const hasProvenance = canAccessFeature("creator_provenance");
+  const { firstName, lastName } = useUserInfo();
+  const creatorName = brandWatermark?.creatorName
+    || [firstName, lastName].filter(Boolean).join(" ")
+    || "Creator";
 
-  // Pre-select platforms from saved settings
+  // Pre-select platforms from saved settings and load brand watermark config
   useEffect(() => {
     const settings = loadSettings();
     const activePlatforms = settings.socialAccounts
@@ -145,6 +153,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       .map((a) => a.platform);
     if (activePlatforms.length > 0) {
       setSelected(new Set(activePlatforms));
+    }
+    if (settings.brandWatermark) {
+      setBrandWatermark(settings.brandWatermark);
+      setWatermarkMode(settings.brandWatermark.mode);
     }
   }, []);
 
@@ -198,7 +210,16 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     try {
       // 1. Composite images for this platform
       const provenanceConfig = hasProvenance
-        ? { creatorName: "Creator", enableWatermark }
+        ? {
+            creatorName,
+            watermarkMode: watermarkMode,
+            logoBase64: brandWatermark?.logoDataUri
+              ? brandWatermark.logoDataUri.replace(/^data:[^;]+;base64,/, "")
+              : undefined,
+            logoPosition: brandWatermark?.position ?? "southeast",
+            logoOpacity: brandWatermark?.opacity ?? 0.3,
+            logoScale: brandWatermark?.scale ?? 0.15,
+          } as const
         : undefined;
       const result = await compositeSlideImages(readySlides, [platform], project.filterConfig, provenanceConfig);
 
@@ -264,7 +285,16 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
       // 1. Composite images on the server (Sharp + SVG overlays)
       const provenanceConfig = hasProvenance
-        ? { creatorName: "Creator", enableWatermark }
+        ? {
+            creatorName,
+            watermarkMode: watermarkMode,
+            logoBase64: brandWatermark?.logoDataUri
+              ? brandWatermark.logoDataUri.replace(/^data:[^;]+;base64,/, "")
+              : undefined,
+            logoPosition: brandWatermark?.position ?? "southeast",
+            logoOpacity: brandWatermark?.opacity ?? 0.3,
+            logoScale: brandWatermark?.scale ?? 0.15,
+          } as const
         : undefined;
       const result = await compositeSlideImages(readySlides, platforms, project.filterConfig, provenanceConfig);
 
@@ -805,9 +835,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         </div>
       )}
 
-      {/* Creator Provenance — watermark toggle (Standard + Pro only) */}
+      {/* Creator Provenance — watermark mode selector (Standard + Pro only) */}
       {selected.size > 0 && hasProvenance && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-emerald-400" />
             <p className="text-sm font-medium">Creator Provenance</p>
@@ -815,17 +845,186 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           <p className="text-xs text-muted-foreground">
             Your name, timestamp, and a unique image fingerprint are embedded into every export.
           </p>
-          <label className="flex items-start gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={enableWatermark}
-              onChange={(e) => setEnableWatermark(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-muted-foreground/30 accent-emerald-500"
-            />
-            <span className="text-xs text-muted-foreground">
-              Add visible watermark
-            </span>
-          </label>
+
+          {/* Watermark mode selector */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">Watermark Mode</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: "text" as const, label: "Visible Text", desc: `"Made with KodaPost by ${creatorName}"` },
+                { value: "logo" as const, label: "Brand Logo", desc: brandWatermark?.logoDataUri ? "Your uploaded logo" : "Upload a logo first" },
+                { value: "hidden" as const, label: "Hidden Only", desc: "EXIF metadata, no visible mark" },
+                { value: "logo_and_hidden" as const, label: "Logo + Hidden", desc: "Logo watermark + metadata" },
+              ]).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setWatermarkMode(opt.value)}
+                  disabled={
+                    (opt.value === "logo" || opt.value === "logo_and_hidden") &&
+                    !brandWatermark?.logoDataUri
+                  }
+                  className={cn(
+                    "rounded-lg border p-2.5 text-left transition-all text-xs",
+                    watermarkMode === opt.value
+                      ? "border-emerald-400 bg-emerald-500/10 ring-1 ring-emerald-400"
+                      : "border-muted-foreground/20 hover:border-muted-foreground/40",
+                    (opt.value === "logo" || opt.value === "logo_and_hidden") &&
+                      !brandWatermark?.logoDataUri &&
+                      "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <p className="font-medium">{opt.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Inline logo upload when logo mode selected but no logo */}
+          {(watermarkMode === "logo" || watermarkMode === "logo_and_hidden") && !brandWatermark?.logoDataUri && (
+            <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-center">
+              <Upload className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+              <p className="text-xs text-muted-foreground mb-2">Upload a PNG logo (max 500KB, 64-512px wide)</p>
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/png"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 500 * 1024) {
+                      toast.error("Logo too large", { description: "Max 500KB" });
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const dataUri = reader.result as string;
+                      const img = new Image();
+                      img.onload = () => {
+                        if (img.width < 64 || img.width > 512) {
+                          toast.error("Invalid dimensions", { description: "Logo must be 64-512px wide" });
+                          return;
+                        }
+                        const updated: BrandWatermarkSettings = {
+                          logoDataUri: dataUri,
+                          mode: watermarkMode,
+                          position: brandWatermark?.position ?? "southeast",
+                          opacity: brandWatermark?.opacity ?? 0.3,
+                          scale: brandWatermark?.scale ?? 0.15,
+                          creatorName,
+                        };
+                        setBrandWatermark(updated);
+                        const settings = loadSettings();
+                        saveSettings({ ...settings, brandWatermark: updated });
+                        toast.success("Logo uploaded");
+                      };
+                      img.src = dataUri;
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-xs font-medium hover:bg-muted/80 transition-colors">
+                  <Upload className="h-3 w-3" />
+                  Choose File
+                </span>
+              </label>
+            </div>
+          )}
+
+          {/* Logo preview when logo is configured */}
+          {brandWatermark?.logoDataUri && (watermarkMode === "logo" || watermarkMode === "logo_and_hidden") && (
+            <div className="flex items-center gap-3 rounded-lg border border-muted-foreground/20 p-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={brandWatermark.logoDataUri}
+                alt="Brand logo"
+                className="h-10 w-10 rounded object-contain bg-muted/50 p-1"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium truncate">Brand Logo</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {brandWatermark.position} &middot; {Math.round(brandWatermark.opacity * 100)}% opacity &middot; {Math.round(brandWatermark.scale * 100)}% scale
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const updated = { ...brandWatermark, logoDataUri: null };
+                  setBrandWatermark(updated);
+                  setWatermarkMode("text");
+                  const settings = loadSettings();
+                  saveSettings({ ...settings, brandWatermark: updated });
+                }}
+                className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Position, opacity, scale controls when logo mode */}
+          {brandWatermark?.logoDataUri && (watermarkMode === "logo" || watermarkMode === "logo_and_hidden") && (
+            <div className="space-y-2.5">
+              {/* Position */}
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] text-muted-foreground w-14 shrink-0">Position</label>
+                <select
+                  value={brandWatermark.position}
+                  onChange={(e) => {
+                    const updated = { ...brandWatermark, position: e.target.value as BrandWatermarkSettings["position"] };
+                    setBrandWatermark(updated);
+                    const settings = loadSettings();
+                    saveSettings({ ...settings, brandWatermark: updated });
+                  }}
+                  className="h-7 flex-1 rounded border border-muted-foreground/20 bg-transparent px-2 text-xs"
+                >
+                  <option value="southeast">Bottom Right</option>
+                  <option value="southwest">Bottom Left</option>
+                  <option value="northeast">Top Right</option>
+                  <option value="northwest">Top Left</option>
+                  <option value="center">Center</option>
+                </select>
+              </div>
+              {/* Opacity */}
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] text-muted-foreground w-14 shrink-0">Opacity</label>
+                <input
+                  type="range"
+                  min="10"
+                  max="80"
+                  value={Math.round(brandWatermark.opacity * 100)}
+                  onChange={(e) => {
+                    const updated = { ...brandWatermark, opacity: parseInt(e.target.value) / 100 };
+                    setBrandWatermark(updated);
+                    const settings = loadSettings();
+                    saveSettings({ ...settings, brandWatermark: updated });
+                  }}
+                  className="flex-1 accent-emerald-500"
+                />
+                <span className="text-[11px] text-muted-foreground w-8 text-right">{Math.round(brandWatermark.opacity * 100)}%</span>
+              </div>
+              {/* Scale */}
+              <div className="flex items-center gap-2">
+                <label className="text-[11px] text-muted-foreground w-14 shrink-0">Scale</label>
+                <input
+                  type="range"
+                  min="5"
+                  max="30"
+                  value={Math.round(brandWatermark.scale * 100)}
+                  onChange={(e) => {
+                    const updated = { ...brandWatermark, scale: parseInt(e.target.value) / 100 };
+                    setBrandWatermark(updated);
+                    const settings = loadSettings();
+                    saveSettings({ ...settings, brandWatermark: updated });
+                  }}
+                  className="flex-1 accent-emerald-500"
+                />
+                <span className="text-[11px] text-muted-foreground w-8 text-right">{Math.round(brandWatermark.scale * 100)}%</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
