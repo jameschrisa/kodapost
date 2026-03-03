@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { saveProject, saveProjectName, loadProjectName } from "@/lib/storage";
 import type { CarouselProject } from "@/lib/types";
 
@@ -30,6 +31,8 @@ export function SaveProjectButton({ project }: SaveProjectButtonProps) {
     const saved = loadProjectName();
     if (saved) setProjectName(saved);
   }, []);
+
+  const isUnsaved = !project.projectName && !projectName.trim();
 
   const handleSave = useCallback(() => {
     const name = projectName.trim() || "Untitled Project";
@@ -63,11 +66,14 @@ export function SaveProjectButton({ project }: SaveProjectButtonProps) {
     <Popover open={showNameInput} onOpenChange={setShowNameInput}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
+          variant={isUnsaved ? "outline" : "ghost"}
           size="icon"
           onClick={handleClick}
           aria-label="Save project"
-          className="relative"
+          className={cn(
+            "relative",
+            isUnsaved && "animate-slow-pulse border-accent"
+          )}
         >
           <AnimatePresence mode="wait" initial={false}>
             {isSaved ? (

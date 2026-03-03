@@ -43,11 +43,13 @@ import {
   PLATFORM_PREVIEW_CONFIG,
   COLOR_SCHEMES,
   DEFAULT_BG_PADDING,
+  type StyleTemplate,
 } from "@/lib/constants";
 import type { PreviewPlatform } from "@/lib/constants";
 import { getCameraFilterStyles, getGrainSVGDataUri } from "@/lib/camera-filters-css";
 import { DEFAULT_FILTER_CONFIG } from "@/lib/filter-presets";
 import { ImageCropDialog } from "@/components/builder/ImageCropDialog";
+import { StyleTemplatePicker } from "@/components/builder/StyleTemplatePicker";
 import { SaveProjectButton } from "@/components/shared/SaveProjectButton";
 import { PLATFORM_IMAGE_SPECS } from "@/lib/constants";
 import type { CarouselProject, CarouselSlide, TextOverlay } from "@/lib/types";
@@ -154,6 +156,9 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   const [globalTextDisplayMode, setGlobalTextDisplayMode] = useState<TextDisplayMode>(
     gos.backgroundColor ? "background" : gos.textShadow ? "shadow" : "plain"
   );
+
+  // -- Active template tracking --
+  const [activeTemplateId, setActiveTemplateId] = useState<string | undefined>(undefined);
 
   // -- Platform preview --
   const [previewPlatform] = useState<PreviewPlatform>(
@@ -377,6 +382,77 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   }
 
   // ── Apply Global Style to All ──
+  function applyTemplateToAll(template: StyleTemplate) {
+    setActiveTemplateId(template.id);
+    const freePos = {
+      x: FREE_POSITION_X_FROM_HORIZONTAL["center"],
+      y: FREE_POSITION_FROM_ALIGNMENT[globalVerticalAlign].y,
+    };
+
+    const updatedSlides = project.slides.map((s) => {
+      const existingOverlay = s.textOverlay;
+      if (!existingOverlay) return s;
+
+      return {
+        ...s,
+        textOverlay: {
+          content: existingOverlay.content,
+          styling: {
+            ...existingOverlay.styling,
+            fontFamily: template.fontFamily,
+            fontSize: { primary: template.fontSize, secondary: existingOverlay.styling.fontSize.secondary },
+            fontWeight: template.fontWeight,
+            fontStyle: template.fontStyle,
+            textColor: template.textColor,
+            backgroundColor: template.backgroundColor === "transparent" ? undefined : template.backgroundColor,
+            textShadow: template.textShadow,
+          },
+          positioning: {
+            ...existingOverlay.positioning,
+            freePosition: freePos,
+          },
+        },
+        textOverlayState: {
+          slideId: s.id,
+          enabled: true,
+          source: "preset_applied" as const,
+          lastModified: new Date().toISOString(),
+          customizations: { textEdited: false, styleEdited: true, positionEdited: true },
+        },
+      };
+    });
+
+    onEdit({
+      ...project,
+      slides: updatedSlides,
+      globalOverlayStyle: {
+        ...gos,
+        fontFamily: template.fontFamily,
+        fontSize: { primary: template.fontSize, secondary: gos.fontSize.secondary },
+        fontWeight: template.fontWeight,
+        fontStyle: template.fontStyle,
+        textColor: template.textColor,
+        backgroundColor: template.backgroundColor === "transparent" ? undefined : template.backgroundColor,
+        textShadow: template.textShadow,
+        freePosition: freePos,
+      },
+    });
+
+    // Sync global toolbar state
+    setGlobalFontFamily(template.fontFamily);
+    setGlobalFontSizePrimary(template.fontSize);
+    setGlobalFontStyle(template.fontStyle);
+    setGlobalTextColor(template.textColor);
+    setGlobalTextDisplayMode(
+      template.backgroundColor !== "transparent" && template.backgroundColor !== undefined
+        ? "background"
+        : template.textShadow ? "shadow" : "plain"
+    );
+
+    toast.success(`"${template.name}" applied to all slides`);
+    setStyleRefreshKey((k) => k + 1);
+  }
+
   function applyGlobalStyle() {
     const freePos = {
       x: FREE_POSITION_X_FROM_HORIZONTAL["center"],
@@ -494,6 +570,12 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         </button>
         {globalToolbarOpen && (
           <div className="border-t px-4 py-4 space-y-4">
+            <Tabs defaultValue="customize">
+              <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 mb-3">
+                <TabsTrigger value="customize" className="rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Customize</TabsTrigger>
+                <TabsTrigger value="templates" className="rounded-full px-4 py-1.5 text-xs font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Templates</TabsTrigger>
+              </TabsList>
+              <TabsContent value="customize" className="space-y-4 mt-0">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {/* Font */}
               <div className="space-y-1.5">
@@ -672,6 +754,11 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 Apply to All
               </Button>
             </div>
+              </TabsContent>
+              <TabsContent value="templates" className="mt-0">
+                <StyleTemplatePicker activeTemplateId={activeTemplateId} onApply={applyTemplateToAll} />
+              </TabsContent>
+            </Tabs>
           </div>
         )}
       </div>
@@ -821,11 +908,22 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
             </div>
           </div>
 
+          {/* Crop button */}
+          {selectedSlide?.imageUrl && (
+            <div className="flex items-center gap-2 max-w-full sm:max-w-[500px] mx-auto">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs"
+                onClick={() => { setCropSlide(selectedSlide); setCropDialogOpen(true); }}>
+                <Crop className="h-3.5 w-3.5" /> Crop Image
+              </Button>
+            </div>
+          )}
+
           {/* Inline text editing controls */}
           {selectedSlide && (
             <Tabs defaultValue="format" className="max-w-full sm:max-w-[500px] mx-auto">
               <TabsList className="inline-flex h-auto w-auto gap-0 rounded-full border border-muted-foreground/20 bg-transparent p-0.5 mb-3">
                 <TabsTrigger value="format" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Format</TabsTrigger>
+                <TabsTrigger value="template" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Template</TabsTrigger>
                 <TabsTrigger value="content" className="rounded-full px-5 py-2 text-sm font-medium data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:bg-transparent data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-none">Content</TabsTrigger>
               </TabsList>
 
@@ -992,6 +1090,26 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                   </div>
                 </div>
                 )}
+              </TabsContent>
+
+              {/* Template tab: style template picker for this slide */}
+              <TabsContent value="template" className="mt-0">
+                <StyleTemplatePicker
+                  activeTemplateId={activeTemplateId}
+                  onApply={(template) => {
+                    setActiveTemplateId(template.id);
+                    setEditFontFamily(template.fontFamily);
+                    setEditFontSizePrimary(template.fontSize);
+                    setEditFontStyle(template.fontStyle);
+                    setEditTextColor(template.textColor);
+                    setEditTextDisplayMode(
+                      template.backgroundColor !== "transparent" && template.backgroundColor !== undefined
+                        ? "background"
+                        : template.textShadow ? "shadow" : "plain"
+                    );
+                    toast.success(`"${template.name}" applied to this slide`);
+                  }}
+                />
               </TabsContent>
 
               {/* Content tab: text input controls */}

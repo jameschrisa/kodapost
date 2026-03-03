@@ -57,6 +57,15 @@ const config: Config = {
   		fontSize: {
   			sm: ['0.9rem', { lineHeight: '1.35rem' }],
   		},
+  		keyframes: {
+  			'slow-pulse': {
+  				'0%, 100%': { opacity: '1' },
+  				'50%': { opacity: '0.5' },
+  			},
+  		},
+  		animation: {
+  			'slow-pulse': 'slow-pulse 2.5s ease-in-out infinite',
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

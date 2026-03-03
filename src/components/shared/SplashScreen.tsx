@@ -94,8 +94,8 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: "AI Caption Writer",
-    description: "Tell your story and KodaPost writes scroll-stopping captions and headlines that feel authentically you.",
+    title: "Caption Writing Assistant",
+    description: "Tell your story and KodaPost can help draft captions and headlines that match your story.",
     span: "",
     style: "accent" as const,
   },
@@ -758,7 +758,7 @@ export function SplashScreen({
                 transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
                 className="max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
               >
-                KodaPost is the phonographic carousel creator for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping phonographic carousels with vintage camera styles, retro film filters, and AI-powered captions.
+                KodaPost is the phonographic carousel creator for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping phonographic carousels with vintage camera styles, retro film filters, with a just a little help from AI.
               </motion.p>
 
               {/* Quote — hidden on mobile to keep CTAs above fold */}
@@ -872,8 +872,8 @@ export function SplashScreen({
                   How KodaPost Works
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  Create Phonographic Carousels{" "}
-                  <span className="text-white/40">in 3 Steps</span>
+                  Easily Create{" "}
+                  <span className="text-white/40">Phonographic Carousels</span>
                 </h2>
               </motion.div>
 

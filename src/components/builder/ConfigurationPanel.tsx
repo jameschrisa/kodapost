@@ -706,8 +706,8 @@ export function ConfigurationPanel({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base">Stylize</CardTitle>
-              <CardHelpIcon title="Stylize">
+              <CardTitle className="text-base">Stylize Images</CardTitle>
+              <CardHelpIcon title="Stylize Images">
                 Shape the visual style of your images. Choose a vintage camera
                 emulation, apply retro photo filters, and fine-tune parameters
                 like grain, bloom, and vignette.

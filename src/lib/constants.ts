@@ -125,17 +125,17 @@ export const PLATFORM_RULES = {
     ],
   },
   youtube: {
-    maxCarouselImages: 1,
+    maxCarouselImages: 10,
     minCarouselImages: 1,
-    supportsCarousel: false,
-    carouselType: "single_image" as const,
+    supportsCarousel: true,
+    carouselType: "multi_image_grid" as const,
     captionMax: 5000,
     captionFirstLinePreview: 100,
     hashtagMax: 15,
     hashtagOptimal: { min: 3, max: 5 },
     requirements: [
-      "Community posts support a single image only — no carousels",
-      "Recommended: 1080×1080 px square (1:1 aspect ratio)",
+      "Community posts support up to 10 images per carousel",
+      "Recommended: 1080x1080 px square (1:1 aspect ratio)",
       "Supported aspect ratios: 2:5 to 5:2",
       "Supported formats: JPEG, PNG, WebP, non-animated GIF",
     ],
@@ -173,24 +173,24 @@ export const PLATFORM_RULES = {
   x: {
     maxCarouselImages: 4,
     minCarouselImages: 1,
-    supportsCarousel: false,
+    supportsCarousel: true,
     carouselType: "multi_image_grid" as const,
     captionMax: 280,
     captionFirstLinePreview: 280,
     hashtagMax: 5,
     hashtagOptimal: { min: 1, max: 2 },
     requirements: [
-      "Maximum 4 images per post — no swipeable carousel",
-      "Images display in auto-arranged grid (2-up, 3-up, or 2×2)",
+      "Maximum 4 images per post in a multi-image grid",
+      "Images display in auto-arranged grid (2-up, 3-up, or 2x2)",
       "Supported aspect ratios: 2:1 to 1:2 (4:5 portrait works well)",
       "Max 5 MB per image (JPEG, PNG, WebP, GIF)",
       "Free accounts: 280-character limit; X Premium: 4,000 characters",
     ],
     bestPractices: [
-      "4:5 portrait takes maximum vertical feed space — more attention",
+      "4:5 portrait takes maximum vertical feed space, more attention",
       "Posts under 100 characters get ~17% higher engagement",
-      "1–2 hashtags max — engagement drops sharply beyond 2 tags",
-      "X does not swipe carousels — all images show in a grid simultaneously",
+      "1-2 hashtags max, engagement drops sharply beyond 2 tags",
+      "All images show in a grid simultaneously",
       "Alt text on all images improves reach and accessibility ranking",
     ],
   },
@@ -576,6 +576,122 @@ export function getFontFamilyWithFallback(fontName: string): string {
   const fallback = option.category === "serif" || option.category === "display" ? "serif" : "sans-serif";
   return `${option.value}, ${fallback}`;
 }
+
+// -----------------------------------------------------------------------------
+// Style Templates
+// -----------------------------------------------------------------------------
+
+export interface StyleTemplate {
+  id: string;
+  name: string;
+  description: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: "bold" | "semibold" | "regular";
+  fontStyle: "normal" | "italic";
+  textColor: string;
+  backgroundColor: string;
+  textShadow: boolean;
+}
+
+export const STYLE_TEMPLATES: StyleTemplate[] = [
+  {
+    id: "bold-statement",
+    name: "Bold Statement",
+    description: "All-caps impact with maximum contrast",
+    fontFamily: "Bebas Neue",
+    fontSize: 56,
+    fontWeight: "bold",
+    fontStyle: "normal",
+    textColor: "#FFFFFF",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    textShadow: false,
+  },
+  {
+    id: "minimal-clean",
+    name: "Minimal Clean",
+    description: "Subtle and modern with soft shadow",
+    fontFamily: "Inter",
+    fontSize: 42,
+    fontWeight: "bold",
+    fontStyle: "normal",
+    textColor: "#FFFFFF",
+    backgroundColor: "transparent",
+    textShadow: true,
+  },
+  {
+    id: "vintage-serif",
+    name: "Vintage Serif",
+    description: "Warm cream on dark brown, classic feel",
+    fontFamily: "Playfair Display",
+    fontSize: 48,
+    fontWeight: "bold",
+    fontStyle: "normal",
+    textColor: "#F5E6D0",
+    backgroundColor: "rgba(40, 25, 15, 0.80)",
+    textShadow: false,
+  },
+  {
+    id: "editorial",
+    name: "Editorial",
+    description: "Magazine-inspired serif heading",
+    fontFamily: "DM Serif Display",
+    fontSize: 44,
+    fontWeight: "bold",
+    fontStyle: "normal",
+    textColor: "#FFFFFF",
+    backgroundColor: "rgba(0, 0, 0, 0.70)",
+    textShadow: true,
+  },
+  {
+    id: "street-pop",
+    name: "Street Pop",
+    description: "Energetic yellow on black, urban edge",
+    fontFamily: "Syne",
+    fontSize: 50,
+    fontWeight: "bold",
+    fontStyle: "normal",
+    textColor: "#FFE500",
+    backgroundColor: "rgba(0, 0, 0, 0.90)",
+    textShadow: false,
+  },
+  {
+    id: "luxury",
+    name: "Luxury",
+    description: "Gold on black, refined italic elegance",
+    fontFamily: "Bodoni Moda",
+    fontSize: 46,
+    fontWeight: "bold",
+    fontStyle: "italic",
+    textColor: "#D4AF37",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    textShadow: false,
+  },
+  {
+    id: "tiktok-viral",
+    name: "TikTok Viral",
+    description: "Bold white on hot pink, maximum energy",
+    fontFamily: "Montserrat Black",
+    fontSize: 54,
+    fontWeight: "bold",
+    fontStyle: "normal",
+    textColor: "#FFFFFF",
+    backgroundColor: "rgba(232, 0, 100, 0.85)",
+    textShadow: false,
+  },
+  {
+    id: "instagram-clean",
+    name: "Instagram Clean",
+    description: "Soft dark overlay, clean modern look",
+    fontFamily: "Poppins",
+    fontSize: 40,
+    fontWeight: "bold",
+    fontStyle: "normal",
+    textColor: "#FFFFFF",
+    backgroundColor: "rgba(0, 0, 0, 0.50)",
+    textShadow: true,
+  },
+];
 
 // -----------------------------------------------------------------------------
 // Derived Types

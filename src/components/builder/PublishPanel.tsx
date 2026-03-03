@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   Check,
   CheckCircle2,
-  ClipboardCopy,
   Download,
   Film,
   ImageIcon,
@@ -27,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -126,6 +126,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [watermarkMode, setWatermarkMode] = useState<BrandWatermarkSettings["mode"]>("text");
   const [brandWatermark, setBrandWatermark] = useState<BrandWatermarkSettings | null>(null);
+  const [watermarkText, setWatermarkText] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Video generator hook
@@ -144,6 +145,11 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const creatorName = brandWatermark?.creatorName
     || [firstName, lastName].filter(Boolean).join(" ")
     || "Creator";
+
+  // Initialize watermark text from creator name
+  useEffect(() => {
+    if (!watermarkText) setWatermarkText(`Made with ${creatorName}`);
+  }, [creatorName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-select platforms from saved settings and load brand watermark config
   useEffect(() => {
@@ -213,6 +219,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         ? {
             creatorName,
             watermarkMode: watermarkMode,
+            watermarkText: watermarkText || undefined,
             logoBase64: brandWatermark?.logoDataUri
               ? brandWatermark.logoDataUri.replace(/^data:[^;]+;base64,/, "")
               : undefined,
@@ -294,6 +301,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         ? {
             creatorName,
             watermarkMode: watermarkMode,
+            watermarkText: watermarkText || undefined,
             logoBase64: brandWatermark?.logoDataUri
               ? brandWatermark.logoDataUri.replace(/^data:[^;]+;base64,/, "")
               : undefined,
@@ -730,8 +738,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                   {rules.carouselType === "photo_mode" && "Photo Mode carousel"}
                   {rules.carouselType === "pdf_document" && "PDF document carousel"}
                   {rules.carouselType === "vertical_swipe" && "Vertical swipe carousel (up to 10 images)"}
-                  {rules.carouselType === "single_image" && "Single image only"}
-                  {rules.carouselType === "multi_image_grid" && "Multi-image grid (max 4)"}
+                  {rules.carouselType === "multi_image_grid" && "Multi-image grid"}
                 </p>
                 <div className="grid gap-1 sm:grid-cols-2">
                   <div className="space-y-1">
@@ -863,7 +870,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             <p className="text-xs font-medium text-muted-foreground">Watermark Mode</p>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { value: "text" as const, label: "Visible Text", desc: `"Made with ${creatorName}"` },
+                { value: "text" as const, label: "Visible Text", desc: `"${watermarkText.slice(0, 30)}${watermarkText.length > 30 ? "..." : ""}"` },
                 { value: "logo" as const, label: "Brand Logo", desc: brandWatermark?.logoDataUri ? "Your uploaded logo" : "Upload a logo first" },
                 { value: "hidden" as const, label: "Hidden Only", desc: "EXIF metadata, no visible mark" },
                 { value: "logo_and_hidden" as const, label: "Logo + Hidden", desc: "Logo watermark + metadata" },
@@ -892,6 +899,25 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
               ))}
             </div>
           </div>
+
+          {/* Watermark text input (only for text mode) */}
+          {watermarkMode === "text" && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Watermark Text</Label>
+              <div className="relative">
+                <Input
+                  value={watermarkText}
+                  onChange={(e) => setWatermarkText(e.target.value.slice(0, 50))}
+                  maxLength={50}
+                  className="h-8 text-xs pr-12"
+                  placeholder="Your watermark text"
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground tabular-nums">
+                  {watermarkText.length}/50
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Inline logo upload when logo mode selected but no logo */}
           {(watermarkMode === "logo" || watermarkMode === "logo_and_hidden") && !brandWatermark?.logoDataUri && (
@@ -1153,7 +1179,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                   onClick={handleDownloadVideo}
                 >
                   <Download className="h-5 w-5" />
-                  Download Video Reel
+                  Download Phonographic Reel
                 </Button>
               </CardContent>
             </Card>
@@ -1170,12 +1196,12 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
               {videoUrl ? (
                 <>
                   <RotateCcw className="h-5 w-5" />
-                  Regenerate Video
+                  Regenerate Phonographic Reel
                 </>
               ) : (
                 <>
                   <Play className="h-5 w-5" />
-                  Generate Video Reel
+                  {project.audioClip?.objectUrl ? "Generate Phonographic Reel" : "Generate Video Reel"}
                 </>
               )}
             </Button>
@@ -1204,34 +1230,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                 <Download className="h-5 w-5" />
               )}
               {exportMode === "nanocast" && project.audioClip?.objectUrl
-                ? "Download Export Package"
-                : "Download Carousel"}
+                ? "Download Phonographic Reel Package"
+                : "Download Image Carousel"}
             </>
           )}
-        </Button>
-      )}
-
-      {/* Copy caption to clipboard — useful for manual posting */}
-      {project.caption && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-2 text-xs"
-          onClick={async () => {
-            let text = project.caption ?? "";
-            if (includeAttribution && project.audioClip?.attribution) {
-              text += `\n\n🎵 ${project.audioClip.attribution.attributionText}`;
-            }
-            try {
-              await navigator.clipboard.writeText(text);
-              toast.success("Caption copied to clipboard");
-            } catch {
-              toast.error("Could not copy to clipboard");
-            }
-          }}
-        >
-          <ClipboardCopy className="h-3.5 w-3.5" />
-          Copy Caption to Clipboard
         </Button>
       )}
 
