@@ -282,7 +282,7 @@ export default function GuidePage() {
             <strong>Artist</strong> &ndash; Your creator or brand name.
           </li>
           <li>
-            <strong>Copyright</strong> &ndash; &ldquo;Made with KodaPost by
+            <strong>Copyright</strong> &ndash; &ldquo;Made with
             [your name]&rdquo;.
           </li>
           <li>
@@ -302,7 +302,7 @@ export default function GuidePage() {
         <ul>
           <li>
             <strong>Visible Text</strong> &ndash; A small semi-transparent line
-            reading &ldquo;Made with KodaPost by [your name]&rdquo; in the
+            reading &ldquo;Made with [your name]&rdquo; in the
             bottom-right corner.
           </li>
           <li>

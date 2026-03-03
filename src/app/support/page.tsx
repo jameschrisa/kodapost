@@ -158,7 +158,7 @@ const FAQ_DATA: FAQItem[] = [
     category: "Publishing",
     question: "What metadata is embedded in exported images?",
     answer:
-      "When Creator Provenance is enabled, each exported image includes EXIF metadata: Artist (your creator or brand name), Copyright (\"Made with KodaPost by [your name]\"), Software (\"KodaPost\"), and an ImageDescription field containing a SHA-256 fingerprint of the image and the creation timestamp. This metadata is embedded regardless of which watermark mode you choose, including Hidden Only. You can verify it with any EXIF viewer.",
+      "When Creator Provenance is enabled, each exported image includes EXIF metadata: Artist (your creator or brand name), Copyright (\"Made with [your name]\"), Software (\"KodaPost\"), and an ImageDescription field containing a SHA-256 fingerprint of the image and the creation timestamp. This metadata is embedded regardless of which watermark mode you choose, including Hidden Only. You can verify it with any EXIF viewer.",
   },
   // Brand & Watermarks
   {
@@ -171,7 +171,7 @@ const FAQ_DATA: FAQItem[] = [
     category: "Brand & Watermarks",
     question: "What are the four watermark modes?",
     answer:
-      "Visible Text places a small \"Made with KodaPost by [your name]\" line in the bottom-right corner. Brand Logo composites your uploaded PNG logo at a configurable position, opacity, and scale. Hidden Only embeds EXIF metadata with no visible mark. Logo + Hidden combines the logo watermark with metadata embedding.",
+      "Visible Text places a small \"Made with [your name]\" line in the bottom-right corner. Brand Logo composites your uploaded PNG logo at a configurable position, opacity, and scale. Hidden Only embeds EXIF metadata with no visible mark. Logo + Hidden combines the logo watermark with metadata embedding.",
   },
   {
     category: "Brand & Watermarks",

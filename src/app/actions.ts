@@ -716,7 +716,7 @@ export async function compositeSlideImages(
             const safeArea = PLATFORM_SAFE_AREA[platform];
 
             if (mode === "text") {
-              const watermarkText = `Made with KodaPost by ${provenanceConfig.creatorName}`;
+              const watermarkText = `Made with ${provenanceConfig.creatorName}`;
               const watermarkSvg = generateWatermarkSVG(
                 watermarkText,
                 spec.width,

@@ -597,10 +597,20 @@ export default function QuickStartPage() {
                   {/* Mockup card */}
                   <motion.div
                     variants={staggerChild}
-                    className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden"
+                    className="relative"
                   >
-                    <MockWindowChrome label={step.title} step={step.step} />
-                    <Mockup />
+                    {/* Background glow for contrast against dark page */}
+                    <div className={`absolute -inset-4 rounded-3xl blur-2xl opacity-30 ${
+                      step.accent === "purple" ? "bg-purple-500/20" :
+                      step.accent === "amber" ? "bg-amber-500/20" :
+                      step.accent === "blue" ? "bg-blue-500/20" :
+                      step.accent === "emerald" ? "bg-emerald-500/20" :
+                      "bg-orange-500/20"
+                    }`} />
+                    <div className="relative rounded-2xl border border-white/[0.08] bg-zinc-900/80 backdrop-blur-sm overflow-hidden ring-1 ring-white/[0.04]">
+                      <MockWindowChrome label={step.title} step={step.step} />
+                      <Mockup />
+                    </div>
                   </motion.div>
                 </div>
               </motion.div>

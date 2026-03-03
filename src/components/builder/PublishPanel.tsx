@@ -851,7 +851,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             <p className="text-xs font-medium text-muted-foreground">Watermark Mode</p>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { value: "text" as const, label: "Visible Text", desc: `"Made with KodaPost by ${creatorName}"` },
+                { value: "text" as const, label: "Visible Text", desc: `"Made with ${creatorName}"` },
                 { value: "logo" as const, label: "Brand Logo", desc: brandWatermark?.logoDataUri ? "Your uploaded logo" : "Upload a logo first" },
                 { value: "hidden" as const, label: "Hidden Only", desc: "EXIF metadata, no visible mark" },
                 { value: "logo_and_hidden" as const, label: "Logo + Hidden", desc: "Logo watermark + metadata" },

@@ -17,7 +17,7 @@ export function generateProvenanceExif(
   createdAt: string
 ): Record<string, string> {
   return {
-    Copyright: `Made with KodaPost by ${creatorName}`,
+    Copyright: `Made with ${creatorName}`,
     Artist: creatorName,
     Software: "KodaPost",
     ImageDescription: `Created ${createdAt} | SHA-256: ${imageHash}`,
