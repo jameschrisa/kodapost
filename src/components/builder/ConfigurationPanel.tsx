@@ -398,6 +398,14 @@ export function ConfigurationPanel({
               </p>
             </div>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2 text-xs text-muted-foreground"
+            onClick={() => setIsGenerating(false)}
+          >
+            Cancel
+          </Button>
         </div>
       </div>
     );

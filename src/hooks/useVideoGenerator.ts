@@ -64,6 +64,8 @@ export interface UseVideoGeneratorReturn {
 // Singleton FFmpeg instance (lazy-loaded, cached across renders)
 // ---------------------------------------------------------------------------
 
+const FFMPEG_LOAD_TIMEOUT = 60_000; // 60 seconds
+
 let ffmpegInstance: import("@ffmpeg/ffmpeg").FFmpeg | null = null;
 let ffmpegLoading: Promise<import("@ffmpeg/ffmpeg").FFmpeg> | null = null;
 
@@ -74,24 +76,41 @@ async function getFFmpeg(
   if (ffmpegLoading) return ffmpegLoading;
 
   ffmpegLoading = (async () => {
-    const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-    const { toBlobURL } = await import("@ffmpeg/util");
-    const ffmpeg = new FFmpeg();
+    try {
+      const loadPromise = (async () => {
+        const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+        const { toBlobURL } = await import("@ffmpeg/util");
+        const ffmpeg = new FFmpeg();
 
-    // Load the single-threaded core from unpkg CDN (cached by browser)
-    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-      wasmURL: await toBlobURL(
-        `${baseURL}/ffmpeg-core.wasm`,
-        "application/wasm"
-      ),
-    });
+        // Load the single-threaded core from unpkg CDN (cached by browser)
+        const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+          wasmURL: await toBlobURL(
+            `${baseURL}/ffmpeg-core.wasm`,
+            "application/wasm"
+          ),
+        });
 
-    ffmpegInstance = ffmpeg;
-    ffmpegLoading = null;
-    onProgress?.(100);
-    return ffmpeg;
+        ffmpegInstance = ffmpeg;
+        onProgress?.(100);
+        return ffmpeg;
+      })();
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Video engine took too long to load. Please check your connection and try again.")),
+          FFMPEG_LOAD_TIMEOUT
+        )
+      );
+
+      return await Promise.race([loadPromise, timeoutPromise]);
+    } catch (err) {
+      ffmpegLoading = null;
+      throw err;
+    } finally {
+      ffmpegLoading = null;
+    }
   })();
 
   return ffmpegLoading;

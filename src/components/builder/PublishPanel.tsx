@@ -127,6 +127,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [watermarkMode, setWatermarkMode] = useState<BrandWatermarkSettings["mode"]>("text");
   const [brandWatermark, setBrandWatermark] = useState<BrandWatermarkSettings | null>(null);
   const [watermarkText, setWatermarkText] = useState("");
+  const [connectionError, setConnectionError] = useState(false);
+  const cancelExportRef = useRef(false);
+  const exportTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Video generator hook
@@ -167,20 +170,22 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   }, []);
 
   // Fetch OAuth connection status
-  useEffect(() => {
-    async function fetchStatus() {
-      try {
-        const res = await fetch("/api/auth/status");
-        if (res.ok) {
-          const data = await res.json();
-          setConnections(data.connections || []);
-        }
-      } catch {
-        // Silently fail — post buttons just won't show
+  const fetchConnectionStatus = useCallback(async () => {
+    try {
+      setConnectionError(false);
+      const res = await fetch("/api/auth/status");
+      if (res.ok) {
+        const data = await res.json();
+        setConnections(data.connections || []);
       }
+    } catch {
+      setConnectionError(true);
     }
-    fetchStatus();
   }, []);
+
+  useEffect(() => {
+    fetchConnectionStatus();
+  }, [fetchConnectionStatus]);
 
   const readySlides = project.slides.filter((s) => s.status === "ready");
 
@@ -291,7 +296,17 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
   async function handleExport() {
     if (selected.size === 0 || isExporting) return;
+    cancelExportRef.current = false;
     setIsExporting(true);
+
+    // Safety timeout: auto-cancel after 2 minutes
+    exportTimeoutRef.current = setTimeout(() => {
+      cancelExportRef.current = true;
+      setIsExporting(false);
+      toast.error("Export timed out", {
+        description: "The export took too long. Please try again with fewer slides or platforms.",
+      });
+    }, 120_000);
 
     try {
       const platforms = Array.from(selected);
@@ -311,6 +326,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           } as const
         : undefined;
       const result = await compositeSlideImages(readySlides, platforms, project.filterConfig, provenanceConfig);
+
+      // Check if user cancelled while compositing
+      if (cancelExportRef.current) return;
 
       if (!result.success) {
         toast.error("Export failed", { description: result.error });
@@ -466,6 +484,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         error instanceof Error ? error.message : "Export failed. Please try again.";
       toast.error("Export failed", { description: message });
     } finally {
+      if (exportTimeoutRef.current) {
+        clearTimeout(exportTimeoutRef.current);
+        exportTimeoutRef.current = null;
+      }
       setIsExporting(false);
     }
   }
@@ -477,28 +499,34 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     // Use the first selected platform for video dimensions
     const platform = Array.from(selected)[0];
 
-    const blob = await generateVideo({
-      project,
-      platform,
-      settings: project.videoSettings ?? DEFAULT_VIDEO_SETTINGS,
-    });
-
-    if (blob) {
-      // Revoke previous URL if any
-      if (videoUrl) URL.revokeObjectURL(videoUrl);
-      const url = URL.createObjectURL(blob);
-      setVideoBlob(blob);
-      setVideoUrl(url);
-      setIsComplete(true);
-
-      toast.success("Video reel generated!", {
-        description: `${readySlides.length}-slide reel ready for ${
-          PLATFORMS.find((p) => p.key === platform)?.label ?? platform
-        }.`,
+    try {
+      const blob = await generateVideo({
+        project,
+        platform,
+        settings: project.videoSettings ?? DEFAULT_VIDEO_SETTINGS,
       });
-    } else {
+
+      if (blob) {
+        // Revoke previous URL if any
+        if (videoUrl) URL.revokeObjectURL(videoUrl);
+        const url = URL.createObjectURL(blob);
+        setVideoBlob(blob);
+        setVideoUrl(url);
+        setIsComplete(true);
+
+        toast.success("Video reel generated!", {
+          description: `${readySlides.length}-slide reel ready for ${
+            PLATFORMS.find((p) => p.key === platform)?.label ?? platform
+          }.`,
+        });
+      } else {
+        toast.error("Video generation failed", {
+          description: "Please try again or use image export.",
+        });
+      }
+    } catch (error) {
       toast.error("Video generation failed", {
-        description: "Please try again or use image export.",
+        description: error instanceof Error ? error.message : "Please try again or use image export.",
       });
     }
   }, [selected, isVideoGenerating, generateVideo, project, readySlides.length, videoUrl]);
@@ -535,6 +563,18 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             .map((p) => PLATFORMS.find((pl) => pl.key === p)?.label)
             .join(", ")}
         </p>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs text-muted-foreground"
+          onClick={() => {
+            cancelExportRef.current = true;
+            setIsExporting(false);
+            toast("Export cancelled");
+          }}
+        >
+          Cancel Export
+        </Button>
       </div>
     );
   }
@@ -1235,6 +1275,16 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             </>
           )}
         </Button>
+      )}
+
+      {/* Connection error warning */}
+      {connectionError && connectedPlatforms.length === 0 && (
+        <p className="text-xs text-amber-500">
+          Could not check platform connections.{" "}
+          <button type="button" onClick={fetchConnectionStatus} className="underline hover:text-amber-400">
+            Retry
+          </button>
+        </p>
       )}
 
       {/* Post Directly section — only shown when platforms are connected */}

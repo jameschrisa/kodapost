@@ -28,39 +28,47 @@ export async function GET() {
     return NextResponse.json({ invoices: [] });
   }
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  const metadata = user.publicMetadata as {
-    stripeCustomerId?: string;
-    subscriptionId?: string;
-    subscriptionStatus?: string;
-    currentPeriodEnd?: string;
-  };
+  try {
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const metadata = user.publicMetadata as {
+      stripeCustomerId?: string;
+      subscriptionId?: string;
+      subscriptionStatus?: string;
+      currentPeriodEnd?: string;
+    };
 
-  if (!metadata.stripeCustomerId) {
-    return NextResponse.json({ invoices: [] });
+    if (!metadata.stripeCustomerId) {
+      return NextResponse.json({ invoices: [] });
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
+
+    // Fetch last 5 invoices
+    const invoiceList = await stripe.invoices.list({
+      customer: metadata.stripeCustomerId,
+      limit: 5,
+    });
+
+    const invoices = invoiceList.data.map((inv) => ({
+      id: inv.id,
+      date: new Date(inv.created * 1000).toISOString(),
+      amount: inv.amount_paid,
+      currency: inv.currency,
+      status: inv.status ?? "unknown",
+      pdf: inv.invoice_pdf ?? null,
+    }));
+
+    return NextResponse.json({
+      subscriptionStatus: metadata.subscriptionStatus,
+      currentPeriodEnd: metadata.currentPeriodEnd,
+      invoices,
+    });
+  } catch (error) {
+    console.error("[billing/status] error:", error);
+    return NextResponse.json(
+      { error: "Failed to load billing information. Please try again." },
+      { status: 500 }
+    );
   }
-
-  const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
-
-  // Fetch last 5 invoices
-  const invoiceList = await stripe.invoices.list({
-    customer: metadata.stripeCustomerId,
-    limit: 5,
-  });
-
-  const invoices = invoiceList.data.map((inv) => ({
-    id: inv.id,
-    date: new Date(inv.created * 1000).toISOString(),
-    amount: inv.amount_paid,
-    currency: inv.currency,
-    status: inv.status ?? "unknown",
-    pdf: inv.invoice_pdf ?? null,
-  }));
-
-  return NextResponse.json({
-    subscriptionStatus: metadata.subscriptionStatus,
-    currentPeriodEnd: metadata.currentPeriodEnd,
-    invoices,
-  });
 }

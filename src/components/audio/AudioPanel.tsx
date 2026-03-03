@@ -220,9 +220,11 @@ export function AudioPanel({
     async (track: MusicTrack) => {
       if (isLoadingTrack) return; // Prevent duplicate requests
       setIsLoadingTrack(true);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
       try {
         // Fetch the audio stream to create a local blob for the player
-        const res = await fetch(track.streamUrl);
+        const res = await fetch(track.streamUrl, { signal: controller.signal });
         if (!res.ok) throw new Error("Failed to load track");
         const blob = await res.blob();
         const objectUrl = URL.createObjectURL(blob);
@@ -262,11 +264,18 @@ export function AudioPanel({
             goldilocks ? ` Auto-trimmed to ${formatTime(goldilocks.end)}s for ${slideCount} slides.` : ""
           }`,
         });
-      } catch {
-        toast.error("Failed to load track", {
-          description: "Please try a different track.",
-        });
+      } catch (err) {
+        if (controller.signal.aborted) {
+          toast.error("Track loading timed out", {
+            description: "Your connection may be slow. Try again or pick a different track.",
+          });
+        } else {
+          toast.error("Failed to load track", {
+            description: err instanceof Error ? err.message : "Please try a different track.",
+          });
+        }
       } finally {
+        clearTimeout(timeout);
         setIsLoadingTrack(false);
       }
     },

@@ -30,24 +30,32 @@ export async function POST() {
     );
   }
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
-  const metadata = user.publicMetadata as { stripeCustomerId?: string };
+  try {
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const metadata = user.publicMetadata as { stripeCustomerId?: string };
 
-  if (!metadata.stripeCustomerId) {
+    if (!metadata.stripeCustomerId) {
+      return NextResponse.json(
+        { error: "No billing account found. Please subscribe to a plan first." },
+        { status: 404 }
+      );
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: metadata.stripeCustomerId,
+      return_url: `${appUrl}/billing`,
+    });
+
+    return NextResponse.json({ url: portalSession.url });
+  } catch (error) {
+    console.error("[billing/portal] error:", error);
     return NextResponse.json(
-      { error: "No billing account found. Please subscribe to a plan first." },
-      { status: 404 }
+      { error: "Failed to open billing portal. Please try again." },
+      { status: 500 }
     );
   }
-
-  const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
-
-  const portalSession = await stripe.billingPortal.sessions.create({
-    customer: metadata.stripeCustomerId,
-    return_url: `${appUrl}/billing`,
-  });
-
-  return NextResponse.json({ url: portalSession.url });
 }
