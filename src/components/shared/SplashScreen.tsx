@@ -900,7 +900,7 @@ export function SplashScreen({
           {/* ================================================================
               FEATURES — Bento Grid
               ================================================================ */}
-          <section id="features" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.88), rgba(9,9,11,0.92), rgba(24,24,27,0.88)), url('/image_other/blurcolor.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+          <section id="features" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.65), rgba(9,9,11,0.70), rgba(24,24,27,0.65)), url('/image_other/blurcolor.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
             {/* Subtle gradient accent */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] -z-0" />
 
