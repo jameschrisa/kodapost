@@ -56,7 +56,7 @@ const staggerChild = {
 const PAIN_POINTS = [
   { icon: Layers, label: "Resizing for every platform", color: "from-violet-500 to-purple-600" },
   { icon: MessageCircle, label: "Writing captions that land", color: "from-amber-500 to-orange-600" },
-  { icon: Palette, label: "Formatting reels & layouts", color: "from-fuchsia-500 to-pink-600" },
+  { icon: Palette, label: "Formatting carousels & layouts", color: "from-fuchsia-500 to-pink-600" },
   { icon: Shield, label: "Keeping your brand voice consistent", color: "from-emerald-500 to-teal-600" },
 ];
 
@@ -73,7 +73,7 @@ const VALUES = [
     icon: Zap,
     title: "Busywork Is the Enemy of Craft",
     description:
-      "Formatting a phonographic reel shouldn't take longer than the idea behind it. We automate the mechanics so you can invest in the meaning.",
+      "Formatting a phonographic carousel shouldn't take longer than the idea behind it. We automate the mechanics so you can invest in the meaning.",
     style: "glass" as const,
     span: "",
   },
@@ -236,7 +236,7 @@ export default function AboutPage() {
             </h2>
             <p className="mt-4 text-white/45 leading-relaxed">
               The hard part is everything that comes after: resizing for every
-              platform, writing captions that land, formatting reels,
+              platform, writing captions that land, formatting carousels,
               keeping your brand voice consistent across channels. The busywork
               eats the hours you should spend making things.
             </p>
@@ -492,7 +492,7 @@ export default function AboutPage() {
                   Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. KodaPost is the assistant, never the artist.
                 </p>
                 <p>
-                  We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&rsquo;s why every KodaPost phonographic reel is a collaboration between you and your AI-powered creative assistant. Creator Provenance goes further, embedding your authorship directly into every export so your work stays yours.
+                  We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&rsquo;s why every KodaPost phonographic carousel is a collaboration between you and your AI-powered creative assistant. Creator Provenance goes further, embedding your authorship directly into every export so your work stays yours.
                 </p>
               </div>
             </motion.div>

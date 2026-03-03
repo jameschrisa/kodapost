@@ -45,7 +45,7 @@ export default function IntroductionPage() {
 
         <h2 id="human-first-creativity">Human-First Creativity</h2>
         <p>
-          At KodaPost, <strong>you are the creator.</strong> Every phonographic reel
+          At KodaPost, <strong>you are the creator.</strong> Every phonographic carousel
           starts with your photos, your words, and your vision. We never
           generate images from scratch, fabricate stories, or replace your voice
           with synthetic text. The creative decisions, what to
@@ -129,7 +129,7 @@ export default function IntroductionPage() {
           to share.
         </p>
         <p>
-          <a href="/">Start creating your first phonographic reel &rarr;</a>
+          <a href="/">Start creating your first phonographic carousel &rarr;</a>
         </p>
       </article>
       <TableOfContents sections={sections} />

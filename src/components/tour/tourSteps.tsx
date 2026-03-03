@@ -74,7 +74,7 @@ export const appTourSteps: Tour[] = [
         content:
           "This is the Stylize card. Pick a vintage camera emulation (Kodak Gold, Fuji Velvia, Polaroid, and more), apply retro photo filters, and use Fine-Tune to dial in grain, vignette, bloom, and saturation. Your filter settings apply to every slide.",
         selector: TOUR_CAMERA,
-        side: "right",
+        side: "bottom",
         pointerPadding: 14,
         pointerRadius: 12,
       },

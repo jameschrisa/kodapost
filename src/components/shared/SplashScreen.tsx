@@ -109,21 +109,21 @@ const FEATURES = [
   {
     icon: Music,
     title: "Audio Clips",
-    description: "Browse and add royalty-free music clips with allowable licensing for use in your phonographic reels.",
+    description: "Browse and add royalty-free music clips with allowable licensing for use in your phonographic carousels.",
     span: "",
     style: "card" as const,
   },
   {
     icon: Radio,
     title: "Nano-Casts",
-    description: "Turn your phonographic reel into a short-form audio story. Record a voiceover or let KodaPost generate one for you.",
+    description: "Turn your phonographic carousel into a short-form audio story. Record a voiceover or let KodaPost generate one for you.",
     span: "",
     style: "dark" as const,
   },
   {
     icon: LayoutTemplate,
     title: "Customizable Templates",
-    description: "Start from beautifully designed reel templates or build your own. Every element is fully customizable.",
+    description: "Start from beautifully designed carousel templates or build your own. Every element is fully customizable.",
     span: "md:col-span-2",
     style: "card" as const,
   },
@@ -137,7 +137,7 @@ const FEATURES = [
   {
     icon: Calendar,
     title: "Content Calendar",
-    description: "Schedule your phonographic reels, track your creative output, and stay consistent without the burnout.",
+    description: "Schedule your phonographic carousels, track your creative output, and stay consistent without the burnout.",
     span: "",
     style: "dark" as const,
   },
@@ -210,10 +210,10 @@ const SEGMENTS = [
     description: "You already have the eye. KodaPost handles the production work so you can post consistently without burning out.",
     image: "/assets/landing/creators.png",
     points: [
-      { title: "Batch-Create a Week of Posts", text: "Upload once, get a full week of styled, captioned phonographic reels ready to publish." },
+      { title: "Batch-Create a Week of Posts", text: "Upload once, get a full week of styled, captioned phonographic carousels ready to publish." },
       { title: "AI Captions in Your Voice", text: "KodaPost writes scroll-stopping copy you edit and approve. Your voice, amplified." },
       { title: "Publish Everywhere at Once", text: "Export optimized for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X." },
-      { title: "Content Calendar", text: "Schedule reels, track output, and stay consistent without the burnout." },
+      { title: "Content Calendar", text: "Schedule carousels, track output, and stay consistent without the burnout." },
     ],
   },
   {
@@ -227,7 +227,7 @@ const SEGMENTS = [
     description: "KodaPost gives your small team the same polished, consistent content output as brands ten times your size, without losing the authenticity that makes you different.",
     image: "/assets/landing/brands.png",
     points: [
-      { title: "Locked-In Brand Aesthetic", text: "Set your camera profile, film filter, fonts, and colors once. Every reel matches automatically." },
+      { title: "Locked-In Brand Aesthetic", text: "Set your camera profile, film filter, fonts, and colors once. Every carousel matches automatically." },
       { title: "Multi-Platform, No Reformatting", text: "One export covers every social channel with the right dimensions and aspect ratio." },
       { title: "Creator Provenance", text: "Every export embeds your brand, timestamp, and a unique fingerprint. Prove you made it first." },
       { title: "Stand Out from Canva Templates", text: "Vintage camera profiles and retro filters give your brand a visual differentiator competitors can't copy." },
@@ -241,12 +241,12 @@ const SEGMENTS = [
     tagText: "text-fuchsia-400",
     activeBg: "bg-fuchsia-500",
     headline: "Your art deserves better than stock templates.",
-    description: "KodaPost's vintage aesthetic and human-in-the-loop approach means your portfolio reels feel as intentional as the work itself.",
+    description: "KodaPost's vintage aesthetic and human-in-the-loop approach means your portfolio carousels feel as intentional as the work itself.",
     image: "/assets/landing/artists.png",
     points: [
       { title: "10 Vintage Camera Profiles", text: "Sony Mavica, Polaroid 600, Kodak EasyShare and more. Your work, through an iconic lens." },
       { title: "Retro Film Filters", text: "1977, Earlybird, Lo-Fi, Nashville. Every pixel processed to feel like it came from film." },
-      { title: "Nano-Casts", text: "Turn your reel into a short-form audio story. Add a voiceover to walk viewers through your process." },
+      { title: "Nano-Casts", text: "Turn your carousel into a short-form audio story. Add a voiceover to walk viewers through your process." },
       { title: "You Stay in Control", text: "Every caption, crop, and filter is a suggestion you accept, modify, or reject. The assistant, never the artist." },
     ],
   },
@@ -758,7 +758,7 @@ export function SplashScreen({
                 transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
                 className="max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
               >
-                KodaPost is the phonographic reel maker for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping phonographic reels with vintage camera styles, retro film filters, and AI-powered captions.
+                KodaPost is the phonographic carousel creator for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping phonographic carousels with vintage camera styles, retro film filters, and AI-powered captions.
               </motion.p>
 
               {/* Quote — hidden on mobile to keep CTAs above fold */}
@@ -802,11 +802,13 @@ export function SplashScreen({
                       </Button>
                       <Button
                         size="lg"
-                        onClick={handleTour}
+                        asChild
                         className="w-full sm:w-auto rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                       >
-                        <Play className="h-4 w-4 mr-2" />
-                        Take a Tour
+                        <Link href="/quickstart">
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Quick Start Guide
+                        </Link>
                       </Button>
                     </>
                   ) : (
@@ -820,11 +822,13 @@ export function SplashScreen({
                       </Button>
                       <Button
                         size="lg"
-                        onClick={handleTour}
+                        asChild
                         className="w-full sm:w-auto rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                       >
-                        <Play className="h-4 w-4 mr-2" />
-                        Take a Tour
+                        <Link href="/quickstart">
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Quick Start Guide
+                        </Link>
                       </Button>
                     </>
                   )}
@@ -868,7 +872,7 @@ export function SplashScreen({
                   How KodaPost Works
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  Create Phonographic Reels{" "}
+                  Create Phonographic Carousels{" "}
                   <span className="text-white/40">in 3 Steps</span>
                 </h2>
               </motion.div>
@@ -906,6 +910,24 @@ export function SplashScreen({
                   </motion.div>
                 ))}
               </motion.div>
+
+              {/* Walkthrough CTA */}
+              <motion.div
+                variants={sectionReveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                className="mt-12 text-center"
+              >
+                <Button
+                  size="lg"
+                  onClick={handleTour}
+                  className="rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  KodaPost Walkthrough
+                </Button>
+              </motion.div>
             </div>
           </section>
 
@@ -929,7 +951,7 @@ export function SplashScreen({
                   KodaPost Features
                 </h2>
                 <p className="mt-3 text-white/40 max-w-lg">
-                  Everything indie creators need to turn everyday photos into scroll-stopping phonographic reels, no design experience required.
+                  Everything indie creators need to turn everyday photos into scroll-stopping phonographic carousels, no design experience required.
                 </p>
               </motion.div>
 
@@ -1037,7 +1059,7 @@ export function SplashScreen({
                     </div>
                     <h3 className="text-2xl font-bold mb-3">Digital Fingerprint on Every Export</h3>
                     <p className="text-white/80 text-sm leading-relaxed">
-                      Every phonographic reel you export from KodaPost embeds your name, a timestamp, and a unique image fingerprint directly into the file metadata. If someone copies your work, you have the receipt.
+                      Every phonographic carousel you export from KodaPost embeds your name, a timestamp, and a unique image fingerprint directly into the file metadata. If someone copies your work, you have the receipt.
                     </p>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -1060,7 +1082,7 @@ export function SplashScreen({
                     {
                       icon: ScanEye,
                       title: "Visible Watermarking",
-                      text: "Add a branded watermark to your reels so attribution is instant and visible. Your audience knows it's yours before they even read the caption.",
+                      text: "Add a branded watermark to your carousels so attribution is instant and visible. Your audience knows it's yours before they even read the caption.",
                       color: "blue",
                     },
                     {
@@ -1129,12 +1151,12 @@ export function SplashScreen({
                     Mobile Content Creation
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
-                    Create Phonographic Reels from Your Phone with{" "}
+                    Create Phonographic Carousels from Your Phone with{" "}
                     <span className="text-white/40">KodaPost + Telegram</span>
                   </h2>
                   <div className="space-y-4 text-white/45 text-sm leading-relaxed">
                     <p>
-                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a reel draft, all while you&apos;re still on the go.
+                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft, all while you&apos;re still on the go.
                     </p>
                     <p>
                       No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
@@ -1146,7 +1168,7 @@ export function SplashScreen({
                     {[
                       { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
                       { icon: IconBrandTelegram, label: "Send to KodaPost via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
-                      { icon: Sparkles, label: "KodaPost drafts your reel", color: "text-purple-400", bg: "bg-purple-500/10" },
+                      { icon: Sparkles, label: "KodaPost drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
                       { icon: Camera, label: "Review and publish on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-4">
@@ -1212,7 +1234,7 @@ export function SplashScreen({
 
                 <div className="relative z-10">
                   <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
-                    Start Creating Phonographic Reels with KodaPost, Free
+                    Start Creating Phonographic Carousels with KodaPost, Free
                   </h2>
                   <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto">
                     Join indie creators using KodaPost to build authentic, nostalgic social media content that stands out from the algorithm.
@@ -1257,7 +1279,7 @@ export function SplashScreen({
                     <span className="text-base font-bold tracking-tight text-orange-500">KodaPost</span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
-                    KodaPost transforms your everyday photos into stunning nostalgic phonographic reels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays. The content creation tool designed for indie brands who value authenticity over algorithms.
+                    KodaPost transforms your everyday photos into stunning nostalgic phonographic carousels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays. The content creation tool designed for indie brands who value authenticity over algorithms.
                   </p>
                 </div>
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useOnborda } from "onborda";
 import { Portal } from "@radix-ui/react-portal";
@@ -10,20 +9,6 @@ import { useTourContext } from "./TourContext";
 
 // Step 0 always renders as a centered portal modal.
 const MODAL_STEP_INDICES = [0];
-
-// Mobile breakpoint (matches Tailwind sm)
-const MOBILE_BREAKPOINT = 640;
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-  return isMobile;
-}
 
 /** Shared card content — used inside both the Portal version and the inline version */
 function CardContent({
@@ -151,7 +136,6 @@ export function TourCard({
 }: CardComponentProps) {
   const { closeOnborda } = useOnborda();
   const tourCtx = useTourContext();
-  const isMobile = useIsMobile();
   const isModalStep = MODAL_STEP_INDICES.includes(currentStep);
 
   const handleNext = async () => {
@@ -164,50 +148,38 @@ export function TourCard({
     prevStep();
   };
 
-  // Portal-centered: used for modal steps (step 0) and ALL steps on mobile
-  // to prevent Onborda's relative positioning from pushing the card off-screen.
-  if (isModalStep || isMobile) {
-    // Modal steps (Welcome) center vertically on all screens.
-    // Non-modal mobile steps anchor to the bottom so the spotlight stays visible.
-    const centerVertically = isModalStep;
-    return (
-      <Portal>
-        {/* Dim overlay (only for explicit modal steps) */}
-        {isModalStep && (
-          <div className="fixed inset-0 z-[900] bg-black/65 pointer-events-none" />
-        )}
-        {/* Card container */}
-        <div
-          className={cn(
-            "fixed inset-x-0 z-[910] flex justify-center pointer-events-none px-4",
-            centerVertically
-              ? "inset-0 items-center"
-              : "bottom-0 items-end pb-4"
-          )}
-        >
-          <CardContent
-            step={step}
-            currentStep={currentStep}
-            totalSteps={totalSteps}
-            onNext={handleNext}
-            onPrev={handlePrev}
-            closeOnborda={closeOnborda}
-          />
-        </div>
-      </Portal>
-    );
-  }
+  // All steps render via Portal for consistent centered positioning.
+  // This prevents Onborda's inline positioning from pushing the card
+  // off-screen or to the side on both mobile and desktop.
+  // Card placement: side="top" → card above spotlight, otherwise below.
+  const placeAtTop = !isModalStep && step.side === "top";
 
-  // Non-modal steps on desktop: render inline inside Onborda's card container
-  // (Onborda positions it relative to the highlighted element)
   return (
-    <CardContent
-      step={step}
-      currentStep={currentStep}
-      totalSteps={totalSteps}
-      onNext={handleNext}
-      onPrev={handlePrev}
-      closeOnborda={closeOnborda}
-    />
+    <Portal>
+      {/* Dim overlay (only for explicit modal steps) */}
+      {isModalStep && (
+        <div className="fixed inset-0 z-[900] bg-black/65 pointer-events-none" />
+      )}
+      {/* Card container — always centered horizontally */}
+      <div
+        className={cn(
+          "fixed inset-x-0 z-[910] flex justify-center pointer-events-none px-4",
+          isModalStep
+            ? "inset-0 items-center"
+            : placeAtTop
+              ? "top-0 items-start pt-4"
+              : "bottom-0 items-end pb-4"
+        )}
+      >
+        <CardContent
+          step={step}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={handleNext}
+          onPrev={handlePrev}
+          closeOnborda={closeOnborda}
+        />
+      </div>
+    </Portal>
   );
 }
