@@ -10,7 +10,10 @@ const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
  * Resolves the current user ID from Clerk auth or falls back to "dev" in dev mode.
  */
 async function getUserId(): Promise<string | null> {
-  if (!isClerkEnabled) return "dev";
+  if (!isClerkEnabled) {
+    console.warn("[Posts API] Clerk disabled - using shared 'dev' user fallback. No tenant isolation.");
+    return "dev";
+  }
   const user = await currentUser();
   return user?.id ?? null;
 }

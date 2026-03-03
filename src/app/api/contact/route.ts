@@ -11,6 +11,19 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
 /* ------------------------------------------------------------------ */
+/*  HTML sanitization for email templates                              */
+/* ------------------------------------------------------------------ */
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/* ------------------------------------------------------------------ */
 /*  Simple rate limiting (in-memory, per-IP, resets on cold start)     */
 /* ------------------------------------------------------------------ */
 
@@ -82,6 +95,10 @@ export async function POST(request: NextRequest) {
   /*  AI Suggestion                                                    */
   /* ---------------------------------------------------------------- */
   if (action === "suggest") {
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json({ suggestion: null }, { status: 429 });
+    }
+
     const { query } = body;
     if (!query || query.length < 5) {
       return NextResponse.json({ suggestion: null });
@@ -156,11 +173,10 @@ ${FAQ_CONTEXT}`,
 
     // Send email via Resend
     if (!RESEND_API_KEY) {
-      // Fallback: log to console when Resend is not configured
+      // Fallback: log to console when Resend is not configured (PII redacted)
       console.log("=== CONTACT FORM SUBMISSION (Resend not configured) ===");
-      console.log(`From: ${name} <${email}>`);
       console.log(`Subject: ${subject}`);
-      console.log(`Message: ${message}`);
+      console.log(`Message length: ${message.length} chars`);
       console.log("=====================================================");
 
       return NextResponse.json({
@@ -198,18 +214,18 @@ ${FAQ_CONTEXT}`,
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px 0; color: #71717a; font-size: 14px; width: 80px;">From</td>
-                  <td style="padding: 8px 0; color: #18181b; font-size: 14px;">${name} &lt;${email}&gt;</td>
+                  <td style="padding: 8px 0; color: #18181b; font-size: 14px;">${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #71717a; font-size: 14px;">Subject</td>
-                  <td style="padding: 8px 0; color: #18181b; font-size: 14px;">${subject}</td>
+                  <td style="padding: 8px 0; color: #18181b; font-size: 14px;">${escapeHtml(subject)}</td>
                 </tr>
               </table>
               <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 16px 0;" />
-              <div style="color: #18181b; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${message}</div>
+              <div style="color: #18181b; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${escapeHtml(message)}</div>
               <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 16px 0;" />
               <p style="color: #a1a1aa; font-size: 12px; margin: 0;">
-                Reply directly to this email to respond to ${name}.
+                Reply directly to this email to respond to ${escapeHtml(name)}.
               </p>
             </div>
           </div>

@@ -98,13 +98,18 @@ export async function POST(request: NextRequest) {
   const result = await response.json();
 
   if (result.ok) {
+    // Log the secret server-side if it was auto-generated (not from env)
+    if (!process.env.TELEGRAM_WEBHOOK_SECRET) {
+      console.log(`[Telegram Setup] Auto-generated webhook secret. Add TELEGRAM_WEBHOOK_SECRET to your env.`);
+    }
     return NextResponse.json({
       status: "Webhook registered successfully!",
       webhookUrl,
       telegramResponse: result,
       next_steps: [
-        `Add TELEGRAM_WEBHOOK_SECRET=${webhookSecret} to your .env.local`,
-        "Message your bot on Telegram — send /start",
+        "Webhook secret has been configured automatically.",
+        "If TELEGRAM_WEBHOOK_SECRET is not set in your env, check server logs.",
+        "Message your bot on Telegram - send /start",
         "Send photos to test the carousel creation flow",
       ],
     });

@@ -24,6 +24,59 @@ import {
   generateWatermarkSVG,
   applyLogoWatermark,
 } from "@/lib/provenance";
+import { auth } from "@clerk/nextjs/server";
+
+const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+// -----------------------------------------------------------------------------
+// Auth + Security Helpers
+// -----------------------------------------------------------------------------
+
+const actionRateMap = new Map<string, { count: number; resetAt: number }>();
+const ACTION_RATE_WINDOW = 60 * 1000; // 1 minute
+const ACTION_RATE_MAX = 30; // 30 actions per minute per user
+
+function checkActionRateLimit(userId: string): void {
+  const now = Date.now();
+  const entry = actionRateMap.get(userId);
+  if (!entry || now > entry.resetAt) {
+    actionRateMap.set(userId, { count: 1, resetAt: now + ACTION_RATE_WINDOW });
+    return;
+  }
+  if (entry.count >= ACTION_RATE_MAX) {
+    throw new Error("Rate limit exceeded. Please wait before trying again.");
+  }
+  entry.count++;
+}
+
+async function requireAuth(): Promise<string> {
+  if (!isClerkEnabled) return "dev";
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  checkActionRateLimit(userId);
+  return userId;
+}
+
+function isAllowedImageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) return false;
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0" || hostname === "::1") return false;
+    if (hostname.startsWith("10.")) return false;
+    if (hostname.startsWith("192.168.")) return false;
+    if (hostname.startsWith("172.")) {
+      const second = parseInt(hostname.split(".")[1], 10);
+      if (second >= 16 && second <= 31) return false;
+    }
+    if (hostname === "169.254.169.254") return false;
+    if (hostname === "metadata.google.internal") return false;
+    if (hostname.endsWith(".internal") || hostname.endsWith(".local") || hostname.endsWith(".localhost")) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -77,6 +130,7 @@ type ActionResult<T> =
 export async function analyzeImage(
   imageUrl: string
 ): Promise<ActionResult<ImageAnalysis>> {
+  await requireAuth();
   try {
     // Build the image source: use base64 for data URIs, URL for remote images
     const parsed = parseDataUri(imageUrl);
@@ -274,6 +328,7 @@ Respond with ONLY valid JSON in this exact format:
 export async function generateCarousel(
   project: CarouselProject
 ): Promise<ActionResult<CarouselProject>> {
+  await requireAuth();
   console.log("[generateCarousel] Starting generation for", project.slideCount, "slides");
   try {
     // 1. Calculate image source strategy
@@ -435,6 +490,7 @@ export async function regenerateSlide(
   project: CarouselProject,
   slideIndex: number
 ): Promise<ActionResult<CarouselSlide>> {
+  await requireAuth();
   try {
     const slide = project.slides[slideIndex];
     if (!slide) {
@@ -515,6 +571,7 @@ export async function generateCaption(
   captionStyle?: "storyteller" | "minimalist" | "data_driven" | "witty" | "educational" | "poetic" | "custom",
   customCaptionStyle?: string
 ): Promise<ActionResult<string>> {
+  await requireAuth();
   try {
     const hashtagsLine = keywords.length > 0
       ? `\nHashtags to include: ${keywords.map((k) => `#${k.replace(/\s+/g, "")}`).join(" ")}`
@@ -612,6 +669,7 @@ export async function compositeSlideImages(
     logoScale?: number;
   }
 ): Promise<ActionResult<CompositeResult[]>> {
+  await requireAuth();
   try {
     const results: CompositeResult[] = [];
     const warnings: string[] = [];
@@ -637,6 +695,10 @@ export async function compositeSlideImages(
             if (parsed) {
               imageBuffer = Buffer.from(parsed.data, "base64");
             } else if (slide.imageUrl.startsWith("http")) {
+              if (!isAllowedImageUrl(slide.imageUrl)) {
+                console.warn(`[Export] Blocked disallowed URL: ${slide.imageUrl}`);
+                continue;
+              }
               const resp = await fetch(slide.imageUrl);
               const arrayBuf = await resp.arrayBuffer();
               imageBuffer = Buffer.from(arrayBuf);
@@ -831,6 +893,7 @@ export async function compositeSlideImages(
 export async function transcribeAudio(
   rawTranscription: string
 ): Promise<ActionResult<string>> {
+  await requireAuth();
   try {
     if (!rawTranscription || rawTranscription.trim().length < 3) {
       return {

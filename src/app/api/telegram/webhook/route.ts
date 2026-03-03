@@ -20,16 +20,18 @@ export const maxDuration = 30;
  * Grammy processes the update and dispatches to the appropriate handler.
  */
 export async function POST(request: NextRequest) {
-  // Verify the webhook secret token if configured
+  // Verify the webhook secret token (required)
   const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (secretToken) {
-    const headerToken = request.headers.get("x-telegram-bot-api-secret-token");
-    if (headerToken !== secretToken) {
-      return NextResponse.json(
-        { error: "Invalid webhook secret" },
-        { status: 403 }
-      );
-    }
+  if (!secretToken) {
+    console.error("[Telegram] TELEGRAM_WEBHOOK_SECRET not configured. Rejecting webhook.");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+  }
+  const headerToken = request.headers.get("x-telegram-bot-api-secret-token");
+  if (headerToken !== secretToken) {
+    return NextResponse.json(
+      { error: "Invalid webhook secret" },
+      { status: 403 }
+    );
   }
 
   try {

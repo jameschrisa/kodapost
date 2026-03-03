@@ -31,14 +31,14 @@ export async function GET() {
   try {
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
-    const metadata = user.publicMetadata as {
-      stripeCustomerId?: string;
-      subscriptionId?: string;
-      subscriptionStatus?: string;
-      currentPeriodEnd?: string;
-    };
+    // Read Stripe fields from privateMetadata, fall back to publicMetadata for pre-migration users
+    const privMeta = user.privateMetadata as { stripeCustomerId?: string; subscriptionStatus?: string; currentPeriodEnd?: string };
+    const pubMeta = user.publicMetadata as { stripeCustomerId?: string; subscriptionStatus?: string; currentPeriodEnd?: string };
+    const stripeCustomerId = privMeta.stripeCustomerId || pubMeta.stripeCustomerId;
+    const subscriptionStatus = privMeta.subscriptionStatus || pubMeta.subscriptionStatus;
+    const currentPeriodEnd = privMeta.currentPeriodEnd || pubMeta.currentPeriodEnd;
 
-    if (!metadata.stripeCustomerId) {
+    if (!stripeCustomerId) {
       return NextResponse.json({ invoices: [] });
     }
 
@@ -46,7 +46,7 @@ export async function GET() {
 
     // Fetch last 5 invoices
     const invoiceList = await stripe.invoices.list({
-      customer: metadata.stripeCustomerId,
+      customer: stripeCustomerId,
       limit: 5,
     });
 
@@ -60,8 +60,8 @@ export async function GET() {
     }));
 
     return NextResponse.json({
-      subscriptionStatus: metadata.subscriptionStatus,
-      currentPeriodEnd: metadata.currentPeriodEnd,
+      subscriptionStatus,
+      currentPeriodEnd,
       invoices,
     });
   } catch (error) {

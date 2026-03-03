@@ -26,6 +26,16 @@ export async function PATCH(
     trialStartDate?: string;
   };
 
+  // Validate role and plan against allowed values
+  const VALID_ROLES = ["admin", "user"];
+  const VALID_PLANS = ["trial", "standard", "pro"];
+  if (role !== undefined && !VALID_ROLES.includes(role)) {
+    return NextResponse.json({ error: "Invalid role. Must be 'admin' or 'user'." }, { status: 400 });
+  }
+  if (plan !== undefined && !VALID_PLANS.includes(plan)) {
+    return NextResponse.json({ error: "Invalid plan. Must be 'trial', 'standard', or 'pro'." }, { status: 400 });
+  }
+
   // Build the metadata update — only include provided fields
   const publicMetadata: Record<string, unknown> = {};
   if (plan !== undefined) publicMetadata.plan = plan;

@@ -37,12 +37,21 @@ function mapPriceToTier(priceId: string): PlanTier {
 async function findClerkUserByStripeCustomer(customerId: string): Promise<string | null> {
   try {
     const client = await clerkClient();
-    // Search users with this stripeCustomerId in publicMetadata
-    const { data: users } = await client.users.getUserList({ limit: 500 });
-    const match = users.find(
-      (u) => (u.publicMetadata as { stripeCustomerId?: string }).stripeCustomerId === customerId
-    );
-    return match?.id ?? null;
+    let offset = 0;
+    const limit = 500;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data: users, totalCount } = await client.users.getUserList({ limit, offset });
+      const match = users.find((u) => {
+        const priv = u.privateMetadata as { stripeCustomerId?: string };
+        const pub = u.publicMetadata as { stripeCustomerId?: string };
+        return priv.stripeCustomerId === customerId || pub.stripeCustomerId === customerId;
+      });
+      if (match) return match.id;
+      offset += limit;
+      if (offset >= totalCount) break;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -60,11 +69,28 @@ async function updateClerkPlan(
 ) {
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
+
+  // Public: only plan tier (needed by client-side useUserRole hook)
+  const publicUpdates: Record<string, unknown> = { ...user.publicMetadata };
+  if (updates.plan !== undefined) publicUpdates.plan = updates.plan;
+  // Clean Stripe fields from publicMetadata (migration from old schema)
+  delete publicUpdates.stripeCustomerId;
+  delete publicUpdates.subscriptionId;
+  delete publicUpdates.subscriptionStatus;
+  delete publicUpdates.currentPeriodEnd;
+
+  // Private: Stripe-sensitive fields (not readable by client)
+  const privateUpdates: Record<string, unknown> = {
+    ...(user.privateMetadata as Record<string, unknown>),
+  };
+  if (updates.stripeCustomerId !== undefined) privateUpdates.stripeCustomerId = updates.stripeCustomerId;
+  if (updates.subscriptionId !== undefined) privateUpdates.subscriptionId = updates.subscriptionId;
+  if (updates.subscriptionStatus !== undefined) privateUpdates.subscriptionStatus = updates.subscriptionStatus;
+  if (updates.currentPeriodEnd !== undefined) privateUpdates.currentPeriodEnd = updates.currentPeriodEnd;
+
   await client.users.updateUserMetadata(userId, {
-    publicMetadata: {
-      ...user.publicMetadata,
-      ...updates,
-    },
+    publicMetadata: publicUpdates,
+    privateMetadata: privateUpdates,
   });
 }
 

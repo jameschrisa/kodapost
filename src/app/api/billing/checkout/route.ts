@@ -42,15 +42,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "priceId is required" }, { status: 400 });
   }
 
+  // Validate priceId against known price IDs
+  const allowedPriceIds = [
+    process.env.STRIPE_CREATOR_PRICE_ID,
+    process.env.STRIPE_MONSTER_PRICE_ID,
+  ].filter(Boolean);
+  if (allowedPriceIds.length > 0 && !allowedPriceIds.includes(priceId)) {
+    return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
+  }
+
   try {
     const stripe = new Stripe(stripeKey, { apiVersion: "2026-02-25.clover" });
 
     // Get or create Stripe customer for this Clerk user
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
-    const metadata = user.publicMetadata as { stripeCustomerId?: string; plan?: string };
+    const privMeta = user.privateMetadata as { stripeCustomerId?: string };
+    const pubMeta = user.publicMetadata as { stripeCustomerId?: string };
 
-    let customerId = metadata.stripeCustomerId;
+    let customerId = privMeta.stripeCustomerId || pubMeta.stripeCustomerId;
 
     if (!customerId) {
       const primaryEmail = user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId);
@@ -61,9 +71,12 @@ export async function POST(request: NextRequest) {
       });
       customerId = customer.id;
 
-      // Persist stripeCustomerId to Clerk metadata
+      // Persist stripeCustomerId to privateMetadata (not client-readable)
       await client.users.updateUserMetadata(userId, {
-        publicMetadata: { ...user.publicMetadata, stripeCustomerId: customerId },
+        privateMetadata: {
+          ...(user.privateMetadata as Record<string, unknown>),
+          stripeCustomerId: customerId,
+        },
       });
     }
 

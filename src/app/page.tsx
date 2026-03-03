@@ -188,12 +188,14 @@ function OAuthRedirectHandler({
       });
       onOpenSettings();
     } else if (error) {
-      toast.error(`${displayName} connection failed`, {
-        description:
-          error === "access_denied"
-            ? "You declined the authorization request."
-            : `Error: ${error}`,
-      });
+      const errorMessages: Record<string, string> = {
+        access_denied: "You declined the authorization request.",
+        invalid_state: "The authorization session expired. Please try again.",
+        token_exchange_failed: "Could not complete the connection. Please try again.",
+        server_error: "An internal error occurred. Please try again.",
+      };
+      const description = errorMessages[error] ?? "An unexpected error occurred. Please try again.";
+      toast.error(`${displayName} connection failed`, { description });
     }
 
     window.history.replaceState({}, "", window.location.pathname);

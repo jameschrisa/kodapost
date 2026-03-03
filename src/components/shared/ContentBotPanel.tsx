@@ -44,6 +44,9 @@ export function ContentBotPanel({ open, onOpenChange }: ContentBotPanelProps) {
 
         {/* Telegram Web iframe */}
         <div className="flex-1 min-h-0">
+          {/* NOTE: allow-same-origin + allow-scripts together weaken sandbox protection.
+              Required for Telegram Web App to function (cookie/storage access).
+              Risk is mitigated by CSP frame-src restricting the iframe to web.telegram.org. */}
           <iframe
             src="https://web.telegram.org/k/#@kodacontentbot"
             className="h-full w-full border-0"

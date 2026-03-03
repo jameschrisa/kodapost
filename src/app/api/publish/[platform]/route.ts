@@ -81,6 +81,17 @@ export async function POST(
 ) {
   const { platform } = params;
 
+  // 0. Require authentication when Clerk is enabled
+  if (isClerkEnabled) {
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+  }
+
   // 1. Validate platform
   if (!VALID_PLATFORMS.includes(platform as typeof VALID_PLATFORMS[number])) {
     return NextResponse.json(

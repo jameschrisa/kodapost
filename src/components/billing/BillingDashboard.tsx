@@ -108,6 +108,9 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
         throw new Error(err.error ?? "Failed to start checkout");
       }
       const { url } = await res.json();
+      if (!url || !url.startsWith("https://checkout.stripe.com")) {
+        throw new Error("Invalid checkout URL received");
+      }
       window.location.href = url;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not start checkout");
@@ -124,6 +127,9 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
         throw new Error(err.error ?? "Failed to open portal");
       }
       const { url } = await res.json();
+      if (!url || !url.startsWith("https://billing.stripe.com")) {
+        throw new Error("Invalid billing portal URL received");
+      }
       window.location.href = url;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not open billing portal");

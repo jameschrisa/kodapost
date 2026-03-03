@@ -7,7 +7,10 @@ import { posts } from "@/lib/db/schema";
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 async function getUserId(): Promise<string | null> {
-  if (!isClerkEnabled) return "dev";
+  if (!isClerkEnabled) {
+    console.warn("[Posts API] Clerk disabled - using shared 'dev' user fallback. No tenant isolation.");
+    return "dev";
+  }
   const user = await currentUser();
   return user?.id ?? null;
 }

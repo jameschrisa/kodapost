@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getTokenCookie, isTokenExpired, setTokenCookie } from "@/lib/token-storage";
 import { refreshToken, tokenResponseToData } from "@/lib/oauth";
 import type { OAuthPlatform } from "@/lib/constants";
+import { auth } from "@clerk/nextjs/server";
+
+const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const VALID_PLATFORMS = [
   "instagram",
@@ -25,6 +28,13 @@ export async function GET(
   _request: Request,
   { params }: { params: { platform: string } }
 ) {
+  if (isClerkEnabled) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   const { platform } = params;
 
   if (

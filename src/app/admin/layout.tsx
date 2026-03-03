@@ -2,12 +2,24 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { PageTransition } from "@/components/shared/PageTransition";
+import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
-export default function AdminLayout({
+const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Server-side admin guard
+  if (isClerkEnabled) {
+    const user = await currentUser();
+    if (!user) redirect("/sign-in");
+    const metadata = user.publicMetadata as { role?: string };
+    if (metadata.role !== "admin") redirect("/");
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">

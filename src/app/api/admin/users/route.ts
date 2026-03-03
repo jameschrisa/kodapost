@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const limit = Number(request.nextUrl.searchParams.get("limit") || "20");
+  const limit = Math.min(Number(request.nextUrl.searchParams.get("limit") || "20"), 100);
   const offset = Number(request.nextUrl.searchParams.get("offset") || "0");
 
   try {

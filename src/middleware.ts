@@ -42,12 +42,20 @@ const isPublicRoute = createRouteMatcher([
   "/api/publish(.*)",
   "/api/telegram(.*)",
   "/api/preview(.*)",
+  "/api/billing/webhook",
   "/api/webhooks(.*)",
   "/api/contact",
   "/api/health(.*)",
 ]);
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+if (!isClerkEnabled) {
+  console.warn(
+    "[Security] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set. " +
+    "All authentication is DISABLED. This should only occur in development."
+  );
+}
 
 const clerkHandler = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
