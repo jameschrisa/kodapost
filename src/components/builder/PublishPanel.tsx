@@ -228,6 +228,12 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         return;
       }
 
+      if (result.warnings?.length) {
+        toast.warning("Export completed with warnings", {
+          description: result.warnings.join("; "),
+        });
+      }
+
       // 2. Extract base64 images for this platform
       const slideImages = result.data
         .filter((item) => item.platform === platform)
@@ -301,6 +307,12 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       if (!result.success) {
         toast.error("Export failed", { description: result.error });
         return;
+      }
+
+      if (result.warnings?.length) {
+        toast.warning("Export completed with warnings", {
+          description: result.warnings.join("; "),
+        });
       }
 
       // 2. Package into a ZIP with folders per platform

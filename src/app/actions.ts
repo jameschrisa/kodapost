@@ -62,7 +62,7 @@ function getAnthropicClient(): Anthropic {
 // -----------------------------------------------------------------------------
 
 type ActionResult<T> =
-  | { success: true; data: T }
+  | { success: true; data: T; warnings?: string[] }
   | { success: false; error: string };
 
 // -----------------------------------------------------------------------------
@@ -613,6 +613,7 @@ export async function compositeSlideImages(
 ): Promise<ActionResult<CompositeResult[]>> {
   try {
     const results: CompositeResult[] = [];
+    const warnings: string[] = [];
 
     for (const platform of platforms) {
       const specKey = PLATFORM_SPEC_MAP[platform];
@@ -731,19 +732,24 @@ export async function compositeSlideImages(
               (mode === "logo" || mode === "logo_and_hidden") &&
               provenanceConfig.logoBase64
             ) {
-              const logoBuffer = Buffer.from(provenanceConfig.logoBase64, "base64");
-              pipeline = await applyLogoWatermark(
-                pipeline,
-                logoBuffer,
-                spec.width,
-                spec.height,
-                {
-                  position: provenanceConfig.logoPosition ?? "southeast",
-                  opacity: provenanceConfig.logoOpacity ?? 0.3,
-                  scale: provenanceConfig.logoScale ?? 0.15,
-                  safeArea,
-                }
-              );
+              try {
+                const logoBuffer = Buffer.from(provenanceConfig.logoBase64, "base64");
+                pipeline = await applyLogoWatermark(
+                  pipeline,
+                  logoBuffer,
+                  spec.width,
+                  spec.height,
+                  {
+                    position: provenanceConfig.logoPosition ?? "southeast",
+                    opacity: provenanceConfig.logoOpacity ?? 0.3,
+                    scale: provenanceConfig.logoScale ?? 0.15,
+                    safeArea,
+                  }
+                );
+              } catch (logoErr) {
+                console.warn(`[Export] Logo watermark failed for slide ${i + 1}:`, logoErr);
+                warnings.push(`Logo watermark could not be applied to slide ${i + 1}`);
+              }
             }
             // "hidden" mode: no visible watermark (EXIF metadata still embedded below)
           }
@@ -768,10 +774,15 @@ export async function compositeSlideImages(
             );
             // Re-encode with EXIF metadata (JPEG only — PNG doesn't support EXIF via Sharp)
             if (format === "jpeg") {
-              outputBuffer = await sharp(outputBuffer)
-                .withMetadata({ exif: { IFD0: exifData } })
-                .jpeg({ quality: spec.quality })
-                .toBuffer();
+              try {
+                outputBuffer = await sharp(outputBuffer)
+                  .withMetadata({ exif: { IFD0: exifData } })
+                  .jpeg({ quality: spec.quality })
+                  .toBuffer();
+              } catch (exifErr) {
+                console.warn(`[Export] EXIF embedding failed for slide ${i + 1}:`, exifErr);
+                warnings.push(`Provenance metadata could not be embedded in slide ${i + 1}`);
+              }
             }
           }
 
@@ -787,7 +798,7 @@ export async function compositeSlideImages(
             `[Export] Failed to composite slide ${i} for ${platform}:`,
             err
           );
-          // Skip failed slides but continue with the rest
+          warnings.push(`Slide ${i + 1} could not be processed for ${platform}`);
         }
       }
     }
@@ -799,7 +810,7 @@ export async function compositeSlideImages(
       };
     }
 
-    return { success: true, data: results };
+    return { success: true, data: results, warnings: warnings.length > 0 ? warnings : undefined };
   } catch (error) {
     return { success: false, error: handleAPIError(error) };
   }

@@ -249,111 +249,116 @@ export default function Home() {
   // Includes legacy migration to multi-draft system
   useEffect(() => {
     async function hydrate() {
-      // Step 1: Run legacy migration if needed
-      if (!isMigrationComplete()) {
-        const migratedId = await migrateLegacyProject(userPlan.tier);
-        if (migratedId) {
-          setActiveDraftId(migratedId);
-        }
-      }
-
-      // Step 2: Prune expired drafts
-      const pruned = await pruneExpiredDrafts();
-      if (pruned.length > 0) {
-        toast.info(`${pruned.length} expired draft${pruned.length > 1 ? "s" : ""} removed`);
-      }
-
-      // Step 3: List all drafts
-      const drafts = await listDraftMetadata();
-      setDraftList(drafts);
-
-      // Step 4: Determine onboarding state
-      if (drafts.length === 0 && !hasSeenGuide()) {
-        setShowOnboarding(true);
-      }
-
-      // Step 5: Load most recent draft or fall back to legacy localStorage
-      if (drafts.length > 0) {
-        const mostRecent = drafts[0]; // sorted by updatedAt desc
-        const loaded = await loadDraft(mostRecent.id);
-        if (loaded) {
-          // Restore images from per-draft IDB
-          const imageMap = await loadDraftImages(mostRecent.id);
-          if (imageMap.size > 0) {
-            loaded.project.uploadedImages = loaded.project.uploadedImages.map((img) => ({
-              ...img,
-              url: imageMap.get(img.id) || img.url,
-              thumbnailUrl: imageMap.get(`${img.id}:thumb`) || img.thumbnailUrl,
-            }));
-            loaded.project.slides = loaded.project.slides.map((slide) => {
-              if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
-                const restored = loaded.project.uploadedImages.find(
-                  (img) => img.id === slide.metadata!.referenceImage
-                );
-                if (restored?.url) {
-                  return { ...slide, imageUrl: restored.url, thumbnailUrl: restored.thumbnailUrl };
-                }
-              }
-              return slide;
-            });
-          }
-
-          setProject(loaded.project);
-          setActiveDraftId(mostRecent.id);
-
-          const hasImages = loaded.project.uploadedImages.some((img) => img.url.length > 0);
-          const stepToUse = (hasImages || loaded.project.slides.length > 0)
-            ? loaded.step as Step
-            : "upload";
-          setStep(stepToUse);
-
-          // Skip splash for returning users (only when auth is not required;
-          // when Clerk is enabled, the auth effect below handles dismissal).
-          if (loaded.name && stepToUse !== "upload" && !isClerkEnabled) {
-            setSplashDismissed(true);
+      try {
+        // Step 1: Run legacy migration if needed
+        if (!isMigrationComplete()) {
+          const migratedId = await migrateLegacyProject(userPlan.tier);
+          if (migratedId) {
+            setActiveDraftId(migratedId);
           }
         }
-      } else {
-        // Fall back to legacy localStorage hydration
-        const saved = loadProject();
-        const savedStep = loadStep();
-        const savedName = loadProjectName();
 
-        if (saved) {
-          const imageMap = await loadImagesFromIDB();
-          if (imageMap.size > 0) {
-            saved.uploadedImages = saved.uploadedImages.map((img) => ({
-              ...img,
-              url: imageMap.get(img.id) || img.url,
-            }));
-            saved.slides = saved.slides.map((slide) => {
-              if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
-                const restored = saved.uploadedImages.find(
-                  (img) => img.id === slide.metadata!.referenceImage
-                );
-                if (restored?.url) {
-                  return { ...slide, imageUrl: restored.url };
+        // Step 2: Prune expired drafts
+        const pruned = await pruneExpiredDrafts();
+        if (pruned.length > 0) {
+          toast.info(`${pruned.length} expired draft${pruned.length > 1 ? "s" : ""} removed`);
+        }
+
+        // Step 3: List all drafts
+        const drafts = await listDraftMetadata();
+        setDraftList(drafts);
+
+        // Step 4: Determine onboarding state
+        if (drafts.length === 0 && !hasSeenGuide()) {
+          setShowOnboarding(true);
+        }
+
+        // Step 5: Load most recent draft or fall back to legacy localStorage
+        if (drafts.length > 0) {
+          const mostRecent = drafts[0]; // sorted by updatedAt desc
+          const loaded = await loadDraft(mostRecent.id);
+          if (loaded) {
+            // Restore images from per-draft IDB
+            const imageMap = await loadDraftImages(mostRecent.id);
+            if (imageMap.size > 0) {
+              loaded.project.uploadedImages = loaded.project.uploadedImages.map((img) => ({
+                ...img,
+                url: imageMap.get(img.id) || img.url,
+                thumbnailUrl: imageMap.get(`${img.id}:thumb`) || img.thumbnailUrl,
+              }));
+              loaded.project.slides = loaded.project.slides.map((slide) => {
+                if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
+                  const restored = loaded.project.uploadedImages.find(
+                    (img) => img.id === slide.metadata!.referenceImage
+                  );
+                  if (restored?.url) {
+                    return { ...slide, imageUrl: restored.url, thumbnailUrl: restored.thumbnailUrl };
+                  }
                 }
-              }
-              return slide;
-            });
-          }
+                return slide;
+              });
+            }
 
-          setProject(saved);
+            setProject(loaded.project);
+            setActiveDraftId(mostRecent.id);
 
-          const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
-          if (!hasImages && savedStep !== "upload") {
-            setStep("upload");
-          } else {
-            setStep(savedStep);
-          }
+            const hasImages = loaded.project.uploadedImages.some((img) => img.url.length > 0);
+            const stepToUse = (hasImages || loaded.project.slides.length > 0)
+              ? loaded.step as Step
+              : "upload";
+            setStep(stepToUse);
 
-          if (savedName && savedStep !== "upload" && !isClerkEnabled) {
-            setSplashDismissed(true);
+            // Skip splash for returning users (only when auth is not required;
+            // when Clerk is enabled, the auth effect below handles dismissal).
+            if (loaded.name && stepToUse !== "upload" && !isClerkEnabled) {
+              setSplashDismissed(true);
+            }
           }
         } else {
-          setStep(loadStep());
+          // Fall back to legacy localStorage hydration
+          const saved = loadProject();
+          const savedStep = loadStep();
+          const savedName = loadProjectName();
+
+          if (saved) {
+            const imageMap = await loadImagesFromIDB();
+            if (imageMap.size > 0) {
+              saved.uploadedImages = saved.uploadedImages.map((img) => ({
+                ...img,
+                url: imageMap.get(img.id) || img.url,
+              }));
+              saved.slides = saved.slides.map((slide) => {
+                if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
+                  const restored = saved.uploadedImages.find(
+                    (img) => img.id === slide.metadata!.referenceImage
+                  );
+                  if (restored?.url) {
+                    return { ...slide, imageUrl: restored.url };
+                  }
+                }
+                return slide;
+              });
+            }
+
+            setProject(saved);
+
+            const hasImages = saved.uploadedImages.some((img) => img.url.length > 0);
+            if (!hasImages && savedStep !== "upload") {
+              setStep("upload");
+            } else {
+              setStep(savedStep);
+            }
+
+            if (savedName && savedStep !== "upload" && !isClerkEnabled) {
+              setSplashDismissed(true);
+            }
+          } else {
+            setStep(loadStep());
+          }
         }
+      } catch (err) {
+        console.error("[hydrate] failed:", err);
+        toast.error("Failed to restore your project. Starting fresh.");
       }
 
       setHydrated(true);
@@ -409,7 +414,9 @@ export default function Home() {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
       autoSaveTimerRef.current = setTimeout(() => {
         const name = project.projectName || loadProjectName() || "Untitled Project";
-        saveDraft(activeDraftId, project, step, name).catch(() => {});
+        saveDraft(activeDraftId, project, step, name).catch(() => {
+          toast.warning("Auto-save failed. Your work is safe in memory but may not persist if you close the tab.");
+        });
 
         // Save images to per-draft storage
         const imgs = project.uploadedImages

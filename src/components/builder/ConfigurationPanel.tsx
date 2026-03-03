@@ -307,6 +307,9 @@ export function ConfigurationPanel({
       } else {
         toast.error("Caption generation failed", { description: result.error });
       }
+    } catch (err) {
+      console.error("[caption] generation failed:", err);
+      toast.error("Caption generation failed", { description: "Please try again." });
     } finally {
       setIsGeneratingCaption(false);
     }

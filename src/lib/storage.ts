@@ -104,17 +104,11 @@ export function saveProject(project: CarouselProject): void {
   try {
     localStorage.setItem(PROJECT_KEY, JSON.stringify(stored));
   } catch (error) {
-    // Quota exceeded — try clearing old data and retrying once
     if (
       error instanceof DOMException &&
       error.name === "QuotaExceededError"
     ) {
-      try {
-        clearProject();
-        localStorage.setItem(PROJECT_KEY, JSON.stringify(stored));
-      } catch {
-        console.warn("[KodaPost] localStorage quota exceeded");
-      }
+      console.warn("[KodaPost] localStorage quota exceeded, skipping save");
     }
   }
 }

@@ -165,6 +165,7 @@ export async function saveDraft(
     });
   } catch (err) {
     console.warn("[KodaPost] Failed to save draft:", err);
+    throw err;
   }
 }
 
