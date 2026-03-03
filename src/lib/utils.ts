@@ -61,6 +61,48 @@ export function parseDataUri(dataUri: string): { mediaType: string; data: string
 }
 
 // =============================================================================
+// Thumbnail Generation
+// =============================================================================
+
+/**
+ * Generates a lightweight JPEG thumbnail from a source image URL (blob: or data: URI).
+ * Uses an off-screen canvas to scale down to maxWidth, preserving aspect ratio.
+ * Returns a JPEG data URI (~50-150KB vs 5-10MB originals).
+ */
+export async function generateThumbnail(
+  sourceUrl: string,
+  maxWidth = 1200,
+  quality = 0.75
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth;
+      let h = img.naturalHeight;
+
+      // Skip resize if already smaller than maxWidth
+      if (w > maxWidth) {
+        h = Math.round((h * maxWidth) / w);
+        w = maxWidth;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas 2D context unavailable"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => reject(new Error("Failed to load image for thumbnail"));
+    img.src = sourceUrl;
+  });
+}
+
+// =============================================================================
 // Color Helpers
 // =============================================================================
 

@@ -83,13 +83,8 @@ async function convertHeicFile(file: File): Promise<Blob> {
   }
 
   // Convert data URI back to Blob for createObjectURL preview
-  const byteString = atob(result.dataUri.split(",")[1]);
-  const ab = new ArrayBuffer(byteString.length);
-  const ia = new Uint8Array(ab);
-  for (let i = 0; i < byteString.length; i++) {
-    ia[i] = byteString.charCodeAt(i);
-  }
-  return new Blob([ab], { type: "image/jpeg" });
+  const resp = await fetch(result.dataUri);
+  return resp.blob();
 }
 
 interface LocalImage {
@@ -290,13 +285,22 @@ export function ImageUploader({
       // Convert blob URLs to base64 data URIs so they survive serialization
       // to server actions and can be sent to external APIs.
       // Images that are already base64 (from existing project) skip conversion.
-      const { blobUrlToBase64 } = await import("@/lib/utils");
+      const { blobUrlToBase64, generateThumbnail } = await import("@/lib/utils");
       const uploaded: UploadedImage[] = await Promise.all(
         images.map(async (img) => {
           const isAlreadyBase64 = img.previewUrl.startsWith("data:");
+          const fullUrl = isAlreadyBase64 ? img.previewUrl : await blobUrlToBase64(img.previewUrl);
+          // Generate lightweight thumbnail for preview rendering
+          let thumbnailUrl: string | undefined;
+          try {
+            thumbnailUrl = await generateThumbnail(fullUrl);
+          } catch {
+            // Fall back to full-res if thumbnail generation fails
+          }
           return {
             id: img.id,
-            url: isAlreadyBase64 ? img.previewUrl : await blobUrlToBase64(img.previewUrl),
+            url: fullUrl,
+            thumbnailUrl,
             filename: img.file.name,
             uploadedAt: new Date().toISOString(),
             usedInSlides: [],

@@ -405,7 +405,7 @@ export function CarouselPreview({
                 <div className="relative h-full w-full overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={slide.imageUrl}
+                    src={slide.thumbnailUrl || slide.imageUrl}
                     alt={`Slide ${slide.position + 1}`}
                     className={cn("h-full w-full", imageObjectFit)}
                     style={{ filter: filterStyles.imageFilter }}

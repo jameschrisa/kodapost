@@ -478,7 +478,7 @@ export function StoryboardPreview({
                     <div className="relative h-full w-full">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={slide.imageUrl}
+                        src={slide.thumbnailUrl || slide.imageUrl}
                         alt={`Slide ${slide.position + 1}`}
                         className="h-full w-full object-cover"
                         style={{

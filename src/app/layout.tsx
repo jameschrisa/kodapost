@@ -112,9 +112,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "KodaPost - Create Stunning Carousels",
+  title: "KodaPost - Create Stunning Phonographic Reels",
   description:
-    "Transform your photos into stunning social media carousels",
+    "Transform your photos into stunning phonographic reels and social media carousels",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

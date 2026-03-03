@@ -42,6 +42,8 @@ export interface UploadedImage {
   id: string;
   /** URL to the stored image (blob or remote) */
   url: string;
+  /** Lightweight preview thumbnail data URI (~50-150KB) */
+  thumbnailUrl?: string;
   /** Original filename from upload */
   filename: string;
   /** ISO timestamp of when the image was uploaded */
@@ -200,6 +202,8 @@ export interface CarouselSlide {
   slideType: "hook" | "story" | "closer";
   /** URL of the image displayed on this slide */
   imageUrl?: string;
+  /** Lightweight preview thumbnail data URI (~50-150KB) */
+  thumbnailUrl?: string;
   /** User-customized or preset-applied text overlay */
   textOverlay?: TextOverlay;
   /** State tracking for the text overlay */

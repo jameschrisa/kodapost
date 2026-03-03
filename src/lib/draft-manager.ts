@@ -97,7 +97,7 @@ export async function switchDraft(
             img.url &&
             (img.url.startsWith("data:") || img.url.startsWith("blob:"))
         )
-        .map((img) => ({ id: img.id, url: img.url }));
+        .map((img) => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
       if (imagesToSave.length > 0) {
         await saveDraftImages(currentDraftId, imagesToSave);
       }
@@ -116,6 +116,7 @@ export async function switchDraft(
         (img) => ({
           ...img,
           url: imageMap.get(img.id) || img.url,
+          thumbnailUrl: imageMap.get(`${img.id}:thumb`) || img.thumbnailUrl,
         })
       );
       // Restore slide images
@@ -128,7 +129,7 @@ export async function switchDraft(
             (img) => img.id === slide.metadata!.referenceImage
           );
           if (restored?.url) {
-            return { ...slide, imageUrl: restored.url };
+            return { ...slide, imageUrl: restored.url, thumbnailUrl: restored.thumbnailUrl };
           }
         }
         return slide;

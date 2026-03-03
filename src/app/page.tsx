@@ -6,7 +6,7 @@ import { TourCard } from "@/components/tour/TourCard";
 import { appTourSteps } from "@/components/tour/tourSteps";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Download, Send } from "lucide-react";
+import { ArrowRight, Send } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { useClerkAuth } from "@/hooks/useClerkAuth";
 import { AnimatePresence, motion } from "framer-motion";
@@ -283,6 +283,7 @@ export default function Home() {
             loaded.project.uploadedImages = loaded.project.uploadedImages.map((img) => ({
               ...img,
               url: imageMap.get(img.id) || img.url,
+              thumbnailUrl: imageMap.get(`${img.id}:thumb`) || img.thumbnailUrl,
             }));
             loaded.project.slides = loaded.project.slides.map((slide) => {
               if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
@@ -290,7 +291,7 @@ export default function Home() {
                   (img) => img.id === slide.metadata!.referenceImage
                 );
                 if (restored?.url) {
-                  return { ...slide, imageUrl: restored.url };
+                  return { ...slide, imageUrl: restored.url, thumbnailUrl: restored.thumbnailUrl };
                 }
               }
               return slide;
@@ -408,7 +409,7 @@ export default function Home() {
         // Save images to per-draft storage
         const imgs = project.uploadedImages
           .filter(img => img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:")))
-          .map(img => ({ id: img.id, url: img.url }));
+          .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
         if (imgs.length > 0) {
           saveDraftImages(activeDraftId, imgs).catch(() => {});
         }
@@ -568,6 +569,7 @@ export default function Home() {
         );
         if (uploaded) {
           slide.imageUrl = uploaded.url;
+          slide.thumbnailUrl = uploaded.thumbnailUrl;
         }
       }
     }
@@ -1240,15 +1242,6 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        variant="outline"
-                        onClick={handlePublish}
-                        className="gap-2"
-                        disabled={!project.slides.some(s => s.status === "ready")}
-                      >
-                        <Download className="h-4 w-4" />
-                        Export
-                      </Button>
                       <Button
                         onClick={handlePublish}
                         className="gap-2"

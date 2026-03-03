@@ -108,21 +108,21 @@ const FEATURES = [
   {
     icon: Music,
     title: "Audio Clips",
-    description: "Browse and add royalty-free music clips with allowable licensing for use in your reels and carousels.",
+    description: "Browse and add royalty-free music clips with allowable licensing for use in your phonographic reels.",
     span: "",
     style: "card" as const,
   },
   {
     icon: Radio,
     title: "Nano-Casts",
-    description: "Turn your carousel into a short-form audio story. Record a voiceover or let KodaPost generate one for you.",
+    description: "Turn your phonographic reel into a short-form audio story. Record a voiceover or let KodaPost generate one for you.",
     span: "",
     style: "dark" as const,
   },
   {
     icon: LayoutTemplate,
     title: "Customizable Templates",
-    description: "Start from beautifully designed carousel templates or build your own. Every element is fully customizable.",
+    description: "Start from beautifully designed reel templates or build your own. Every element is fully customizable.",
     span: "md:col-span-2",
     style: "card" as const,
   },
@@ -136,7 +136,7 @@ const FEATURES = [
   {
     icon: Calendar,
     title: "Content Calendar",
-    description: "Schedule your social media carousels, track your creative output, and stay consistent without the burnout.",
+    description: "Schedule your phonographic reels, track your creative output, and stay consistent without the burnout.",
     span: "",
     style: "dark" as const,
   },
@@ -207,11 +207,12 @@ const SEGMENTS = [
     activeBg: "bg-purple-500",
     headline: "Turn your photo library into a content engine.",
     description: "You already have the eye. KodaPost handles the production work so you can post consistently without burning out.",
+    image: "/assets/landing/creators.png",
     points: [
-      { title: "Batch-Create a Week of Posts", text: "Upload once, get a full week of styled, captioned carousels ready to publish." },
+      { title: "Batch-Create a Week of Posts", text: "Upload once, get a full week of styled, captioned phonographic reels ready to publish." },
       { title: "AI Captions in Your Voice", text: "KodaPost writes scroll-stopping copy you edit and approve. Your voice, amplified." },
       { title: "Publish Everywhere at Once", text: "Export optimized for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X." },
-      { title: "Content Calendar", text: "Schedule carousels, track output, and stay consistent without the burnout." },
+      { title: "Content Calendar", text: "Schedule reels, track output, and stay consistent without the burnout." },
     ],
   },
   {
@@ -223,8 +224,9 @@ const SEGMENTS = [
     activeBg: "bg-amber-500",
     headline: "Your brand voice, amplified across every platform.",
     description: "KodaPost gives your small team the same polished, consistent content output as brands ten times your size, without losing the authenticity that makes you different.",
+    image: "/assets/landing/brands.png",
     points: [
-      { title: "Locked-In Brand Aesthetic", text: "Set your camera profile, film filter, fonts, and colors once. Every carousel matches automatically." },
+      { title: "Locked-In Brand Aesthetic", text: "Set your camera profile, film filter, fonts, and colors once. Every reel matches automatically." },
       { title: "Multi-Platform, No Reformatting", text: "One export covers every social channel with the right dimensions and aspect ratio." },
       { title: "Creator Provenance", text: "Every export embeds your brand, timestamp, and a unique fingerprint. Prove you made it first." },
       { title: "Stand Out from Canva Templates", text: "Vintage camera profiles and retro filters give your brand a visual differentiator competitors can't copy." },
@@ -238,11 +240,12 @@ const SEGMENTS = [
     tagText: "text-fuchsia-400",
     activeBg: "bg-fuchsia-500",
     headline: "Your art deserves better than stock templates.",
-    description: "KodaPost's vintage aesthetic and human-in-the-loop approach means your portfolio carousels feel as intentional as the work itself.",
+    description: "KodaPost's vintage aesthetic and human-in-the-loop approach means your portfolio reels feel as intentional as the work itself.",
+    image: "/assets/landing/artists.png",
     points: [
       { title: "10 Vintage Camera Profiles", text: "Sony Mavica, Polaroid 600, Kodak EasyShare and more. Your work, through an iconic lens." },
       { title: "Retro Film Filters", text: "1977, Earlybird, Lo-Fi, Nashville. Every pixel processed to feel like it came from film." },
-      { title: "Nano-Casts", text: "Turn your carousel into a short-form audio story. Add a voiceover to walk viewers through your process." },
+      { title: "Nano-Casts", text: "Turn your reel into a short-form audio story. Add a voiceover to walk viewers through your process." },
       { title: "You Stay in Control", text: "Every caption, crop, and filter is a suggestion you accept, modify, or reject. The assistant, never the artist." },
     ],
   },
@@ -303,7 +306,7 @@ function WhoItsForSection() {
             transition={{ duration: 0.25, ease: easeOutExpo }}
             className="grid md:grid-cols-2 gap-10 items-start"
           >
-            {/* Left — headline + description */}
+            {/* Left — headline + description + image */}
             <div>
               <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${segment.tagBg} ${segment.tagText} text-xs font-bold uppercase tracking-widest mb-4`}>
                 {segment.label}
@@ -314,6 +317,12 @@ function WhoItsForSection() {
               <p className="text-white/45 text-sm leading-relaxed">
                 {segment.description}
               </p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={segment.image}
+                alt={segment.label}
+                className="mt-6 w-full rounded-xl object-cover shadow-lg shadow-black/30"
+              />
             </div>
 
             {/* Right — value points */}
@@ -746,7 +755,7 @@ export function SplashScreen({
                 transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
                 className="max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
               >
-                KodaPost is the social media carousel maker for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping carousels with vintage camera styles, retro film filters, and AI-powered captions.
+                KodaPost is the phonographic reel maker for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping phonographic reels with vintage camera styles, retro film filters, and AI-powered captions.
               </motion.p>
 
               {/* Quote — hidden on mobile to keep CTAs above fold */}
@@ -856,7 +865,7 @@ export function SplashScreen({
                   How KodaPost Works
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  Create Social Media Carousels{" "}
+                  Create Phonographic Reels{" "}
                   <span className="text-white/40">in 3 Steps</span>
                 </h2>
               </motion.div>
@@ -917,7 +926,7 @@ export function SplashScreen({
                   KodaPost Features
                 </h2>
                 <p className="mt-3 text-white/40 max-w-lg">
-                  Everything indie creators need to turn everyday photos into scroll-stopping social media carousels, no design experience required.
+                  Everything indie creators need to turn everyday photos into scroll-stopping phonographic reels, no design experience required.
                 </p>
               </motion.div>
 
@@ -1025,8 +1034,14 @@ export function SplashScreen({
                     </div>
                     <h3 className="text-2xl font-bold mb-3">Digital Fingerprint on Every Export</h3>
                     <p className="text-white/80 text-sm leading-relaxed">
-                      Every carousel you export from KodaPost embeds your name, a timestamp, and a unique image fingerprint directly into the file metadata. If someone copies your work, you have the receipt.
+                      Every phonographic reel you export from KodaPost embeds your name, a timestamp, and a unique image fingerprint directly into the file metadata. If someone copies your work, you have the receipt.
                     </p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/assets/landing/proven.png"
+                      alt="Creator provenance metadata embedded in exported image"
+                      className="mt-6 w-full h-auto rounded-xl"
+                    />
                   </div>
                 </motion.div>
 
@@ -1042,7 +1057,7 @@ export function SplashScreen({
                     {
                       icon: ScanEye,
                       title: "Visible Watermarking",
-                      text: "Add a branded watermark to your carousels so attribution is instant and visible. Your audience knows it's yours before they even read the caption.",
+                      text: "Add a branded watermark to your reels so attribution is instant and visible. Your audience knows it's yours before they even read the caption.",
                       color: "blue",
                     },
                     {
@@ -1094,42 +1109,13 @@ export function SplashScreen({
               >
                 {/* Image placeholder — left side */}
                 <motion.div variants={staggerChild} className="relative order-2 md:order-1 hidden md:block">
-                  <div className="aspect-[4/5] max-w-[320px] mx-auto rounded-[2rem] border border-white/[0.06] bg-gradient-to-b from-zinc-800/50 to-zinc-900/80 overflow-hidden flex flex-col items-center justify-center">
-                    {/* Phone mockup placeholder */}
-                    <div className="flex flex-col items-center gap-4 px-8 text-center">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                        <IconBrandTelegram size={32} className="text-blue-400" />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-3 w-32 rounded-full bg-white/[0.06]" />
-                        <div className="h-3 w-24 rounded-full bg-white/[0.04] mx-auto" />
-                      </div>
-                      <div className="mt-4 space-y-3 w-full">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-purple-500/10 shrink-0" />
-                          <div className="flex-1 space-y-1.5">
-                            <div className="h-2 w-full rounded-full bg-white/[0.06]" />
-                            <div className="h-2 w-3/4 rounded-full bg-white/[0.04]" />
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-amber-500/10 shrink-0" />
-                          <div className="flex-1 space-y-1.5">
-                            <div className="h-2 w-full rounded-full bg-white/[0.06]" />
-                            <div className="h-2 w-2/3 rounded-full bg-white/[0.04]" />
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-green-500/10 shrink-0" />
-                          <div className="flex-1 space-y-1.5">
-                            <div className="h-2 w-full rounded-full bg-white/[0.06]" />
-                            <div className="h-2 w-1/2 rounded-full bg-white/[0.04]" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Replace placeholder text */}
-                    <p className="mt-6 text-[10px] uppercase tracking-widest text-white/15 font-medium">Image placeholder</p>
+                  <div className="max-w-[320px] mx-auto rounded-[2rem] border border-white/[0.06] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/assets/landing/kodamobile.png"
+                      alt="KodaPost mobile experience on Telegram"
+                      className="w-full h-auto"
+                    />
                   </div>
                 </motion.div>
 
@@ -1140,12 +1126,12 @@ export function SplashScreen({
                     Mobile Content Creation
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
-                    Create Carousels from Your Phone with{" "}
+                    Create Phonographic Reels from Your Phone with{" "}
                     <span className="text-white/40">KodaPost + Telegram</span>
                   </h2>
                   <div className="space-y-4 text-white/45 text-sm leading-relaxed">
                     <p>
-                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft, all while you&apos;re still on the go.
+                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a reel draft, all while you&apos;re still on the go.
                     </p>
                     <p>
                       No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
@@ -1157,7 +1143,7 @@ export function SplashScreen({
                     {[
                       { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
                       { icon: IconBrandTelegram, label: "Send to KodaPost via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
-                      { icon: Sparkles, label: "KodaPost drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
+                      { icon: Sparkles, label: "KodaPost drafts your reel", color: "text-purple-400", bg: "bg-purple-500/10" },
                       { icon: Camera, label: "Review and publish on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
                     ].map((step, i) => (
                       <div key={step.label} className="flex items-center gap-4">
@@ -1223,7 +1209,7 @@ export function SplashScreen({
 
                 <div className="relative z-10">
                   <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
-                    Start Creating Social Media Carousels with KodaPost, Free
+                    Start Creating Phonographic Reels with KodaPost, Free
                   </h2>
                   <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto">
                     Join indie creators using KodaPost to build authentic, nostalgic social media content that stands out from the algorithm.
@@ -1268,7 +1254,7 @@ export function SplashScreen({
                     <span className="text-base font-bold tracking-tight text-orange-500">KodaPost</span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
-                    KodaPost transforms your everyday photos into stunning nostalgic social media carousels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays. The content creation tool designed for indie brands who value authenticity over algorithms.
+                    KodaPost transforms your everyday photos into stunning nostalgic phonographic reels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays. The content creation tool designed for indie brands who value authenticity over algorithms.
                   </p>
                 </div>
 

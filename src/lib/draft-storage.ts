@@ -87,6 +87,7 @@ function createStorableProject(project: CarouselProject): CarouselProject {
     uploadedImages: project.uploadedImages.map((img) => ({
       ...img,
       url: img.url.startsWith("data:") || img.url.startsWith("blob:") ? "" : img.url,
+      thumbnailUrl: img.thumbnailUrl?.startsWith("data:") || img.thumbnailUrl?.startsWith("blob:") ? "" : img.thumbnailUrl,
     })),
     slides: project.slides.map((slide) => ({
       ...slide,
@@ -94,6 +95,10 @@ function createStorableProject(project: CarouselProject): CarouselProject {
         slide.imageUrl?.startsWith("data:") || slide.imageUrl?.startsWith("blob:")
           ? ""
           : slide.imageUrl,
+      thumbnailUrl:
+        slide.thumbnailUrl?.startsWith("data:") || slide.thumbnailUrl?.startsWith("blob:")
+          ? ""
+          : slide.thumbnailUrl,
     })),
     audioClip: project.audioClip
       ? { ...project.audioClip, objectUrl: "" }
@@ -280,7 +285,7 @@ export async function getDraftCount(): Promise<number> {
  */
 export async function saveDraftImages(
   draftId: string,
-  images: { id: string; url: string }[]
+  images: { id: string; url: string; thumbnailUrl?: string }[]
 ): Promise<void> {
   try {
     const db = await openDraftDB();
@@ -298,7 +303,7 @@ export async function saveDraftImages(
       store.delete(rec.compoundKey);
     }
 
-    // Store new images
+    // Store new images (full-res + thumbnails)
     for (const img of images) {
       if (img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:"))) {
         store.put({
@@ -306,6 +311,14 @@ export async function saveDraftImages(
           draftId,
           imageId: img.id,
           url: img.url,
+        });
+      }
+      if (img.thumbnailUrl && img.thumbnailUrl.startsWith("data:")) {
+        store.put({
+          compoundKey: `${draftId}:${img.id}:thumb`,
+          draftId,
+          imageId: `${img.id}:thumb`,
+          url: img.thumbnailUrl,
         });
       }
     }
@@ -321,7 +334,7 @@ export async function saveDraftImages(
 
 /**
  * Loads images for a specific draft.
- * Returns a Map of imageId → data URL.
+ * Returns a Map of imageId → data URL (thumbnail entries keyed as "imageId:thumb").
  */
 export async function loadDraftImages(
   draftId: string
