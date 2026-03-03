@@ -561,17 +561,17 @@ export function ConfigurationPanel({
               const selected = project.keywords;
               const conflicts: [string, string, string][] = [
                 ["promotional", "educational", "Promotional + Educational can read like an infomercial"],
-                ["promotional", "poetic", "Promotional + Poetic clash — hard sell vs. contemplative"],
+                ["promotional", "poetic", "Promotional + Poetic clash: hard sell vs. contemplative"],
                 ["controversial", "inspirational", "Controversial + Inspirational pull in opposite directions"],
                 ["controversial", "educational", "Controversial + Educational can come across as preachy"],
-                ["poetic", "controversial", "Poetic + Controversial — reflective tone vs. blunt provocation"],
+                ["poetic", "controversial", "Poetic + Controversial: reflective tone vs. blunt provocation"],
               ];
               const pairings: Record<string, string> = {
-                "storytelling+inspirational": "Great combo — uplifting narrative arc",
-                "educational+observational": "Nice pairing — insightful \"did you know?\" posts",
-                "relatable+storytelling": "Strong match — personal anecdotes that connect",
-                "observational+poetic": "Beautiful combo — contemplative, atmospheric feel",
-                "relatable+controversial": "Bold pairing — personal takes that spark discussion",
+                "storytelling+inspirational": "Great combo: uplifting narrative arc",
+                "educational+observational": "Nice pairing: insightful \"did you know?\" posts",
+                "relatable+storytelling": "Strong match: personal anecdotes that connect",
+                "observational+poetic": "Beautiful combo: contemplative, atmospheric feel",
+                "relatable+controversial": "Bold pairing: personal takes that spark discussion",
               };
               const activeConflict = conflicts.find(
                 ([a, b]) => selected.includes(a) && selected.includes(b)
@@ -662,7 +662,7 @@ export function ConfigurationPanel({
             </span>
             <CardHelpIcon title="Social Caption">
               Your caption is crafted from your story and vibes above. Write your own or
-              use the &ldquo;Create a caption&rdquo; button in the Story card — then refine it as many times as you like.
+              use the &ldquo;Create a caption&rdquo; button in the Story card, then refine it as many times as you like.
             </CardHelpIcon>
           </div>
         </CardHeader>
@@ -688,7 +688,7 @@ export function ConfigurationPanel({
             </p>
             {!captionText.trim() && project.theme.trim() && (
               <p className="text-xs text-purple-400">
-                ✨ Story ready — tap <span className="font-medium">Create a caption</span> above
+                ✨ Story ready. Tap <span className="font-medium">Create a caption</span> above
               </p>
             )}
           </div>

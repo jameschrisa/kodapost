@@ -237,7 +237,7 @@ function PlatformCard({
                           ` as @${connection.platformUsername}`}
                       </span>
                     ) : (
-                      "Not connected — connect to post directly"
+                      "Not connected. Connect to post directly"
                     )}
                   </p>
 

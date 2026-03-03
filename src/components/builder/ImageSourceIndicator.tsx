@@ -29,7 +29,7 @@ function getRatioStatus(percentage: number) {
     };
   }
   return {
-    label: "Most slides will be text-only — upload more photos",
+    label: "Most slides will be text-only. Upload more photos",
     color: "text-orange-500",
     barColor: "bg-orange-500",
     bgColor: "bg-orange-500/10",

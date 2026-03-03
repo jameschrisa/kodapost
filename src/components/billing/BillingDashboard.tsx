@@ -157,7 +157,7 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
             <Shield className="h-6 w-6" />
           </div>
           <div>
-            <p className="font-semibold text-white">Administrator — Universal Access</p>
+            <p className="font-semibold text-white">Administrator - Universal Access</p>
             <p className="text-sm text-zinc-400">
               Admin accounts have unrestricted access to all features and are not subject to plan limits.
             </p>
@@ -269,7 +269,7 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
                           PDF <ExternalLink className="h-3 w-3" />
                         </a>
                       ) : (
-                        <span className="text-zinc-600 text-xs">—</span>
+                        <span className="text-zinc-600 text-xs">-</span>
                       )}
                     </td>
                   </tr>

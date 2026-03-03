@@ -24,7 +24,7 @@ export const appTourSteps: Tour[] = [
         icon: "👋",
         title: "Welcome to KodaPost",
         content:
-          "A quick tour of the workflow — takes about 90 seconds. You'll learn how to create and publish stunning carousels.",
+          "A quick tour of the workflow. Takes about 90 seconds. You'll learn how to create and publish stunning carousels.",
         selector: MODAL,
         side: "bottom",
         pointerPadding: -1,
@@ -36,7 +36,7 @@ export const appTourSteps: Tour[] = [
         icon: "🖼️",
         title: "Upload your photos",
         content:
-          "Drag and drop 3–10 photos here. JPG, PNG, WebP, or HEIC — up to 10 MB each.",
+          "Drag and drop 3–10 photos here. JPG, PNG, WebP, or HEIC, up to 10 MB each.",
         selector: UPLOAD_ZONE,
         side: "top",
         pointerPadding: 12,
@@ -60,7 +60,7 @@ export const appTourSteps: Tour[] = [
         icon: "✨",
         title: "Koda helps write headlines",
         content:
-          'Describe your story and hit "Create Headlines and Captions". Koda writes overlay text for every slide — you can edit any line afterward.',
+          'Describe your story and hit "Create Headlines and Captions". Koda writes overlay text for every slide. You can edit any line afterward.',
         selector: TOUR_STORY,
         side: "top",
         pointerPadding: 12,

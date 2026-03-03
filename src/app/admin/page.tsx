@@ -308,7 +308,7 @@ export default function AdminPage() {
                         <p className="font-medium">
                           {u.firstName || u.lastName
                             ? `${u.firstName || ""} ${u.lastName || ""}`.trim()
-                            : "—"}
+                            : "-"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {u.email || "No email"}
@@ -342,7 +342,7 @@ export default function AdminPage() {
                     <td className="px-4 py-2.5 text-xs text-muted-foreground">
                       {u.trialStartDate
                         ? new Date(u.trialStartDate).toLocaleDateString()
-                        : "—"}
+                        : "-"}
                     </td>
                     <td className="px-4 py-2.5">
                       <div className="flex gap-1.5">

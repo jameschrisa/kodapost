@@ -1002,7 +1002,7 @@ export function SplashScreen({
                   <span className="text-white/40">Prove It.</span>
                 </h2>
                 <p className="mt-4 text-white/40 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-                  Social media is flooded with AI-generated slop and wholesale copies of original work. KodaPost doesn&apos;t just help you create — it helps you prove you created it first.
+                  Social media is flooded with AI-generated slop and wholesale copies of original work. KodaPost doesn&apos;t just help you create. It helps you prove you created it first.
                 </p>
               </motion.div>
 
@@ -1185,7 +1185,7 @@ export function SplashScreen({
                       <div className="flex-1">
                         <h3 className="text-sm font-semibold text-white">Install KodaPost on Your Phone</h3>
                         <p className="mt-1 text-xs text-white/40 leading-relaxed">
-                          Add KodaPost to your home screen for instant, full-screen access — no app store needed.
+                          Add KodaPost to your home screen for instant, full-screen access. No app store needed.
                         </p>
                       </div>
                     </div>

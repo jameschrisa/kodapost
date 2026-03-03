@@ -254,7 +254,7 @@ function WelcomeStep({ onStart }: { onStart: () => void }) {
         </div>
         <DialogTitle className="text-center text-xl">Connect Your Social Accounts</DialogTitle>
         <DialogDescription className="text-center">
-          Link KudoPost to your platforms and publish carousels directly — no manual
+          Link KudoPost to your platforms and publish carousels directly. No manual
           downloads required.
         </DialogDescription>
       </DialogHeader>
@@ -391,7 +391,7 @@ function ConnectStep({
       <DialogHeader>
         <DialogTitle>Connect Your Accounts</DialogTitle>
         <DialogDescription>
-          Click <strong>Connect</strong> — a new tab opens for login. Return here when done,
+          Click <strong>Connect</strong>. A new tab opens for login. Return here when done,
           then hit <strong>Refresh</strong> to confirm the connection.
         </DialogDescription>
       </DialogHeader>

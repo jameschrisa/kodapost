@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Plans and Pricing — KodaPost",
+  title: "Plans and Pricing - KodaPost",
   description: "Choose the right KodaPost plan for your creative workflow.",
 };
 

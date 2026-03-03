@@ -80,7 +80,7 @@ export function ContentSchedule() {
           <p className="text-sm text-muted-foreground">
             {hasAnyPosts
               ? "View your published, scheduled, and draft posts"
-              : "Your content calendar — posts will appear here as you publish"}
+              : "Your content calendar. Posts will appear here as you publish."}
           </p>
         </div>
 

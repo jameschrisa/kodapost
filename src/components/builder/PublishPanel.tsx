@@ -641,16 +641,16 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
           if (!rules.supportsCarousel && readySlides.length > 1) {
             warnings.push(
-              `${platformLabel} supports a single image only — only your first slide will be used.`
+              `${platformLabel} supports a single image only. Only your first slide will be used.`
             );
           } else if (rules.maxCarouselImages < readySlides.length) {
             warnings.push(
-              `${platformLabel} supports max ${rules.maxCarouselImages} images — only the first ${rules.maxCarouselImages} slides will be exported.`
+              `${platformLabel} supports max ${rules.maxCarouselImages} images. Only the first ${rules.maxCarouselImages} slides will be exported.`
             );
           }
           if (platform === "youtube_shorts" && rules.supportsCarousel) {
             warnings.push(
-              "YouTube Shorts: keep text and logos within the centered 4:5 safe zone — the Subscribe button and description cover the top and bottom ~285 px of each frame."
+              "YouTube Shorts: keep text and logos within the centered 4:5 safe zone. The Subscribe button and description cover the top and bottom ~285 px of each frame."
             );
           }
         }
@@ -684,7 +684,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                       {platform === "x" && "X (Twitter)"}
                     </>
                   )}{" "}
-                  — {rules.carouselType === "native_swipe" && "Swipeable carousel"}
+                  · {rules.carouselType === "native_swipe" && "Swipeable carousel"}
                   {rules.carouselType === "photo_mode" && "Photo Mode carousel"}
                   {rules.carouselType === "pdf_document" && "PDF document carousel"}
                   {rules.carouselType === "vertical_swipe" && "Vertical swipe carousel (up to 10 images)"}

@@ -629,7 +629,7 @@ export function StoryboardPreview({
                           ? "text-purple-400 hover:text-purple-300"
                           : "text-muted-foreground hover:text-foreground"
                       )}
-                      title={hasOverride ? `Custom: ${slideDur.toFixed(1)}s — click to edit` : "Click to set custom duration"}
+                      title={hasOverride ? `Custom: ${slideDur.toFixed(1)}s, click to edit` : "Click to set custom duration"}
                     >
                       <Clock className="h-3 w-3" />
                       {slideDur.toFixed(1)}s

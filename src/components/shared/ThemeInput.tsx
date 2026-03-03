@@ -26,7 +26,7 @@ export function ThemeInput({ value, onChange, trailingAction }: ThemeInputProps)
           id="theme-input"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Describe the moment, scene, or feeling you want to share. E.g., 'Early morning coffee at a rooftop café in Manila — golden hour light, city skyline, quiet gratitude.'"
+          placeholder="Describe the moment, scene, or feeling you want to share. E.g., 'Early morning coffee at a rooftop café in Manila. Golden hour light, city skyline, quiet gratitude.'"
           maxLength={MAX_LENGTH}
           rows={3}
           className="resize-none text-sm pr-12 min-h-[6rem] sm:min-h-0"
@@ -40,7 +40,7 @@ export function ThemeInput({ value, onChange, trailingAction }: ThemeInputProps)
       </div>
       <div className="flex items-start justify-between gap-4">
         <p className="text-xs text-muted-foreground">
-          A specific moment or scene works best — think place, mood, and time of day.
+          A specific moment or scene works best. Think place, mood, and time of day.
         </p>
         <span
           className={cn(

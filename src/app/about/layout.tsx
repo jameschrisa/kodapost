@@ -6,7 +6,7 @@ import { PageTransition } from "@/components/shared/PageTransition";
 export const metadata: Metadata = {
   title: "About - KodaPost",
   description:
-    "KodaPost empowers content creators with AI-assisted tools that amplify your voice — never replace it.",
+    "KodaPost empowers content creators with AI-assisted tools that amplify your voice, never replace it.",
 };
 
 const NAV_LINKS = [

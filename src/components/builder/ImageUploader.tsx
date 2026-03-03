@@ -510,8 +510,8 @@ export function ImageUploader({
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {headlineMode === "all" && `Headlines generated on all ${slideCount} slide${slideCount !== 1 ? "s" : ""}`}
-                        {headlineMode === "first_only" && "Title card on slide 1 — photos only after"}
-                        {headlineMode === "none" && "No headline text — images only"}
+                        {headlineMode === "first_only" && "Title card on slide 1, photos only after"}
+                        {headlineMode === "none" && "No headline text, images only"}
                       </p>
 
                       {/* Slide count (carousel only) */}
