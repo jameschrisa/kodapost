@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   active: { label: "Active", className: "bg-green-500/15 text-green-400" },
   trialing: { label: "Trial", className: "bg-blue-500/15 text-blue-400" },
   past_due: { label: "Past Due", className: "bg-red-500/15 text-red-400" },
-  canceled: { label: "Canceled", className: "bg-zinc-700 text-zinc-400" },
+  canceled: { label: "Canceled", className: "bg-muted text-muted-foreground" },
 };
 
 function formatDate(iso: string) {
@@ -150,8 +150,8 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
 
       {/* ── Page header ── */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-white">Plans and Pricing</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <h1 className="text-2xl font-bold text-foreground">Plans and Pricing</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Choose the right plan for your creative workflow.
         </p>
       </div>
@@ -163,8 +163,8 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
             <Shield className="h-6 w-6" />
           </div>
           <div>
-            <p className="font-semibold text-white">Administrator - Universal Access</p>
-            <p className="text-sm text-zinc-400">
+            <p className="font-semibold text-foreground">Administrator - Universal Access</p>
+            <p className="text-sm text-muted-foreground">
               Admin accounts have unrestricted access to all features and are not subject to plan limits.
             </p>
           </div>
@@ -191,11 +191,11 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
 
       {/* ── Current plan summary (non-admin, paid users) ── */}
       {!role.isAdmin && userPlan.isPaid && (
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="rounded-2xl border bg-card p-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-500 mb-1">Your Subscription</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">Your Subscription</p>
             <div className="flex items-center gap-3">
-              <span className="text-xl font-bold text-white">{userPlan.config.displayName}</span>
+              <span className="text-xl font-bold text-foreground">{userPlan.config.displayName}</span>
               {billingStatus?.subscriptionStatus && STATUS_LABELS[billingStatus.subscriptionStatus] && (
                 <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] font-semibold", STATUS_LABELS[billingStatus.subscriptionStatus].className)}>
                   {STATUS_LABELS[billingStatus.subscriptionStatus].label}
@@ -203,15 +203,15 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
               )}
             </div>
             {billingStatus?.currentPeriodEnd && (
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Renews {formatDate(billingStatus.currentPeriodEnd)}
               </p>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {loadingStatus && <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />}
+            {loadingStatus && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             {!loadingStatus && (
-              <Button variant="ghost" size="icon" onClick={fetchStatus} className="h-8 w-8 text-zinc-500 hover:text-white">
+              <Button variant="ghost" size="icon" onClick={fetchStatus} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
             )}
@@ -236,30 +236,30 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
       {/* ── Payment history ── */}
       {!role.isAdmin && billingStatus?.invoices && billingStatus.invoices.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-500 mb-4">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">
             Payment History
           </h2>
-          <div className="rounded-xl border border-white/10 overflow-hidden">
+          <div className="rounded-xl border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5">
-                  <th className="px-4 py-3 text-left font-medium text-zinc-400">Date</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-400">Amount</th>
-                  <th className="px-4 py-3 text-left font-medium text-zinc-400">Status</th>
-                  <th className="px-4 py-3 text-right font-medium text-zinc-400">Receipt</th>
+                <tr className="border-b bg-muted/50">
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Amount</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Receipt</th>
                 </tr>
               </thead>
               <tbody>
                 {billingStatus.invoices.map((inv) => (
-                  <tr key={inv.id} className="border-b border-white/5 last:border-0">
-                    <td className="px-4 py-3 text-zinc-300">{formatDate(inv.date)}</td>
-                    <td className="px-4 py-3 text-zinc-300">{formatAmount(inv.amount, inv.currency)}</td>
+                  <tr key={inv.id} className="border-b last:border-0">
+                    <td className="px-4 py-3 text-foreground">{formatDate(inv.date)}</td>
+                    <td className="px-4 py-3 text-foreground">{formatAmount(inv.amount, inv.currency)}</td>
                     <td className="px-4 py-3">
                       <span className={cn(
                         "rounded-full px-2 py-0.5 text-[11px] font-medium",
                         inv.status === "paid"
                           ? "bg-green-500/15 text-green-400"
-                          : "bg-zinc-700 text-zinc-400"
+                          : "bg-muted text-muted-foreground"
                       )}>
                         {inv.status}
                       </span>
@@ -275,7 +275,7 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
                           PDF <ExternalLink className="h-3 w-3" />
                         </a>
                       ) : (
-                        <span className="text-zinc-600 text-xs">-</span>
+                        <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </td>
                   </tr>

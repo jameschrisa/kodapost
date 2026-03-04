@@ -27,19 +27,19 @@ const TIER_ICONS: Record<PlanTier, React.ReactNode> = {
 };
 
 const TIER_ACCENT: Record<PlanTier, string> = {
-  trial: "border-zinc-700 bg-zinc-900/60",
+  trial: "border-border bg-muted/60",
   standard: "border-purple-500/50 bg-purple-950/30",
   pro: "border-fuchsia-500/50 bg-fuchsia-950/20",
 };
 
 const TIER_ICON_BG: Record<PlanTier, string> = {
-  trial: "bg-zinc-700/50 text-zinc-300",
+  trial: "bg-muted text-muted-foreground",
   standard: "bg-purple-500/20 text-purple-400",
   pro: "bg-fuchsia-500/20 text-fuchsia-400",
 };
 
 const TIER_BADGE: Record<PlanTier, string> = {
-  trial: "bg-zinc-700 text-zinc-300",
+  trial: "bg-muted text-muted-foreground",
   standard: "bg-purple-500/20 text-purple-300",
   pro: "bg-fuchsia-500/20 text-fuchsia-300",
 };
@@ -77,7 +77,7 @@ export function PlanCard({
       className={cn(
         "relative flex flex-col rounded-2xl border p-6 gap-5",
         TIER_ACCENT[tier],
-        isCurrentPlan && "ring-2 ring-offset-2 ring-offset-zinc-950",
+        isCurrentPlan && "ring-2 ring-offset-2 ring-offset-background",
         tier === "standard" && "ring-purple-500",
         tier === "pro" && "ring-fuchsia-500"
       )}
@@ -97,8 +97,8 @@ export function PlanCard({
           {TIER_ICONS[tier]}
         </div>
         <div>
-          <h3 className="text-base font-bold text-white">{config.displayName}</h3>
-          <p className="text-xs text-zinc-400">
+          <h3 className="text-base font-bold text-foreground">{config.displayName}</h3>
+          <p className="text-xs text-muted-foreground">
             {isFreeTier ? "Free · 10-day trial" : `$${config.priceMonthly}/month`}
           </p>
         </div>
@@ -109,7 +109,7 @@ export function PlanCard({
         {[draftsLabel, generationsLabel, expiryLabel].map((stat) => (
           <span
             key={stat}
-            className="rounded-full bg-white/5 px-2.5 py-1 text-[11px] font-medium text-zinc-300"
+            className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
           >
             {stat}
           </span>
@@ -125,9 +125,9 @@ export function PlanCard({
               {enabled ? (
                 <Check className="h-4 w-4 shrink-0 text-green-400" />
               ) : (
-                <X className="h-4 w-4 shrink-0 text-zinc-600" />
+                <X className="h-4 w-4 shrink-0 text-muted-foreground/50" />
               )}
-              <span className={cn(enabled ? "text-zinc-200" : "text-zinc-500")}>
+              <span className={cn(enabled ? "text-foreground" : "text-muted-foreground")}>
                 {label}
               </span>
               {enabled && comingSoon && (
@@ -140,7 +140,7 @@ export function PlanCard({
         })}
       </ul>
       {config.multilingualSupport && (
-        <p className="text-[10px] text-zinc-500">
+        <p className="text-[10px] text-muted-foreground">
           *Korean, Japanese, Chinese, Spanish
         </p>
       )}

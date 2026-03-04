@@ -72,13 +72,13 @@ function PulsingBars({ className }: { className?: string }) {
 
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-3 rounded-lg bg-zinc-900/50 p-3 animate-pulse">
-      <div className="h-12 w-12 rounded bg-zinc-800" />
+    <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 animate-pulse">
+      <div className="h-12 w-12 rounded bg-muted" />
       <div className="flex-1 space-y-2">
-        <div className="h-3 w-2/3 rounded bg-zinc-800" />
-        <div className="h-2.5 w-1/3 rounded bg-zinc-800" />
+        <div className="h-3 w-2/3 rounded bg-muted" />
+        <div className="h-2.5 w-1/3 rounded bg-muted" />
       </div>
-      <div className="h-3 w-10 rounded bg-zinc-800" />
+      <div className="h-3 w-10 rounded bg-muted" />
     </div>
   );
 }
@@ -293,14 +293,14 @@ export function MusicBrowser({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for music..."
-          className="pl-9 h-9 text-sm bg-zinc-900/50"
+          className="pl-9 h-9 text-sm bg-muted/50"
         />
       </div>
 
       {/* Filters row */}
       <div className="flex items-center gap-3">
         {/* Source filter tabs */}
-        <div className="flex items-center gap-1 rounded-md bg-zinc-900/50 p-0.5">
+        <div className="flex items-center gap-1 rounded-md bg-muted/50 p-0.5">
           {sourceOptions.map((opt) => (
             <button
               key={opt.value}
@@ -359,7 +359,7 @@ export function MusicBrowser({
               "rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors",
               genre === g.value
                 ? "bg-purple-500/20 text-purple-400"
-                : "bg-zinc-800 text-muted-foreground hover:bg-purple-500/10 hover:text-foreground"
+                : "bg-muted text-muted-foreground hover:bg-purple-500/10 hover:text-foreground"
             )}
           >
             {g.label}
@@ -438,7 +438,7 @@ export function MusicBrowser({
                     key={term}
                     type="button"
                     onClick={() => setQuery(term)}
-                    className="rounded-full bg-zinc-800 px-2.5 py-1 text-xs text-muted-foreground hover:bg-purple-500/10 hover:text-purple-400 transition-colors"
+                    className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground hover:bg-purple-500/10 hover:text-purple-400 transition-colors"
                   >
                     {term}
                   </button>
@@ -483,14 +483,14 @@ export function MusicBrowser({
                       "group relative flex items-center gap-3 rounded-lg p-2.5 transition-colors",
                       isPreviewing
                         ? "bg-purple-500/10"
-                        : "bg-zinc-900/50 hover:bg-purple-500/10"
+                        : "bg-muted/50 hover:bg-purple-500/10"
                     )}
                   >
                     {/* Artwork + play overlay */}
                     <button
                       type="button"
                       onClick={() => togglePreview(track)}
-                      className="relative h-12 w-12 flex-shrink-0 rounded overflow-hidden bg-zinc-800"
+                      className="relative h-12 w-12 flex-shrink-0 rounded overflow-hidden bg-muted"
                     >
                       {track.artworkUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -501,7 +501,7 @@ export function MusicBrowser({
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                          <Music className="h-5 w-5 text-zinc-600" />
+                          <Music className="h-5 w-5 text-muted-foreground/50" />
                         </div>
                       )}
                       {/* Play/pause overlay */}

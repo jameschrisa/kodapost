@@ -33,9 +33,11 @@ export async function POST() {
   try {
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
-    const metadata = user.publicMetadata as { stripeCustomerId?: string };
+    const privMeta = user.privateMetadata as { stripeCustomerId?: string };
+    const pubMeta = user.publicMetadata as { stripeCustomerId?: string };
+    const stripeCustomerId = privMeta.stripeCustomerId || pubMeta.stripeCustomerId;
 
-    if (!metadata.stripeCustomerId) {
+    if (!stripeCustomerId) {
       return NextResponse.json(
         { error: "No billing account found. Please subscribe to a plan first." },
         { status: 404 }
@@ -46,7 +48,7 @@ export async function POST() {
     const appUrl = process.env.APP_URL ?? "http://localhost:3000";
 
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: metadata.stripeCustomerId,
+      customer: stripeCustomerId,
       return_url: `${appUrl}/billing`,
     });
 

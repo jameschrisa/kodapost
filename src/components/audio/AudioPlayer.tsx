@@ -117,7 +117,7 @@ export function AudioPlayer({
   return (
     <div className={cn("space-y-3", className)}>
       {/* Waveform */}
-      <div className="rounded-lg bg-zinc-900/50 p-3">
+      <div className="rounded-lg bg-muted/50 p-3">
         <Waveform
           audioUrl={audioUrl}
           currentTime={currentTime}

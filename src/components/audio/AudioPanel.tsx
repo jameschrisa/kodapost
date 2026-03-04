@@ -723,7 +723,7 @@ export function AudioPanel({
 
                   {/* Live waveform during recording */}
                   {recorder.isRecording && (
-                    <div className="rounded-lg bg-zinc-900/50 p-3">
+                    <div className="rounded-lg bg-muted/50 p-3">
                       <Waveform
                         analyserNode={recorder.analyserNode}
                         height={48}

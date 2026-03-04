@@ -105,6 +105,7 @@ export function buildAuthUrl(
       return `${config.authUrl}?${params.toString()}`;
 
     case "youtube":
+    case "youtube_shorts":
       params.set("client_id", clientId);
       params.set("redirect_uri", redirectUri);
       params.set("scope", config.scopes.join(" "));
@@ -157,6 +158,7 @@ export async function exchangeCode(
     case "linkedin":
       return exchangeLinkedInCode(code);
     case "youtube":
+    case "youtube_shorts":
       return exchangeYouTubeCode(code);
     case "reddit":
       return exchangeRedditCode(code);
@@ -248,6 +250,7 @@ async function exchangeInstagramCode(code: string): Promise<TokenResponse> {
 
   return {
     accessToken,
+    refreshToken: accessToken,
     expiresIn,
     platformUserId,
     platformUsername,
@@ -614,9 +617,10 @@ export async function refreshToken(
       };
     }
 
-    case "youtube": {
-      const { clientId: ytClientId, clientSecret: ytClientSecret } = getCredentials("youtube");
-      const res = await fetch(OAUTH_CONFIG.youtube.tokenUrl, {
+    case "youtube":
+    case "youtube_shorts": {
+      const { clientId: ytClientId, clientSecret: ytClientSecret } = getCredentials(platform);
+      const res = await fetch(OAUTH_CONFIG[platform].tokenUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
