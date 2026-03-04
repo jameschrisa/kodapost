@@ -11,6 +11,7 @@ const sections = [
   { id: "our-philosophy", title: "Our Philosophy" },
   { id: "human-first-creativity", title: "Human-First Creativity" },
   { id: "role-of-ai", title: "The Role of Koda" },
+  { id: "what-you-can-create", title: "What You Can Create" },
   { id: "who-is-kodapost-for", title: "Who Is KodaPost For?" },
   { id: "get-started", title: "Get Started" },
 ];
@@ -72,19 +73,36 @@ export default function IntroductionPage() {
             cohesive and intentional.
           </li>
           <li>
+            <strong>Style Templates:</strong> Offering pre-built visual styles
+            (Bold Statement, Vintage Serif, Editorial, and more) that set fonts,
+            colors, and overlays in one click. You can customize any template to
+            match your brand.
+          </li>
+          <li>
             <strong>Layout and Formatting:</strong> Arranging your photos into
             properly sized carousel slides for each social media platform,
             handling aspect ratios and safe zones automatically.
           </li>
           <li>
             <strong>Text Suggestions:</strong> Offering headline and caption
-            ideas based on your theme and keywords, suggestions you can
+            ideas based on your theme and keywords. These are suggestions you can
             accept, edit, or ignore entirely.
           </li>
           <li>
+            <strong>Audio and Music:</strong> Adding background audio to
+            video-format exports. Record a voiceover, upload your own track,
+            or browse the built-in music library.
+          </li>
+          <li>
+            <strong>Multi-Platform Publishing:</strong> Exporting and publishing
+            to Instagram, TikTok, LinkedIn, X/Twitter, YouTube, YouTube Shorts,
+            Reddit, and Lemon8, each formatted to that platform&rsquo;s
+            specifications.
+          </li>
+          <li>
             <strong>Technical Optimization:</strong> Compositing images with
-            text overlays, managing export quality, and formatting for
-            multi-platform publishing.
+            text overlays, managing export quality, and handling platform-specific
+            formatting automatically.
           </li>
         </ul>
         <p>
@@ -92,6 +110,36 @@ export default function IntroductionPage() {
           handles the tedious production work so you can focus on what matters:
           your creative vision.
         </p>
+
+        <h2 id="what-you-can-create">What You Can Create</h2>
+        <p>
+          KodaPost helps you produce polished phonographic carousels from your
+          own photos, words, and audio. Here are the key features that set your
+          work apart:
+        </p>
+        <ul>
+          <li>
+            <strong>Creator Provenance:</strong> Every carousel can be
+            cryptographically signed with Ed25519, embedding tamper-proof
+            authorship metadata directly into your exported files. This proves
+            you created the work, with no third-party service required.
+          </li>
+          <li>
+            <strong>Brand Watermarks:</strong> Add a visible watermark to your
+            slides to protect your content and reinforce your brand identity
+            across platforms.
+          </li>
+          <li>
+            <strong>Camera Emulation Filters:</strong> Apply film stock
+            emulations like Kodak Gold 200, Fuji Superia, and more to give your
+            photos a consistent analog feel.
+          </li>
+          <li>
+            <strong>Video Export with Audio:</strong> Turn your carousel into
+            a slideshow video with crossfade transitions, timed to your
+            background music or voiceover.
+          </li>
+        </ul>
 
         <h2 id="who-is-kodapost-for">Who Is KodaPost For?</h2>
         <p>

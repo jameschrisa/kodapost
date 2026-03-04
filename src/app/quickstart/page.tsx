@@ -138,6 +138,28 @@ function CraftMockup() {
         </div>
       </div>
 
+      {/* Style template selector */}
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Style Template</label>
+        <div className="flex gap-1.5 overflow-hidden">
+          {[
+            { name: "Bold Statement", color: "bg-white/10" },
+            { name: "Vintage Serif", color: "bg-amber-900/30" },
+            { name: "Editorial", color: "bg-white/8" },
+          ].map((tpl, i) => (
+            <div
+              key={tpl.name}
+              className={`flex-1 rounded-lg border ${
+                i === 0 ? "border-purple-500/40 ring-1 ring-purple-500/20" : "border-white/[0.06]"
+              } ${tpl.color} px-2 py-2 text-center`}
+            >
+              <Palette className="h-3 w-3 text-white/25 mx-auto mb-0.5" />
+              <span className="text-[9px] text-white/30 leading-tight block">{tpl.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Camera filter dropdown */}
       <div className="space-y-1.5">
         <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Camera Filter</label>
@@ -167,16 +189,8 @@ function CraftMockup() {
         </div>
       </div>
 
-      {/* Caption area */}
-      <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Caption</label>
-        <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 h-16">
-          <span className="text-xs text-white/25 italic">Generated from your story and vibes...</span>
-        </div>
-      </div>
-
-      <Callout number={1}>Describe what the carousel is about in the Theme field.</Callout>
-      <Callout number={2}>Pick a camera filter to set the visual mood for all slides.</Callout>
+      <Callout number={1}>Pick a style template to set fonts, colors, and overlays in one click.</Callout>
+      <Callout number={2}>Choose a camera filter to set the visual mood for all slides.</Callout>
       <Callout number={3}>Add vibe tags to shape the tone of generated text and captions.</Callout>
     </div>
   );
@@ -260,6 +274,7 @@ function ReviewMockup() {
           { label: "Instagram", active: true },
           { label: "TikTok", active: false },
           { label: "LinkedIn", active: false },
+          { label: "X", active: false },
         ].map((tab) => (
           <button
             key={tab.label}
@@ -268,6 +283,21 @@ function ReviewMockup() {
                 ? "bg-white/10 text-white/70"
                 : "text-white/25 hover:text-white/40"
             }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="flex gap-1 rounded-lg bg-white/[0.03] p-1">
+        {[
+          { label: "YouTube", active: false },
+          { label: "Shorts", active: false },
+          { label: "Reddit", active: false },
+          { label: "Lemon8", active: false },
+        ].map((tab) => (
+          <button
+            key={tab.label}
+            className={`flex-1 rounded-md px-3 py-1.5 text-[11px] font-medium transition-colors text-white/25 hover:text-white/40`}
           >
             {tab.label}
           </button>
@@ -335,6 +365,7 @@ function PublishMockup() {
           { name: "Instagram", connected: true, checked: true },
           { name: "TikTok", connected: true, checked: true },
           { name: "LinkedIn", connected: false, checked: false },
+          { name: "X/Twitter", connected: true, checked: true },
         ].map((platform) => (
           <div
             key={platform.name}
@@ -411,7 +442,7 @@ const STEPS = [
     title: "Craft",
     subtitle: "Set the mood",
     description:
-      "Describe your carousel theme, pick a camera emulation filter, and add vibe keywords that shape the tone of generated text. Koda uses these inputs to write slide overlays and a caption.",
+      "Choose a style template to set fonts, colors, and overlays in one click. Then describe your carousel theme, pick a camera emulation filter, and add vibe keywords that shape the tone of generated text. Koda uses these inputs to write slide overlays and a caption.",
     icon: Paintbrush,
     accent: "amber",
     mockup: CraftMockup,
@@ -431,7 +462,7 @@ const STEPS = [
     title: "Review",
     subtitle: "Preview the final result",
     description:
-      "See all your slides in a carousel grid. Switch between platform tabs to preview format differences. Optionally add an audio track for video exports.",
+      "See all your slides in a carousel grid. Switch between platform tabs (Instagram, TikTok, LinkedIn, X/Twitter, YouTube, YouTube Shorts, Reddit, Lemon8) to preview format differences. Optionally add an audio track by recording a voiceover, uploading your own file, or browsing the built-in music library.",
     icon: CheckCircle2,
     accent: "emerald",
     mockup: ReviewMockup,
@@ -441,7 +472,7 @@ const STEPS = [
     title: "Publish",
     subtitle: "Share with the world",
     description:
-      "Select connected platforms and hit Post Now, or export a ZIP for manual posting. Toggle Creator Provenance to embed EXIF authorship metadata and an optional watermark.",
+      "Select connected platforms and hit Post Now, or export a ZIP for manual posting. Toggle Creator Provenance to cryptographically sign your work with Ed25519 and embed tamper-proof authorship metadata. You can also add a brand watermark to protect your content across platforms.",
     icon: Share2,
     accent: "orange",
     mockup: PublishMockup,
@@ -521,7 +552,7 @@ export default function QuickStartPage() {
               variants={staggerChild}
               className="text-lg text-white/50 max-w-2xl mx-auto mb-8"
             >
-              Create your first carousel in 5 minutes. Follow each step below to go from photos to a polished, ready-to-post carousel.
+              Create your first phonographic carousel in 5 minutes. Follow each step below to go from photos to a polished, ready-to-post carousel with style templates, audio, and creator provenance.
             </motion.p>
 
             {/* Breadcrumb links */}

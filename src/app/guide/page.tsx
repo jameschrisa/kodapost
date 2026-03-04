@@ -13,10 +13,13 @@ const sections = [
   { id: "create-in-app", title: "Create in the App" },
   { id: "create-on-telegram", title: "Create on Telegram" },
   { id: "the-flow", title: "The Flow" },
+  { id: "style-templates", title: "Style Templates" },
+  { id: "audio-and-music", title: "Audio and Music" },
   { id: "settings", title: "Settings" },
   { id: "tips", title: "Tips for Great Posts" },
   { id: "creator-provenance", title: "Creator Provenance" },
   { id: "brand-logo-watermark", title: "Brand Logo Watermark" },
+  { id: "platform-notes", title: "Platform Notes" },
   { id: "commands", title: "Commands Reference" },
 ];
 
@@ -83,19 +86,22 @@ export default function GuidePage() {
             <strong>Design</strong> &ndash; Fine-tune each slide visually.
             Edit text overlays directly on the preview, change fonts, adjust
             text position and color, and toggle text on or off per slide.
-            Navigate slides using the thumbnail strip at the bottom.
+            Open the Stylize panel to apply a style template to all slides at
+            once, or pick different templates per slide. Navigate slides using
+            the thumbnail strip at the bottom.
           </li>
           <li>
             <strong>Review</strong> &ndash; Preview all your slides in a
             carousel grid. Switch between platform tabs (Instagram, TikTok,
-            LinkedIn, etc.) to see format differences. Optionally add an audio
-            track for video-format exports.
+            LinkedIn, etc.) to see format differences. Add an audio track from
+            the Music Library, upload your own audio file, or record a voice
+            narration for video-format exports.
           </li>
           <li>
             <strong>Publish</strong> &ndash; Select connected social media
             platforms and tap Post Now to publish, or export a ZIP for manual
-            posting. Toggle Creator Provenance to embed authorship metadata
-            and an optional watermark in each exported image.
+            posting. Toggle Creator Provenance to embed a cryptographic
+            signature and optional watermark in each exported image.
           </li>
         </ol>
 
@@ -191,16 +197,17 @@ export default function GuidePage() {
               <td>
                 <strong>3. Design</strong>
               </td>
-              <td>Edit text, change fonts, adjust position and color</td>
+              <td>Edit text, apply style templates, adjust position and color</td>
               <td>Each slide is styled individually with live preview</td>
             </tr>
             <tr>
               <td>
                 <strong>4. Review</strong>
               </td>
-              <td>Preview the carousel grid, switch platform tabs</td>
+              <td>Preview the carousel grid, add audio, switch platform tabs</td>
               <td>
-                Format differences are shown per platform; audio can be added
+                Format differences are shown per platform; audio is auto-trimmed
+                to match your slides
               </td>
             </tr>
             <tr>
@@ -210,11 +217,140 @@ export default function GuidePage() {
               <td>Select platforms, post or export</td>
               <td>
                 Carousel is published or exported as a ZIP with optional
-                provenance metadata
+                provenance signature
               </td>
             </tr>
           </tbody>
         </table>
+
+        <h2 id="style-templates">Style Templates</h2>
+        <p>
+          Style templates let you apply a complete text look to your slides in
+          one tap. Each template sets the font, size, weight, text color,
+          background color, and shadow together so everything looks coordinated.
+        </p>
+        <h3>Available Templates</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Template</th>
+              <th>Style</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bold Statement</strong></td>
+              <td>All-caps impact with maximum contrast (Bebas Neue)</td>
+            </tr>
+            <tr>
+              <td><strong>Minimal Clean</strong></td>
+              <td>Subtle and modern with soft shadow (Inter)</td>
+            </tr>
+            <tr>
+              <td><strong>Vintage Serif</strong></td>
+              <td>Warm cream on dark brown, classic feel (Playfair Display)</td>
+            </tr>
+            <tr>
+              <td><strong>Editorial</strong></td>
+              <td>Magazine-inspired serif heading (DM Serif Display)</td>
+            </tr>
+            <tr>
+              <td><strong>Street Pop</strong></td>
+              <td>Energetic yellow on black, urban edge (Syne)</td>
+            </tr>
+            <tr>
+              <td><strong>Luxury</strong></td>
+              <td>Gold on black, refined italic elegance (Bodoni Moda)</td>
+            </tr>
+            <tr>
+              <td><strong>TikTok Viral</strong></td>
+              <td>Bold white on hot pink, maximum energy (Montserrat Black)</td>
+            </tr>
+            <tr>
+              <td><strong>Instagram Clean</strong></td>
+              <td>Soft dark overlay, clean modern look (Poppins)</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>How to Use Templates</h3>
+        <ol>
+          <li>
+            In the <strong>Design</strong> step, open the{" "}
+            <strong>Stylize</strong> panel.
+          </li>
+          <li>
+            Browse the template grid. Each one shows a live preview with sample
+            text so you can see the look before applying it.
+          </li>
+          <li>
+            Tap a template to apply it to your current slide. The text overlay
+            updates instantly with the new font, color, and background.
+          </li>
+          <li>
+            To apply the same template to all slides at once, use the{" "}
+            <strong>Apply to All</strong> option. You can also mix templates
+            across slides for variety.
+          </li>
+        </ol>
+        <p>
+          Templates set defaults that you can fine-tune afterward. Change the
+          font size, text position, or color on any slide without losing the
+          template&apos;s base style.
+        </p>
+
+        <h2 id="audio-and-music">Audio and Music</h2>
+        <p>
+          Add a soundtrack or voice narration to your carousel for video-format
+          exports (Reels, TikTok, YouTube Shorts). Audio is configured in the
+          Review step using the Audio panel.
+        </p>
+        <h3>Three Ways to Add Audio</h3>
+        <ul>
+          <li>
+            <strong>Music Library</strong> &ndash; Search and browse licensed
+            tracks from Jamendo and Audius. Preview tracks in the browser, then
+            select one to add to your project. Attribution information is
+            included automatically.
+          </li>
+          <li>
+            <strong>Upload Audio</strong> &ndash; Upload your own audio file.
+            Supported formats include MP3, WAV, M4A, OGG, WebM, and AAC. Max
+            file size is 50 MB, max duration is 10 minutes.
+          </li>
+          <li>
+            <strong>Record Voice</strong> &ndash; Record a voice narration
+            directly in the browser using your microphone. A live waveform shows
+            your recording in progress. You can preview the recording and
+            re-record if needed before applying it.
+          </li>
+        </ul>
+        <h3>Goldilocks Auto-Trim</h3>
+        <p>
+          When you add an audio track that is longer than your carousel needs,
+          KodaPost automatically trims it to fit. The recommended duration is
+          calculated at about 4.5 seconds per slide. For example, a 6-slide
+          carousel would auto-trim to roughly 27 seconds.
+        </p>
+        <p>
+          The auto-trim always starts from the beginning of the track. You can
+          override this by dragging the trim handles to select a different
+          section of the audio.
+        </p>
+        <h3>Trim Handles</h3>
+        <p>
+          Tap <strong>Trim Clip</strong> to reveal the trim handles on the
+          audio waveform. Drag the start and end handles to select the exact
+          portion of audio you want to use. The trimmed region is highlighted
+          on the waveform so you can see your selection at a glance.
+        </p>
+        <h3>Applying Audio</h3>
+        <p>
+          After selecting or recording audio, tap{" "}
+          <strong>Apply to Storyboard</strong> to attach it to your carousel.
+          The track is staged first so you can preview it, adjust trimming, and
+          confirm before it takes effect. You can change or remove the track at
+          any time before publishing.
+        </p>
 
         <h2 id="settings">Settings</h2>
         <p>
@@ -255,6 +391,10 @@ export default function GuidePage() {
             close-up, and a detail shot for visual variety across slides.
           </li>
           <li>
+            <strong>Try a style template</strong> to set a consistent look
+            across all your slides, then fine-tune individual slides as needed.
+          </li>
+          <li>
             <strong>Edit the caption</strong> before posting. The generated
             caption is a starting point. Your voice makes it authentic.
           </li>
@@ -269,9 +409,29 @@ export default function GuidePage() {
         <h2 id="creator-provenance">Creator Provenance</h2>
         <p>
           Every image you export from KodaPost carries proof that you made it.
-          Creator Provenance embeds authorship data directly into your image files
-          so your work stays attributed to you, even after it leaves your device.
+          Creator Provenance uses Ed25519 cryptographic signing to create a
+          tamper-proof record of authorship. The signature is generated
+          instantly, with no external service or crypto wallet required.
         </p>
+        <h3>How It Works</h3>
+        <ol>
+          <li>
+            When you export with Creator Provenance enabled, KodaPost computes
+            a SHA-256 fingerprint (hash) of each image.
+          </li>
+          <li>
+            The image hashes, your creator name, and a timestamp are combined
+            into a provenance claim.
+          </li>
+          <li>
+            KodaPost signs the claim with its Ed25519 private key. The
+            resulting signature is stored alongside your provenance record.
+          </li>
+          <li>
+            Anyone can verify the signature using the app&apos;s public key,
+            confirming that the images were created by you at the recorded time.
+          </li>
+        </ol>
         <h3>What Gets Embedded</h3>
         <p>
           When you export with Creator Provenance enabled, KodaPost writes the
@@ -294,6 +454,20 @@ export default function GuidePage() {
             creation timestamp.
           </li>
         </ul>
+        <h3>Cryptographic Verification</h3>
+        <p>
+          The provenance verification endpoint is public. Anyone with a
+          SHA-256 image hash can check whether that image has been registered
+          and see the creator name, creation date, and cryptographic signature.
+          The app&apos;s Ed25519 public key is available for independent
+          verification.
+        </p>
+        <p>
+          You can also check the embedded EXIF metadata using any photo viewer.
+          On macOS, right-click an image and select &ldquo;Get Info.&rdquo;
+          On Windows, right-click and choose &ldquo;Properties &gt;
+          Details.&rdquo; Online tools like exifdata.com also work.
+        </p>
         <h3>Watermark Modes</h3>
         <p>
           In the Publish step, choose how your watermark appears on exported
@@ -312,7 +486,8 @@ export default function GuidePage() {
           </li>
           <li>
             <strong>Hidden Only</strong> &ndash; No visible watermark. EXIF
-            metadata is still embedded for provenance tracking.
+            metadata and cryptographic signature are still embedded for
+            provenance tracking.
           </li>
           <li>
             <strong>Logo + Hidden</strong> &ndash; Combines the visible logo
@@ -320,17 +495,10 @@ export default function GuidePage() {
             (steganography) is coming in a future update.
           </li>
         </ul>
-        <h3>How to Verify</h3>
-        <p>
-          You can check the embedded metadata using any photo viewer or EXIF
-          tool. On macOS, right-click an image and select &ldquo;Get Info.&rdquo;
-          On Windows, right-click and choose &ldquo;Properties &gt;
-          Details.&rdquo; Online tools like exifdata.com also work.
-        </p>
         <h3>Availability</h3>
         <p>
-          Creator Provenance is available on the Creator Mode (Standard) and
-          Monster Mode (Pro) plans. Coming soon: C2PA Content Credentials for
+          Creator Provenance is available on the Creator Mode ($19/mo) and
+          Monster Mode ($39/mo) plans. Coming soon: C2PA Content Credentials for
           tamper-evident provenance that works with platforms like Adobe Content
           Authenticity and Google Search.
         </p>
@@ -445,6 +613,66 @@ export default function GuidePage() {
           <strong>Scale</strong> controls the logo width as a percentage of the
           image width. The range is 5% to 30%. At 15% (the default), a logo on
           a 1080px-wide image renders at about 162px wide.
+        </p>
+
+        <h2 id="platform-notes">Platform Notes</h2>
+        <p>
+          Each social platform has its own format requirements and limits.
+          KodaPost handles formatting automatically, but here are some
+          details to keep in mind.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Instagram</strong></td>
+              <td>
+                Up to 10 carousel images. Token refresh is handled automatically
+                so your connection stays active.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>YouTube</strong></td>
+              <td>
+                Supports up to 10 carousel images in community posts.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>YouTube Shorts</strong></td>
+              <td>
+                Video-format export with OAuth authentication for direct posting.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>X (Twitter)</strong></td>
+              <td>
+                Supports multi-image grid posts for visual variety.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>TikTok</strong></td>
+              <td>
+                Carousel slideshow format with optional audio.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>LinkedIn</strong></td>
+              <td>
+                Multi-image carousel format for professional audiences.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          If any part of the export encounters an issue (for example, a
+          watermark or metadata step fails), KodaPost completes the export with
+          warnings rather than blocking the entire process. You will see a
+          notification about what was skipped so you can retry if needed.
         </p>
 
         <h2 id="commands">Commands Reference</h2>

@@ -64,7 +64,25 @@ const FAQ_DATA: FAQItem[] = [
     category: "Getting Started",
     question: "What is Creator Provenance?",
     answer:
-      "Creator Provenance embeds authorship data directly into your exported images. When enabled, KodaPost writes your creator name, copyright notice, software tag, and a SHA-256 image fingerprint into EXIF metadata. You can choose from four watermark modes: Visible Text, Brand Logo, Hidden Only, or Logo + Hidden. It is available on Creator Mode (Standard) and Monster Mode (Pro) plans.",
+      "Creator Provenance embeds authorship data directly into your exported images. When enabled, KodaPost writes your creator name, copyright notice, software tag, and a SHA-256 image fingerprint into EXIF metadata. Each carousel is also signed with an Ed25519 digital signature for tamper-proof verification. You can choose from four watermark modes: Visible Text, Brand Logo, Hidden Only, or Logo + Hidden. It is available on Creator Mode ($19/mo) and Monster Mode ($39/mo) plans.",
+  },
+  {
+    category: "Getting Started",
+    question: "How do I register provenance for my carousel?",
+    answer:
+      "Provenance is registered automatically when you export your carousel with Creator Provenance enabled. Open the Publish step, make sure Creator Provenance is toggled on, then export. KodaPost embeds your creator name, copyright, SHA-256 image fingerprint, and an Ed25519 digital signature into each exported image. No wallet, no blockchain, no extra steps required.",
+  },
+  {
+    category: "Getting Started",
+    question: "How does provenance verification work?",
+    answer:
+      "Each exported image contains an Ed25519 digital signature in its EXIF metadata. Anyone with the KodaPost public key can verify that the image was created by you and has not been tampered with since export. The verification checks the image hash, creator name, and timestamp against the embedded signature. You can verify images using any EXIF viewer that displays the signature field.",
+  },
+  {
+    category: "Getting Started",
+    question: "Does provenance cost anything?",
+    answer:
+      "No. Creator Provenance uses Ed25519 cryptographic signing, which is free and instant. There are no transaction fees, no wallet setup, and no third-party service costs. The only requirement is a Creator Mode or Monster Mode plan.",
   },
   {
     category: "Getting Started",
@@ -116,6 +134,18 @@ const FAQ_DATA: FAQItem[] = [
     answer:
       "Yes. Filters are applied as live CSS overlays at export time. Return to the Craft step at any time to change the camera style, predefined filter, or fine-tune the sliders, then regenerate.",
   },
+  {
+    category: "Filters & Style",
+    question: "How do I use style templates?",
+    answer:
+      "In the Design step, open the text editing panel for any slide and look for the Style Templates section. Templates provide preset combinations of font, size, weight, color, background, and text shadow. Click a template to apply it to your current slide. You can browse options like Bold Statement, Minimal Clean, Vintage Warmth, and more.",
+  },
+  {
+    category: "Filters & Style",
+    question: "Can I customize a style template after applying it?",
+    answer:
+      "Yes. Templates are starting points, not locked presets. After applying a template, you can adjust any individual property (font, size, color, background, shadow) using the text editing controls. Your manual changes override the template defaults.",
+  },
   // AI Generation
   {
     category: "AI Generation",
@@ -134,6 +164,31 @@ const FAQ_DATA: FAQItem[] = [
     question: "Does Koda store my photos?",
     answer:
       "Photos are sent to the Koda processing pipeline solely to generate your carousel content. We do not permanently store your images on our servers after processing completes. See our Privacy Policy for full details.",
+  },
+  // Audio & Music
+  {
+    category: "Audio & Music",
+    question: "What music can I use in my carousel?",
+    answer:
+      "KodaPost includes a built-in music library powered by Jamendo (Creative Commons licensed tracks) and Audius. You can search by keyword, filter by genre (Ambient, Electronic, Lo-Fi, Pop, Hip-Hop, Jazz, Classical, Rock), toggle instrumental-only, and preview tracks before selecting. All Jamendo tracks include proper CC attribution automatically.",
+  },
+  {
+    category: "Audio & Music",
+    question: "How does auto-trim work?",
+    answer:
+      "When you select a track or upload audio, KodaPost calculates the ideal duration based on your slide count. The recommended length is 4.5 seconds per slide (the \"Goldilocks zone\"). If your audio is longer than this, it is automatically trimmed to fit. You can drag the trim handles to adjust the start and end points manually.",
+  },
+  {
+    category: "Audio & Music",
+    question: "Can I use my own audio?",
+    answer:
+      "Yes. In the audio panel, choose Upload Audio to select a file from your device (MP3, WAV, M4A, OGG, WebM, or AAC, up to 50 MB and 10 minutes). You can also choose Record Voice to capture a voiceover directly in your browser using your microphone.",
+  },
+  {
+    category: "Audio & Music",
+    question: "Why did my audio disappear after reloading the page?",
+    answer:
+      "Audio clips use temporary browser URLs (blob URLs) that do not survive page reloads. If you reload or close the tab, you will need to re-add the audio track. Your audio selection metadata is preserved so KodaPost shows which track was previously applied. Click Clear and Re-add, then select the same track again.",
   },
   // Publishing
   {
@@ -190,19 +245,25 @@ const FAQ_DATA: FAQItem[] = [
     category: "Accounts & Billing",
     question: "Is KodaPost free?",
     answer:
-      "KodaPost offers a free tier with a limited number of AI-generated carousels per month. Premium plans unlock unlimited generation, additional platforms, and advanced features. See the pricing page for current plans.",
+      "KodaPost offers Explore Mode (free) with up to 10 AI-generated carousels per month and 1 saved draft. Premium plans include Creator Mode ($19/mo) with 200 generations, 5 drafts, direct publishing, and Creator Provenance. Monster Mode ($39/mo) offers unlimited generations, 15 drafts that never expire, and priority support.",
   },
   {
     category: "Accounts & Billing",
     question: "How do I upgrade my plan?",
     answer:
-      "Sign in and open your Profile (top-right menu > Profile). The billing section shows your current plan and upgrade options.",
+      "Go to the Billing page (Menu > Billing, or visit /billing). You will see all three plans side by side. Click the upgrade button on the plan you want. You will be redirected to a secure Stripe checkout page to complete payment.",
+  },
+  {
+    category: "Accounts & Billing",
+    question: "How do I manage my subscription?",
+    answer:
+      "Visit the Billing page and click Manage Subscription. This opens the Stripe billing portal where you can update your payment method, view invoices, download receipts, or change your plan. You can also see your subscription status and renewal date directly on the Billing page.",
   },
   {
     category: "Accounts & Billing",
     question: "Can I cancel my subscription?",
     answer:
-      "Yes. Cancel at any time from your Profile > Billing settings. You retain access to premium features until the end of your current billing period.",
+      "Yes. Open the Billing page and click Manage Subscription to access the Stripe billing portal. From there, click Cancel Plan. You retain access to premium features until the end of your current billing period.",
   },
   // Troubleshooting
   {
@@ -229,6 +290,24 @@ const FAQ_DATA: FAQItem[] = [
     answer:
       "Project data is stored in your browser's local storage. It may be lost if you cleared browser data, used a different browser, or opened KodaPost in a private/incognito window. We recommend exporting your carousel ZIP frequently as a backup.",
   },
+  {
+    category: "Troubleshooting",
+    question: "My export is taking too long. What can I do?",
+    answer:
+      "Large carousels with high-resolution images or video reels may take longer to process. If the export stalls, use the Cancel button to stop it, then retry. Try reducing the number of slides or image resolution if the problem persists. Make sure your browser tab stays in focus during export.",
+  },
+  {
+    category: "Troubleshooting",
+    question: "The app feels cramped on my phone. Any tips?",
+    answer:
+      "KodaPost is optimized for mobile browsers with safe-area support and touch-friendly controls. For the best experience, use your device in portrait mode and add KodaPost to your home screen as a PWA for full-screen viewing. If buttons feel too small, try zooming in slightly or rotating to landscape for the Design step.",
+  },
+  {
+    category: "Troubleshooting",
+    question: "My audio track disappeared after a page reload.",
+    answer:
+      "Audio clips use temporary blob URLs that do not persist across page reloads. This is a browser limitation, not a bug. When you reopen your project, the audio panel will show a prompt to re-add your track. Click Clear and Re-add, then select the same music or upload your file again.",
+  },
 ];
 
 const FAQ_CATEGORIES = [
@@ -236,6 +315,7 @@ const FAQ_CATEGORIES = [
   "Uploads & Formats",
   "Filters & Style",
   "AI Generation",
+  "Audio & Music",
   "Publishing",
   "Brand & Watermarks",
   "Accounts & Billing",
