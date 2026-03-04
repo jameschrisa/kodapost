@@ -6,17 +6,13 @@ import type { ProvenanceStatus } from "@/lib/types";
 
 const STATUS_COLORS: Record<ProvenanceStatus, string> = {
   pending: "text-amber-500",
-  creating_token_type: "text-amber-500",
-  minting: "text-amber-500",
-  succeeded: "text-green-500",
+  signed: "text-green-500",
   failed: "text-red-500",
 };
 
 const STATUS_LABELS: Record<ProvenanceStatus, string> = {
   pending: "Registering...",
-  creating_token_type: "Creating token...",
-  minting: "Minting...",
-  succeeded: "On-chain",
+  signed: "Verified",
   failed: "Failed",
 };
 
@@ -29,7 +25,6 @@ interface ProvenanceBadgeProps {
 export default function ProvenanceBadge({ status, onClick, className }: ProvenanceBadgeProps) {
   const colorClass = STATUS_COLORS[status];
   const label = STATUS_LABELS[status];
-  const isAnimating = status === "pending" || status === "creating_token_type" || status === "minting";
 
   return (
     <button
@@ -44,7 +39,7 @@ export default function ProvenanceBadge({ status, onClick, className }: Provenan
       )}
       title={`Provenance: ${label}`}
     >
-      <Shield className={cn("h-3 w-3", isAnimating && "animate-pulse")} />
+      <Shield className={cn("h-3 w-3", status === "pending" && "animate-pulse")} />
       <span>{label}</span>
     </button>
   );

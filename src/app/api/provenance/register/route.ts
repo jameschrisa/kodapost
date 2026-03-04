@@ -4,7 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { provenanceRecords } from "@/lib/db/schema";
 import { canAccessFeature, type PlanTier } from "@/lib/plans";
-import { registerProvenanceAsync } from "@/lib/venly/mint";
+import { signProvenance } from "@/lib/provenance/signer";
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -38,8 +38,9 @@ async function getAuthUser(): Promise<{
 /**
  * POST /api/provenance/register
  *
- * Register on-chain provenance for a carousel's image hashes.
+ * Register cryptographically signed provenance for a carousel's image hashes.
  * Requires auth + creator_provenance feature access (standard/pro plan).
+ * Signing is instant (Ed25519), no async polling needed.
  */
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
@@ -149,6 +150,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Sign the provenance claim (Ed25519, instant)
+    const signature = signProvenance({
+      imageHashes: hashString,
+      creatorName,
+      createdAt: now,
+    });
+
     await db.insert(provenanceRecords).values({
       id,
       userId: user.id,
@@ -158,28 +166,16 @@ export async function POST(request: NextRequest) {
       creatorEmail: user.email,
       slideCount,
       platform: platform ?? null,
-      chain: "polygon",
-      status: "pending",
+      signature,
+      status: "signed",
       createdAt: now,
       updatedAt: now,
     });
 
-    // Fire-and-forget: run minting pipeline in background
-    registerProvenanceAsync(id, {
-      imageHashes,
-      creatorName,
-      creatorEmail: user.email,
-      slideCount,
-      platform,
-      postId,
-    }).catch((err) => {
-      console.error("[Provenance] Background registration error:", err);
-    });
-
-    return NextResponse.json({ id, status: "pending" }, { status: 201 });
+    return NextResponse.json({ id, status: "signed" }, { status: 201 });
   } catch (error) {
     console.error(
-      "[Provenance] Failed to create record:",
+      "[Provenance] Failed to register:",
       error instanceof Error ? error.message : "unknown"
     );
     return NextResponse.json(

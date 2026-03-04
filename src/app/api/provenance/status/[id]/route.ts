@@ -3,8 +3,6 @@ import { currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { provenanceRecords } from "@/lib/db/schema";
-import { getPolygonscanBaseUrl } from "@/lib/venly/client";
-import { checkMintStatus } from "@/lib/venly/status";
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -18,7 +16,7 @@ async function getUserId(): Promise<string | null> {
  * GET /api/provenance/status/[id]
  *
  * Check the status of a provenance registration.
- * Auth required (owner only). Self-heals by polling Venly for non-terminal statuses.
+ * Auth required (owner only).
  */
 export async function GET(
   _request: NextRequest,
@@ -51,48 +49,20 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Self-healing: if status is non-terminal and we have a mintId, poll Venly
-    if (record.mintId && record.status !== "succeeded" && record.status !== "failed") {
-      try {
-        const mintResult = await checkMintStatus(record.mintId);
-
-        if (mintResult.status === "SUCCEEDED" && mintResult.transactionHash) {
-          await db.update(provenanceRecords)
-            .set({
-              status: "succeeded",
-              transactionHash: mintResult.transactionHash,
-              tokenId: mintResult.tokenId ?? null,
-              updatedAt: new Date().toISOString(),
-            })
-            .where(eq(provenanceRecords.id, id));
-
-          record.status = "succeeded";
-          record.transactionHash = mintResult.transactionHash;
-          record.tokenId = mintResult.tokenId ?? null;
-        } else if (mintResult.status === "FAILED") {
-          await db.update(provenanceRecords)
-            .set({
-              status: "failed",
-              error: "Mint transaction failed on-chain",
-              updatedAt: new Date().toISOString(),
-            })
-            .where(eq(provenanceRecords.id, id));
-
-          record.status = "failed";
-          record.error = "Mint transaction failed on-chain";
-        }
-      } catch {
-        // Don't fail the status check if Venly polling fails
-      }
-    }
-
-    const polygonscanUrl = record.transactionHash
-      ? `${getPolygonscanBaseUrl()}/tx/${record.transactionHash}`
-      : null;
-
+    // Return client-safe fields (exclude creatorEmail)
     return NextResponse.json({
-      ...record,
-      polygonscanUrl,
+      id: record.id,
+      userId: record.userId,
+      postId: record.postId,
+      imageHashes: record.imageHashes,
+      creatorName: record.creatorName,
+      slideCount: record.slideCount,
+      platform: record.platform,
+      signature: record.signature,
+      status: record.status,
+      error: record.error,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     });
   } catch (error) {
     console.error(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,7 @@ interface ProvenanceRecordResponse {
   status: ProvenanceStatus;
   creatorName: string;
   imageHashes: string;
-  chain: string;
-  transactionHash: string | null;
-  tokenId: string | null;
-  contractAddress: string | null;
-  polygonscanUrl?: string | null;
+  signature: string | null;
   createdAt: string;
   error: string | null;
 }
@@ -30,9 +26,6 @@ interface RegisterProvenanceButtonProps {
   platform?: string;
 }
 
-const POLL_INTERVAL = 5000;
-const TERMINAL_STATUSES: ProvenanceStatus[] = ["succeeded", "failed"];
-
 export default function RegisterProvenanceButton({
   imageHashes,
   creatorName,
@@ -43,49 +36,6 @@ export default function RegisterProvenanceButton({
   const [record, setRecord] = useState<ProvenanceRecordResponse | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const prevStatusRef = useRef<ProvenanceStatus | null>(null);
-
-  const stopPolling = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
-
-  // Clean up polling on unmount
-  useEffect(() => stopPolling, [stopPolling]);
-
-  const pollStatus = useCallback(async (id: string) => {
-    try {
-      const res = await fetch(`/api/provenance/status/${id}`);
-      if (!res.ok) return;
-
-      const data: ProvenanceRecordResponse = await res.json();
-      setRecord(data);
-
-      // Show toast on status transitions
-      if (prevStatusRef.current !== data.status) {
-        prevStatusRef.current = data.status;
-
-        if (data.status === "succeeded") {
-          toast.success("Provenance registered on-chain", {
-            description: "Your creator proof is now on Polygon.",
-          });
-        } else if (data.status === "failed") {
-          toast.error("Provenance registration failed", {
-            description: data.error || "Please try again.",
-          });
-        }
-      }
-
-      if (TERMINAL_STATUSES.includes(data.status)) {
-        stopPolling();
-      }
-    } catch {
-      // Silent failure for polling
-    }
-  }, [stopPolling]);
 
   async function handleRegister() {
     if (isRegistering || record) return;
@@ -113,26 +63,27 @@ export default function RegisterProvenanceButton({
         return;
       }
 
-      setRecord({
-        id: data.id,
-        status: data.status,
-        creatorName,
-        imageHashes: imageHashes.join(","),
-        chain: "polygon",
-        transactionHash: null,
-        tokenId: null,
-        contractAddress: null,
-        createdAt: new Date().toISOString(),
-        error: null,
-      });
-      prevStatusRef.current = data.status;
+      // Signing is instant, so fetch the full record
+      const statusRes = await fetch(`/api/provenance/status/${data.id}`);
+      if (statusRes.ok) {
+        const fullRecord: ProvenanceRecordResponse = await statusRes.json();
+        setRecord(fullRecord);
+      } else {
+        // Fallback: use the register response
+        setRecord({
+          id: data.id,
+          status: data.status,
+          creatorName,
+          imageHashes: imageHashes.join(","),
+          signature: null,
+          createdAt: new Date().toISOString(),
+          error: null,
+        });
+      }
 
-      toast.success("Provenance registration started", {
-        description: "Minting your creator proof on Polygon...",
+      toast.success("Provenance registered", {
+        description: "Your creator proof has been cryptographically signed.",
       });
-
-      // Start polling
-      pollRef.current = setInterval(() => pollStatus(data.id), POLL_INTERVAL);
     } catch {
       toast.error("Failed to register provenance");
     } finally {
@@ -166,7 +117,7 @@ export default function RegisterProvenanceButton({
       className="gap-2"
     >
       <Shield className="h-3.5 w-3.5" />
-      {isRegistering ? "Registering..." : "Register Provenance"}
+      {isRegistering ? "Signing..." : "Register Provenance"}
     </Button>
   );
 }

@@ -2,18 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { like } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { provenanceRecords } from "@/lib/db/schema";
-import { getPolygonscanBaseUrl } from "@/lib/venly/client";
+import { verifyProvenance, getPublicKeyPem } from "@/lib/provenance/signer";
 import type { ProvenanceVerification } from "@/lib/types";
 
 /**
  * GET /api/provenance/verify?hash={sha256}
  *
  * Public endpoint (no auth) to verify if an image hash has been registered.
- * Returns creator info, chain data, and Polygonscan link if verified.
+ * Returns creator info and cryptographic verification status.
+ *
+ * Optional: ?publickey=true to also return the app's public key for
+ * independent verification.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const hash = searchParams.get("hash");
+  const includePublicKey = searchParams.get("publickey") === "true";
 
   if (!hash) {
     return NextResponse.json(
@@ -47,26 +51,36 @@ export async function GET(request: NextRequest) {
 
     const record = records[0];
 
-    // Only return verified if the mint succeeded
-    if (record.status !== "succeeded") {
+    // Only return verified if signed
+    if (record.status !== "signed" || !record.signature) {
       const result: ProvenanceVerification = { verified: false };
       return NextResponse.json(result);
     }
 
-    const polygonscanUrl = record.transactionHash
-      ? `${getPolygonscanBaseUrl()}/tx/${record.transactionHash}`
-      : undefined;
+    // Cryptographically verify the signature is valid
+    const signatureValid = verifyProvenance({
+      imageHashes: record.imageHashes,
+      creatorName: record.creatorName,
+      createdAt: record.createdAt,
+      signature: record.signature,
+    });
 
-    const result: ProvenanceVerification = {
+    if (!signatureValid) {
+      const result: ProvenanceVerification = { verified: false };
+      return NextResponse.json(result);
+    }
+
+    const result: ProvenanceVerification & { publicKey?: string } = {
       verified: true,
       creatorName: record.creatorName,
       createdAt: record.createdAt,
       platform: record.platform ?? undefined,
-      chain: record.chain,
-      transactionHash: record.transactionHash ?? undefined,
-      polygonscanUrl,
-      tokenId: record.tokenId ?? undefined,
+      signature: record.signature,
     };
+
+    if (includePublicKey) {
+      result.publicKey = getPublicKeyPem();
+    }
 
     return NextResponse.json(result);
   } catch (error) {

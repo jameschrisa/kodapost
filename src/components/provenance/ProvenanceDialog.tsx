@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, ExternalLink, Shield } from "lucide-react";
+import { Copy, Shield } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -21,11 +21,7 @@ interface ProvenanceDialogProps {
     status: ProvenanceStatus;
     creatorName: string;
     imageHashes: string;
-    chain: string;
-    transactionHash: string | null;
-    tokenId: string | null;
-    contractAddress: string | null;
-    polygonscanUrl?: string | null;
+    signature: string | null;
     createdAt: string;
     error: string | null;
   } | null;
@@ -38,11 +34,10 @@ function copyToClipboard(text: string, label: string) {
   );
 }
 
-function DetailRow({ label, value, copyable, href }: {
+function DetailRow({ label, value, copyable }: {
   label: string;
   value: string;
   copyable?: boolean;
-  href?: string;
 }) {
   return (
     <div className="space-y-1">
@@ -60,18 +55,6 @@ function DetailRow({ label, value, copyable, href }: {
           >
             <Copy className="h-3 w-3" />
           </Button>
-        )}
-        {href && (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0"
-          >
-            <Button variant="ghost" size="icon" className="h-6 w-6">
-              <ExternalLink className="h-3 w-3" />
-            </Button>
-          </a>
         )}
       </div>
     </div>
@@ -92,7 +75,7 @@ export default function ProvenanceDialog({ open, onOpenChange, record }: Provena
             Creator Provenance
           </DialogTitle>
           <DialogDescription>
-            On-chain proof of creation on {record.chain === "polygon" ? "Polygon" : record.chain}.
+            Cryptographically signed proof of creation.
           </DialogDescription>
         </DialogHeader>
 
@@ -131,27 +114,18 @@ export default function ProvenanceDialog({ open, onOpenChange, record }: Provena
             ))}
           </div>
 
-          {record.transactionHash && (
-            <DetailRow
-              label="Transaction"
-              value={record.transactionHash}
-              copyable
-              href={record.polygonscanUrl ?? undefined}
-            />
-          )}
-
-          {record.tokenId && (
-            <DetailRow label="Token ID" value={record.tokenId} copyable />
-          )}
-
-          {record.contractAddress && (
-            <DetailRow label="Contract" value={record.contractAddress} copyable />
+          {record.signature && (
+            <DetailRow label="Ed25519 Signature" value={record.signature} copyable />
           )}
 
           <DetailRow
             label="Registered"
             value={new Date(record.createdAt).toLocaleString()}
           />
+
+          <p className="text-xs text-muted-foreground">
+            Verify at: /api/provenance/verify?hash={"<any_hash_above>"}
+          </p>
         </div>
       </DialogContent>
     </Dialog>

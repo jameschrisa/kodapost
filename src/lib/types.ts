@@ -251,10 +251,10 @@ export interface ProvenanceData {
   softwareVersion: string;
 }
 
-/** On-chain provenance mint status */
-export type ProvenanceStatus = "pending" | "creating_token_type" | "minting" | "succeeded" | "failed";
+/** Provenance registration status */
+export type ProvenanceStatus = "pending" | "signed" | "failed";
 
-/** On-chain provenance record (client-safe subset of DB row, excludes creatorEmail) */
+/** Provenance record (client-safe subset of DB row, excludes creatorEmail) */
 export interface ProvenanceRecord {
   id: string;
   userId: string;
@@ -263,12 +263,7 @@ export interface ProvenanceRecord {
   creatorName: string;
   slideCount: number;
   platform: string | null;
-  chain: string;
-  contractAddress: string | null;
-  tokenTypeId: string | null;
-  mintId: string | null;
-  tokenId: string | null;
-  transactionHash: string | null;
+  signature: string | null;
   status: ProvenanceStatus;
   error: string | null;
   createdAt: string;
@@ -281,10 +276,7 @@ export interface ProvenanceVerification {
   creatorName?: string;
   createdAt?: string;
   platform?: string;
-  chain?: string;
-  transactionHash?: string;
-  polygonscanUrl?: string;
-  tokenId?: string;
+  signature?: string;
 }
 
 // -----------------------------------------------------------------------------

@@ -144,8 +144,8 @@ export const posts = sqliteTable("posts", {
 });
 
 /**
- * On-chain provenance records.
- * Tracks ERC-1155 token mints on Polygon linking image hashes to creators.
+ * Cryptographically signed provenance records.
+ * Links image SHA-256 hashes to creators via Ed25519 signatures.
  */
 export const provenanceRecords = sqliteTable("provenance_records", {
   /** Unique identifier (e.g., "prov_abc123") */
@@ -156,29 +156,19 @@ export const provenanceRecords = sqliteTable("provenance_records", {
   postId: text("post_id").references(() => posts.id),
   /** Comma-separated SHA-256 hashes of slide images */
   imageHashes: text("image_hashes").notNull(),
-  /** Creator name embedded in token metadata */
+  /** Creator name in the signed claim */
   creatorName: text("creator_name").notNull(),
-  /** Creator email for NFT2Email delivery */
+  /** Creator email (for records, not exposed to clients) */
   creatorEmail: text("creator_email").notNull(),
   /** Number of slides in the carousel */
   slideCount: integer("slide_count").notNull(),
   /** Platform the carousel was published to */
   platform: text("platform"),
-  /** Blockchain network */
-  chain: text("chain").notNull().default("polygon"),
-  /** Smart contract address */
-  contractAddress: text("contract_address"),
-  /** Venly token type ID */
-  tokenTypeId: text("token_type_id"),
-  /** Venly mint operation ID */
-  mintId: text("mint_id"),
-  /** On-chain token ID */
-  tokenId: text("token_id"),
-  /** On-chain transaction hash */
-  transactionHash: text("transaction_hash"),
-  /** Mint pipeline status */
+  /** Ed25519 signature of the provenance claim (hex-encoded) */
+  signature: text("signature"),
+  /** Registration status */
   status: text("status", {
-    enum: ["pending", "creating_token_type", "minting", "succeeded", "failed"],
+    enum: ["pending", "signed", "failed"],
   }).notNull().default("pending"),
   /** Error message if status === "failed" */
   error: text("error"),
