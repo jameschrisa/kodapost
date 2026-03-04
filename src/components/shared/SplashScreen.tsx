@@ -33,6 +33,8 @@ import {
   Fingerprint,
   Lock,
   ScanEye,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { IconBrandTelegram } from "@tabler/icons-react";
 import { KodaPostIcon, UserHexagonIcon } from "@/components/icons";
@@ -376,6 +378,7 @@ export function SplashScreen({
   const userInfo = useUserInfo();
   const [visible, setVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"telegram" | "mobileweb">("telegram");
   // Use window scroll for native mobile scrolling (no fixed container)
   const { scrollY } = useScroll();
   const orbY = useTransform(scrollY, [0, 600], [0, -120]);
@@ -1154,62 +1157,131 @@ export function SplashScreen({
                     Create Phonographic Carousels from Your Phone with{" "}
                     <span className="text-white/40">KodaPost + Telegram</span>
                   </h2>
-                  <div className="space-y-4 text-white/45 text-sm leading-relaxed">
-                    <p>
-                      Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft, all while you&apos;re still on the go.
-                    </p>
-                    <p>
-                      No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
-                    </p>
-                  </div>
+                  <p className="text-white/45 text-sm leading-relaxed">
+                    Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft, all while you&apos;re still on the go. No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
+                  </p>
 
-                  {/* Steps */}
-                  <div className="mt-8 space-y-4">
-                    {[
-                      { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
-                      { icon: IconBrandTelegram, label: "Send to KodaPost via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
-                      { icon: Sparkles, label: "KodaPost drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
-                      { icon: Camera, label: "Review and publish on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
-                    ].map((step, i) => (
-                      <div key={step.label} className="flex items-center gap-4">
-                        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step.bg}`}>
-                          {step.tabler ? (
-                            <step.icon size={18} className={step.color} />
-                          ) : (
-                            <step.icon className={`h-[18px] w-[18px] ${step.color}`} />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
-                          <span className="text-sm font-medium text-white/70">{step.label}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Telegram / Mobile Web tabs */}
+                  <div className="mt-8">
+                    <div className="flex gap-1 rounded-lg bg-white/[0.04] p-1 mb-6">
+                      <button
+                        type="button"
+                        onClick={() => setMobileTab("telegram")}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-all ${
+                          mobileTab === "telegram"
+                            ? "bg-sky-500/15 text-sky-400 shadow-sm"
+                            : "text-white/40 hover:text-white/60"
+                        }`}
+                      >
+                        <IconBrandTelegram size={16} />
+                        Telegram
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMobileTab("mobileweb")}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-all ${
+                          mobileTab === "mobileweb"
+                            ? "bg-purple-500/15 text-purple-400 shadow-sm"
+                            : "text-white/40 hover:text-white/60"
+                        }`}
+                      >
+                        <Globe className="h-4 w-4" />
+                        Mobile Web
+                      </button>
+                    </div>
 
-                  {/* Add to Home Screen CTA */}
-                  <div className="mt-10 rounded-xl border border-purple-500/30 bg-purple-950/60 p-5 shadow-[0_0_20px_rgba(124,58,237,0.15)]">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
-                        <Download className="h-[18px] w-[18px] text-purple-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-white">Install KodaPost on Your Phone</h3>
-                        <p className="mt-1 text-xs text-white/40 leading-relaxed">
-                          Add KodaPost to your home screen for instant, full-screen access. No app store needed.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 space-y-2.5 pl-12">
-                      <div className="flex items-center gap-2.5 text-xs text-white/50">
-                        <Share className="h-3.5 w-3.5 shrink-0 text-blue-400" />
-                        <span><strong className="text-white/70">iPhone:</strong> Tap <span className="text-white/70">Share</span> then <span className="text-white/70">Add to Home Screen</span></span>
-                      </div>
-                      <div className="flex items-center gap-2.5 text-xs text-white/50">
-                        <PlusSquare className="h-3.5 w-3.5 shrink-0 text-green-400" />
-                        <span><strong className="text-white/70">Android:</strong> Tap <span className="text-white/70">Menu (&#8942;)</span> then <span className="text-white/70">Add to Home screen</span></span>
-                      </div>
-                    </div>
+                    <AnimatePresence mode="wait">
+                      {mobileTab === "telegram" ? (
+                        <motion.div
+                          key="telegram"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {/* Telegram workflow steps */}
+                          <div className="space-y-4">
+                            {[
+                              { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
+                              { icon: IconBrandTelegram, label: "Send to KodaPost via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
+                              { icon: Sparkles, label: "KodaPost drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
+                              { icon: Camera, label: "Review and publish on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
+                            ].map((step, i) => (
+                              <div key={step.label} className="flex items-center gap-4">
+                                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step.bg}`}>
+                                  {step.tabler ? (
+                                    <step.icon size={18} className={step.color} />
+                                  ) : (
+                                    <step.icon className={`h-[18px] w-[18px] ${step.color}`} />
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
+                                  <span className="text-sm font-medium text-white/70">{step.label}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="mt-5 text-xs text-white/35 leading-relaxed">
+                            Open Telegram and search for <strong className="text-white/60">@kodacontentbot</strong>. Tap Start, send 1 to 10 photos, describe what the post is about, and choose a vibe. The bot generates your caption and builds the carousel for you. Use the preview link to review slides, copy captions, and download images right from your phone.
+                          </p>
+                          <div className="mt-5">
+                            <Link
+                              href="/guide#telegram"
+                              className="inline-flex items-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-sm font-medium text-sky-400 hover:bg-sky-500/20 transition-colors"
+                            >
+                              Learn More
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="mobileweb"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {/* Install KodaPost on Your Phone */}
+                          <div className="rounded-xl border border-purple-500/30 bg-purple-950/60 p-5 shadow-[0_0_20px_rgba(124,58,237,0.15)]">
+                            <div className="flex items-start gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+                                <Download className="h-[18px] w-[18px] text-purple-400" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="text-sm font-semibold text-white">Install KodaPost on Your Phone</h3>
+                                <p className="mt-1 text-xs text-white/40 leading-relaxed">
+                                  Add KodaPost to your home screen for instant, full-screen access. No app store needed. KodaPost works as a Progressive Web App, so it launches in its own window, works offline, and feels just like a native app.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-4 space-y-2.5 pl-12">
+                              <div className="flex items-center gap-2.5 text-xs text-white/50">
+                                <Share className="h-3.5 w-3.5 shrink-0 text-blue-400" />
+                                <span><strong className="text-white/70">iPhone:</strong> Open KodaPost in Safari, tap <span className="text-white/70">Share</span>, then <span className="text-white/70">Add to Home Screen</span></span>
+                              </div>
+                              <div className="flex items-center gap-2.5 text-xs text-white/50">
+                                <PlusSquare className="h-3.5 w-3.5 shrink-0 text-green-400" />
+                                <span><strong className="text-white/70">Android:</strong> Open KodaPost in Chrome, tap <span className="text-white/70">Menu (&#8942;)</span>, then <span className="text-white/70">Add to Home screen</span></span>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="mt-5 text-xs text-white/35 leading-relaxed">
+                            Once installed, KodaPost opens full-screen from your home screen with no browser bar. You can upload photos, apply filters, edit text overlays, and even publish directly from your phone. Your projects sync automatically, so you can start on mobile and finish on desktop.
+                          </p>
+                          <div className="mt-5">
+                            <Link
+                              href="/guide#mobile-web"
+                              className="inline-flex items-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-sm font-medium text-purple-400 hover:bg-purple-500/20 transition-colors"
+                            >
+                              Learn More
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                 </motion.div>
@@ -1220,13 +1292,23 @@ export function SplashScreen({
           {/* ================================================================
               CTA SECTION
               ================================================================ */}
-          <section className="relative py-16 sm:py-32 px-6 bg-gradient-to-b from-zinc-900 to-black">
+          <section className="relative py-16 sm:py-32 px-6 overflow-hidden">
+            {/* Gallery background image */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/landing/gallerybg.jpg"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Dark overlay for readability */}
+            <div className="absolute inset-0 bg-black/75" />
             <motion.div
               variants={sectionReveal}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.4 }}
-              className="max-w-3xl mx-auto text-center"
+              className="relative z-10 max-w-3xl mx-auto text-center"
             >
               <div className="relative rounded-[2rem] border border-white/[0.06] bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-purple-500/10 p-8 sm:p-12 md:p-16 backdrop-blur-xl overflow-hidden">
                 {/* Background glow */}

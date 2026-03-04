@@ -195,7 +195,7 @@ const FAQ_DATA: FAQItem[] = [
     category: "Publishing",
     question: "Which platforms can I publish to?",
     answer:
-      "KodaPost supports direct publishing to Instagram, TikTok, LinkedIn, YouTube, Reddit, and Lemon8 via OAuth. You can also export a platform-optimised ZIP to post manually.",
+      "KodaPost supports direct publishing to Instagram, TikTok, and LinkedIn via OAuth. YouTube, YouTube Shorts, X/Twitter, and Reddit support export for manual posting. You can also export a platform-optimised ZIP for any platform.",
   },
   {
     category: "Publishing",
@@ -565,89 +565,83 @@ export default function SupportPage() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr"
           >
-            {/* FAQ link */}
-            <motion.a
-              variants={staggerChild}
-              href="#faq"
-              className="group flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-                <HelpCircle className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-amber-300 transition-colors">
-                  Browse FAQs
-                </h3>
-                <p className="text-xs text-white/40 mt-0.5">
-                  Answers to common questions
-                </p>
-              </div>
-              <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
-            </motion.a>
-
-            {/* User Guide link */}
-            <motion.div variants={staggerChild}>
-              <Link
-                href="/guide"
-                className="group flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400">
-                  <BookOpen className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white group-hover:text-blue-300 transition-colors">
-                    User Guide
-                  </h3>
-                  <p className="text-xs text-white/40 mt-0.5">
-                    Step-by-step documentation
-                  </p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
-              </Link>
-            </motion.div>
-
-            {/* Contact link */}
-            <motion.button
-              variants={staggerChild}
-              onClick={scrollToContact}
-              className="group flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all text-left"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
-                <MessageCircle className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-white group-hover:text-purple-300 transition-colors">
-                  Contact Us
-                </h3>
-                <p className="text-xs text-white/40 mt-0.5">
-                  Send a message to our team
-                </p>
-              </div>
-              <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
-            </motion.button>
-
-            {/* Quick Start link */}
-            <motion.div variants={staggerChild}>
-              <Link
-                href="/quickstart"
-                className="group flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
-                  <Zap className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
-                    Quick Start Guide
-                  </h3>
-                  <p className="text-xs text-white/40 mt-0.5">
-                    Visual walkthrough in 5 steps
-                  </p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
-              </Link>
-            </motion.div>
+            {[
+              {
+                href: "#faq",
+                icon: HelpCircle,
+                iconBg: "bg-amber-500/10",
+                iconColor: "text-amber-400",
+                hoverColor: "group-hover:text-amber-300",
+                title: "Browse FAQs",
+                description: "Answers to common questions",
+              },
+              {
+                href: "/guide",
+                icon: BookOpen,
+                iconBg: "bg-blue-500/10",
+                iconColor: "text-blue-400",
+                hoverColor: "group-hover:text-blue-300",
+                title: "User Guide",
+                description: "Step-by-step documentation",
+              },
+              {
+                href: "#contact",
+                icon: MessageCircle,
+                iconBg: "bg-purple-500/10",
+                iconColor: "text-purple-400",
+                hoverColor: "group-hover:text-purple-300",
+                title: "Contact Us",
+                description: "Send a message to our team",
+                onClick: scrollToContact,
+              },
+              {
+                href: "/quickstart",
+                icon: Zap,
+                iconBg: "bg-emerald-500/10",
+                iconColor: "text-emerald-400",
+                hoverColor: "group-hover:text-emerald-300",
+                title: "Quick Start Guide",
+                description: "Visual walkthrough in 5 steps",
+              },
+            ].map((item) => {
+              const inner = (
+                <span className="group flex h-full flex-col justify-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.iconBg} ${item.iconColor}`}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`text-sm font-semibold text-white ${item.hoverColor} transition-colors`}>
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-white/40 mt-0.5">
+                        {item.description}
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-white/20 shrink-0 group-hover:text-white/40 transition-colors" />
+                  </div>
+                </span>
+              );
+              return (
+                <motion.div key={item.title} variants={staggerChild} className="flex">
+                  {item.onClick ? (
+                    <button type="button" onClick={item.onClick} className="flex w-full text-left">
+                      {inner}
+                    </button>
+                  ) : item.href.startsWith("#") ? (
+                    <a href={item.href} className="flex w-full">
+                      {inner}
+                    </a>
+                  ) : (
+                    <Link href={item.href} className="flex w-full">
+                      {inner}
+                    </Link>
+                  )}
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>

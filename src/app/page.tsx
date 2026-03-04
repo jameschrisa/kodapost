@@ -6,7 +6,7 @@ import { TourCard } from "@/components/tour/TourCard";
 import { appTourSteps } from "@/components/tour/tourSteps";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Send } from "lucide-react";
+import { ArrowRight, FolderOpen, Send } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 import { useClerkAuth } from "@/hooks/useClerkAuth";
 import { AnimatePresence, motion } from "framer-motion";
@@ -57,6 +57,7 @@ import { cn, computeConfigHash } from "@/lib/utils";
 import { SquarePenIcon } from "@/components/icons/animated/square-pen";
 import { CalendarDaysIcon } from "@/components/icons/animated/calendar-days";
 import { ContentSchedule } from "@/components/history/ContentSchedule";
+import { ProjectsView } from "@/components/projects/ProjectsView";
 import { AudioPanel } from "@/components/audio";
 import { SavedDraftCard } from "@/components/shared/SavedDraftCard";
 import { DraftListPanel } from "@/components/shared/DraftListPanel";
@@ -80,7 +81,7 @@ import type { AudioClip, CarouselProject, CarouselSlide, DraftMetadata, PostMode
 import { TourContext } from "@/components/tour/TourContext";
 
 type Step = "upload" | "configure" | "edit" | "review" | "publish";
-type AppMode = "create" | "schedule";
+type AppMode = "create" | "projects" | "schedule";
 
 const STEP_ORDER: Step[] = ["upload", "configure", "edit", "review", "publish"];
 
@@ -893,6 +894,15 @@ export default function Home() {
     }
   }, [activeDraftId]);
 
+  const handleContinueProject = useCallback(async (draftId: string) => {
+    if (draftId === activeDraftId) {
+      setAppMode("create");
+      return;
+    }
+    await handleSwitchDraft(draftId);
+    setAppMode("create");
+  }, [activeDraftId, handleSwitchDraft]);
+
   // -- Keyboard shortcuts --
   const handleSaveShortcut = useCallback(() => {
     if (step === "configure" || step === "edit") {
@@ -1054,6 +1064,26 @@ export default function Home() {
           </button>
           <button
             type="button"
+            onClick={() => setAppMode("projects")}
+            className={cn(
+              "relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
+              appMode === "projects"
+                ? "text-purple-400"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <FolderOpen size={16} />
+            Projects
+            {appMode === "projects" && (
+              <motion.div
+                layoutId="app-mode-indicator"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+          <button
+            type="button"
             onClick={() => setAppMode("schedule")}
             className={cn(
               "relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
@@ -1084,6 +1114,22 @@ export default function Home() {
       {appMode === "schedule" && (
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-8 sm:px-6">
           <ContentSchedule />
+        </main>
+      )}
+
+      {/* === PROJECTS VIEW === */}
+      {appMode === "projects" && (
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-8 sm:px-6">
+          <ProjectsView
+            drafts={draftList}
+            activeDraftId={activeDraftId}
+            draftLimit={userPlan.draftLimit}
+            planName={userPlan.config.displayName}
+            onContinue={handleContinueProject}
+            onDelete={handleDeleteDraft}
+            onNewProject={handleNewDraft}
+            onRename={handleRenameDraft}
+          />
         </main>
       )}
 
