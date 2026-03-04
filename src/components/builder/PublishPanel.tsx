@@ -41,6 +41,7 @@ import { logActivity } from "@/lib/activity-log";
 import { useLoadingStore } from "@/lib/stores/loading-store";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import RegisterProvenanceButton from "@/components/provenance/RegisterProvenanceButton";
 import type { CarouselProject, OAuthConnection, Platform, BrandWatermarkSettings } from "@/lib/types";
 
 export const PLATFORMS: {
@@ -128,6 +129,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [brandWatermark, setBrandWatermark] = useState<BrandWatermarkSettings | null>(null);
   const [watermarkText, setWatermarkText] = useState("");
   const [connectionError, setConnectionError] = useState(false);
+  const [provenanceHashes, setProvenanceHashes] = useState<string[]>([]);
+  const [provenancePlatform, setProvenancePlatform] = useState<string | undefined>();
+  const [provenancePostId, setProvenancePostId] = useState<string | undefined>();
   const cancelExportRef = useRef(false);
   const exportTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -277,6 +281,16 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             ? "Your carousel is live."
             : "Your carousel has been published.",
         });
+
+        // Capture image hashes and post ID for provenance registration
+        const hashes = result.data
+          .filter((item) => item.imageHash)
+          .map((item) => item.imageHash as string);
+        if (hashes.length > 0) {
+          setProvenanceHashes(hashes);
+          setProvenancePlatform(platform);
+          setProvenancePostId(publishData.postId ?? publishData.id);
+        }
       } else {
         toast.error("Post failed", {
           description: publishData.error || "Unknown error occurred",
@@ -463,6 +477,15 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       URL.revokeObjectURL(url);
 
       setIsComplete(true);
+
+      // Capture image hashes for provenance registration
+      const hashes = result.data
+        .filter((item) => item.imageHash)
+        .map((item) => item.imageHash as string);
+      if (hashes.length > 0) {
+        setProvenanceHashes(hashes);
+        setProvenancePlatform(platforms[0]);
+      }
 
       const platformNames = platforms
         .map((p) => PLATFORMS.find((pl) => pl.key === p)?.label)
@@ -1378,6 +1401,19 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
               );
             })}
           </div>
+
+          {/* Provenance registration — shown after successful publish/export when hashes are available */}
+          {hasProvenance && provenanceHashes.length > 0 && (
+            <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+              <RegisterProvenanceButton
+                imageHashes={provenanceHashes}
+                creatorName={creatorName}
+                slideCount={readySlides.length}
+                postId={provenancePostId}
+                platform={provenancePlatform}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

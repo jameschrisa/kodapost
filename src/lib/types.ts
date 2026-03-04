@@ -251,6 +251,42 @@ export interface ProvenanceData {
   softwareVersion: string;
 }
 
+/** On-chain provenance mint status */
+export type ProvenanceStatus = "pending" | "creating_token_type" | "minting" | "succeeded" | "failed";
+
+/** On-chain provenance record (client-safe subset of DB row, excludes creatorEmail) */
+export interface ProvenanceRecord {
+  id: string;
+  userId: string;
+  postId: string | null;
+  imageHashes: string;
+  creatorName: string;
+  slideCount: number;
+  platform: string | null;
+  chain: string;
+  contractAddress: string | null;
+  tokenTypeId: string | null;
+  mintId: string | null;
+  tokenId: string | null;
+  transactionHash: string | null;
+  status: ProvenanceStatus;
+  error: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Public verification result for an image hash */
+export interface ProvenanceVerification {
+  verified: boolean;
+  creatorName?: string;
+  createdAt?: string;
+  platform?: string;
+  chain?: string;
+  transactionHash?: string;
+  polygonscanUrl?: string;
+  tokenId?: string;
+}
+
 // -----------------------------------------------------------------------------
 // Image Source Strategy Types
 // -----------------------------------------------------------------------------

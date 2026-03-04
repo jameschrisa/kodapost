@@ -46,6 +46,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
   "/api/contact",
   "/api/health(.*)",
+  "/api/provenance/verify",
 ]);
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
