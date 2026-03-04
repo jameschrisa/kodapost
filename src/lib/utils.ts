@@ -25,6 +25,7 @@ export function computeConfigHash(project: CarouselProject): string {
     uploadedImageIds: project.uploadedImages.map(img => img.id),
     csvOverrides: project.csvOverrides,
     storyTranscription: project.storyTranscription,
+    language: project.language,
   };
   return JSON.stringify(relevantFields);
 }
@@ -65,8 +66,15 @@ export function parseDataUri(dataUri: string): { mediaType: string; data: string
 // =============================================================================
 
 /**
+ * Maximum canvas pixel count for mobile Safari (~16.7MP).
+ * Exceeding this causes silent failures or blank output on iOS devices.
+ */
+const MAX_CANVAS_PIXELS = 16_000_000;
+
+/**
  * Generates a lightweight JPEG thumbnail from a source image URL (blob: or data: URI).
  * Uses an off-screen canvas to scale down to maxWidth, preserving aspect ratio.
+ * Enforces a maximum pixel budget to avoid mobile Safari canvas limits.
  * Returns a JPEG data URI (~50-150KB vs 5-10MB originals).
  */
 export async function generateThumbnail(
@@ -80,10 +88,18 @@ export async function generateThumbnail(
       let w = img.naturalWidth;
       let h = img.naturalHeight;
 
-      // Skip resize if already smaller than maxWidth
+      // Scale down to maxWidth first
       if (w > maxWidth) {
         h = Math.round((h * maxWidth) / w);
         w = maxWidth;
+      }
+
+      // Enforce mobile Safari canvas pixel budget
+      const pixels = w * h;
+      if (pixels > MAX_CANVAS_PIXELS) {
+        const scale = Math.sqrt(MAX_CANVAS_PIXELS / pixels);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
       }
 
       const canvas = document.createElement("canvas");

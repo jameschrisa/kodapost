@@ -148,7 +148,12 @@ export async function processGenerationJob(
     try {
       const captionResult = await generateCaption(
         config.theme,
-        config.keywords || []
+        config.keywords || [],
+        undefined,
+        undefined,
+        config.captionStyle,
+        undefined,
+        config.language
       );
       if (captionResult.success) {
         caption = captionResult.data;

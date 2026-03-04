@@ -65,6 +65,7 @@ import { AdvancedSettingsDialog } from "@/components/shared/AdvancedSettingsDial
 import { EmptyStateGuide, hasSeenGuide, markGuideSeen } from "@/components/shared/EmptyStateGuide";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useLanguage } from "@/i18n/context";
 import { logActivity } from "@/lib/activity-log";
 import {
   listDraftMetadata,
@@ -240,6 +241,9 @@ export default function Home() {
 
   // Plan-aware limits
   const userPlan = useUserPlan();
+
+  // Sync i18n language preference into project for AI generation
+  const { language: i18nLanguage } = useLanguage();
 
   // Prefetch key routes so navigation feels instant
   useEffect(() => {
@@ -547,6 +551,7 @@ export default function Home() {
     // needs image metadata (id, filename, dimensions) — not the pixels.
     const lightProject: CarouselProject = {
       ...project,
+      language: project.language || i18nLanguage,
       uploadedImages: project.uploadedImages.map(img => ({
         ...img,
         url: "", // Strip base64 — restored client-side after response
@@ -609,7 +614,7 @@ export default function Home() {
           : `${readySlides} slides created successfully.`,
       });
     }
-  }, [project, navigateToStep, activeDraftId]);
+  }, [project, navigateToStep, activeDraftId, i18nLanguage]);
 
   const handleEditComplete = useCallback(() => {
     // Auto-save before entering Review

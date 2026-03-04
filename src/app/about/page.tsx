@@ -20,6 +20,8 @@ import {
   Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/i18n/context";
+import { LanguageSwitcher } from "@/i18n/LanguageSwitcher";
 
 /* ── Animation helpers (match SplashScreen) ── */
 
@@ -51,88 +53,51 @@ const staggerChild = {
   },
 };
 
-/* ── Data ── */
+/* ── Data (icons, colors, layout metadata only) ── */
 
-const PAIN_POINTS = [
-  { icon: Layers, label: "Resizing for every platform", color: "from-violet-500 to-purple-600" },
-  { icon: MessageCircle, label: "Writing captions that land", color: "from-amber-500 to-orange-600" },
-  { icon: Palette, label: "Formatting carousels & layouts", color: "from-fuchsia-500 to-pink-600" },
-  { icon: Shield, label: "Keeping your brand voice consistent", color: "from-emerald-500 to-teal-600" },
+const PAIN_POINTS_META = [
+  { icon: Layers, color: "from-violet-500 to-purple-600" },
+  { icon: MessageCircle, color: "from-amber-500 to-orange-600" },
+  { icon: Palette, color: "from-fuchsia-500 to-pink-600" },
+  { icon: Shield, color: "from-emerald-500 to-teal-600" },
 ];
 
-const VALUES = [
-  {
-    icon: Fingerprint,
-    title: "Creators Own Their Voice",
-    description:
-      "AI generates options. You make the decisions. Your audience follows you for your perspective, and we protect that.",
-    style: "accent" as const,
-    span: "md:col-span-2",
-  },
-  {
-    icon: Zap,
-    title: "Busywork Is the Enemy of Craft",
-    description:
-      "Formatting a phonographic carousel shouldn't take longer than the idea behind it. We automate the mechanics so you can invest in the meaning.",
-    style: "glass" as const,
-    span: "",
-  },
-  {
-    icon: Eye,
-    title: "Tools Should Be Transparent",
-    description:
-      "You always see what Koda is doing and why. No black-box publishing, no surprise edits, no hidden algorithms shaping your content.",
-    style: "dark" as const,
-    span: "",
-  },
-  {
-    icon: Heart,
-    title: "Great Content Is Human Content",
-    description:
-      "The best posts have fingerprints on them: imperfect, opinionated, real. We're here to polish, not to homogenize.",
-    style: "glass" as const,
-    span: "md:col-span-2",
-  },
+const VALUES_META = [
+  { icon: Fingerprint, style: "accent" as const, span: "md:col-span-2" },
+  { icon: Zap, style: "glass" as const, span: "" },
+  { icon: Eye, style: "dark" as const, span: "" },
+  { icon: Heart, style: "glass" as const, span: "md:col-span-2" },
 ];
 
-const STEPS = [
-  {
-    icon: ImagePlus,
-    title: "Upload Your Images",
-    description: "Bring your photos and tell Koda what your post is about.",
-    accent: "from-violet-500 to-purple-600",
-    glowColor: "hsl(270 70% 55% / 0.25)",
-  },
-  {
-    icon: Sparkles,
-    title: "Koda Generates Options",
-    description: "Headlines, captions, and layouts tailored to your vibe and platform.",
-    accent: "from-fuchsia-500 to-pink-600",
-    glowColor: "hsl(320 70% 55% / 0.25)",
-  },
-  {
-    icon: Palette,
-    title: "You Review & Refine",
-    description: "Edit text, adjust styling, crop images, and tweak filters until it feels right.",
-    accent: "from-amber-500 to-orange-600",
-    glowColor: "hsl(30 95% 55% / 0.25)",
-  },
-  {
-    icon: Share2,
-    title: "Publish Directly",
-    description: "To Instagram, Telegram, and more, or export on your own schedule.",
-    accent: "from-emerald-500 to-teal-600",
-    glowColor: "hsl(175 80% 50% / 0.25)",
-  },
+const STEPS_META = [
+  { icon: ImagePlus, accent: "from-violet-500 to-purple-600", glowColor: "hsl(270 70% 55% / 0.25)" },
+  { icon: Sparkles, accent: "from-fuchsia-500 to-pink-600", glowColor: "hsl(320 70% 55% / 0.25)" },
+  { icon: Palette, accent: "from-amber-500 to-orange-600", glowColor: "hsl(30 95% 55% / 0.25)" },
+  { icon: Share2, accent: "from-emerald-500 to-teal-600", glowColor: "hsl(175 80% 50% / 0.25)" },
+];
+
+const WORKFLOW_META = [
+  { icon: ImagePlus, color: "text-violet-400", bg: "bg-violet-500/10" },
+  { icon: Sparkles, color: "text-amber-400", bg: "bg-amber-500/10" },
+  { icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { icon: Share2, color: "text-blue-400", bg: "bg-blue-500/10" },
 ];
 
 /* ── Page Component ── */
 
 export default function AboutPage() {
+  const { t } = useTranslation("about");
+  const { t: tc } = useTranslation("common");
+
   return (
     <div className="overflow-hidden">
       {/* ═══ 1. HERO ═══ */}
       <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden px-6 py-32">
+        {/* Language switcher - top right */}
+        <div className="absolute right-6 top-6 z-20">
+          <LanguageSwitcher compact />
+        </div>
+
         {/* Background image with gradient overlay */}
         <div
           className="absolute inset-0"
@@ -186,7 +151,7 @@ export default function AboutPage() {
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-purple-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-purple-400"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            About KodaPost
+            {t("hero.badge")}
           </motion.div>
 
           <motion.h1
@@ -196,11 +161,11 @@ export default function AboutPage() {
             className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl"
           >
             <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500 bg-clip-text text-transparent">
-              Your Creative Vision,
+              {t("hero.title.line1")}
             </span>
             <br />
             <span className="text-white">
-              Amplified.
+              {t("hero.title.line2")}
             </span>
           </motion.h1>
 
@@ -210,9 +175,7 @@ export default function AboutPage() {
             transition={{ duration: 0.6, delay: 0.3, ease: easeOutExpo }}
             className="mx-auto mt-6 max-w-2xl text-lg text-white/45"
           >
-            We build tools that handle the tedious parts of content publishing
-            so you can focus on the work that actually matters: telling your
-            story, your way.
+            {t("hero.description")}
           </motion.p>
         </div>
       </section>
@@ -229,21 +192,18 @@ export default function AboutPage() {
           {/* Text */}
           <div>
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-400">
-              The Problem
+              {t("problem.badge")}
             </span>
             <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
-              Creating great content isn&rsquo;t the hard part.
+              {t("problem.heading")}
             </h2>
             <p className="mt-4 text-white/45 leading-relaxed">
-              The hard part is everything that comes after: resizing for every
-              platform, writing captions that land, formatting carousels,
-              keeping your brand voice consistent across channels. The busywork
-              eats the hours you should spend making things.
+              {t("problem.p1")}
             </p>
             <p className="mt-4 text-white/45 leading-relaxed">
-              Meanwhile, fully automated AI tools promise to &ldquo;do it all
-              for you&rdquo; and strip out the one thing that makes your
-              content yours: <span className="text-white font-medium">you</span>.
+              {t("problem.p2.before")}
+              <span className="text-white font-medium">{t("problem.p2.bold")}</span>
+              {t("problem.p2.after")}
             </p>
           </div>
 
@@ -256,15 +216,15 @@ export default function AboutPage() {
             className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm sm:p-8"
           >
             <p className="mb-5 text-xs font-bold uppercase tracking-widest text-white/30">
-              Sound familiar?
+              {t("problem.soundFamiliar")}
             </p>
             <div className="space-y-4">
-              {PAIN_POINTS.map((point, i) => (
+              {PAIN_POINTS_META.map((point, i) => (
                 <motion.div key={i} variants={staggerChild} className="flex items-center gap-4">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${point.color}`}>
                     <point.icon className="h-5 w-5 text-white" />
                   </div>
-                  <p className="text-sm font-medium text-white/70">{point.label}</p>
+                  <p className="text-sm font-medium text-white/70">{t(`problem.painPoints.${i}`)}</p>
                 </motion.div>
               ))}
             </div>
@@ -292,23 +252,20 @@ export default function AboutPage() {
           </div>
 
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
-            Keep Humans in the Creative Driver&rsquo;s Seat
+            {t("mission.heading")}
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-white/45 leading-relaxed">
-            KodaPost exists to keep you in control. We handle the tedious,
-            time-consuming parts of content publishing: formatting,
-            captioning, and cross-platform adaptation, so you can focus on
-            telling your story, your way.
+            {t("mission.description")}
           </p>
 
           {/* Quote card */}
           <div className="mt-10 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-8 py-6 backdrop-blur-sm">
             <p className="text-xl font-medium italic text-white/80 sm:text-2xl" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
-              &ldquo;AI should be your production assistant, not your ghostwriter.&rdquo;
+              &ldquo;{t("mission.quote")}&rdquo;
             </p>
             <p className="mt-3 text-sm text-white/30">
-              Every headline Koda suggests is a starting point that you shape, refine, and approve. Nothing publishes without your say-so.
+              {t("mission.quoteCaption")}
             </p>
           </div>
         </motion.div>
@@ -325,9 +282,9 @@ export default function AboutPage() {
         >
           <div className="mb-10 text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-400">
-              Our Values
+              {t("values.badge")}
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">What We Believe</h2>
+            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">{t("values.heading")}</h2>
           </div>
 
           <motion.div
@@ -337,7 +294,7 @@ export default function AboutPage() {
             viewport={{ once: true, amount: 0.2 }}
             className="grid gap-5 md:grid-cols-2"
           >
-            {VALUES.map((value, i) => {
+            {VALUES_META.map((value, i) => {
               const Icon = value.icon;
               const isAccent = value.style === "accent";
               const isDark = value.style === "dark";
@@ -363,10 +320,10 @@ export default function AboutPage() {
                   </div>
 
                   <h3 className={`text-lg font-semibold ${isAccent ? "text-white" : "text-white"}`}>
-                    {value.title}
+                    {t(`values.${i}.title`)}
                   </h3>
                   <p className={`mt-2 text-sm leading-relaxed ${isAccent ? "text-white/80" : "text-white/45"}`}>
-                    {value.description}
+                    {t(`values.${i}.description`)}
                   </p>
                 </motion.div>
               );
@@ -387,10 +344,10 @@ export default function AboutPage() {
           <div className="mb-12 text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-fuchsia-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-fuchsia-400">
               <Sparkles className="h-3.5 w-3.5" />
-              How It Works
+              {t("howItWorks.badge")}
             </span>
             <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
-              Four steps. You&rsquo;re in control the whole way.
+              {t("howItWorks.heading")}
             </h2>
           </div>
 
@@ -401,7 +358,7 @@ export default function AboutPage() {
             viewport={{ once: true, amount: 0.2 }}
             className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
           >
-            {STEPS.map((step, i) => {
+            {STEPS_META.map((step, i) => {
               const Icon = step.icon;
               return (
                 <motion.div
@@ -421,11 +378,11 @@ export default function AboutPage() {
                     <Icon className="h-6 w-6 text-white" />
                   </div>
 
-                  <h3 className="text-base font-semibold text-white">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/45">{step.description}</p>
+                  <h3 className="text-base font-semibold text-white">{t(`howItWorks.steps.${i}.title`)}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/45">{t(`howItWorks.steps.${i}.description`)}</p>
 
                   {/* Arrow connector (desktop, between cards) */}
-                  {i < STEPS.length - 1 && (
+                  {i < STEPS_META.length - 1 && (
                     <ArrowRight className="absolute -right-3 top-1/2 hidden h-5 w-5 -translate-y-1/2 text-white/15 lg:block" />
                   )}
                 </motion.div>
@@ -448,18 +405,15 @@ export default function AboutPage() {
             <Users className="h-7 w-7 text-white" />
           </div>
 
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">Built by Creators</h2>
+          <h2 className="text-3xl font-bold text-white sm:text-4xl">{t("team.heading")}</h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-white/45 leading-relaxed">
-            KodaPost is built by creators who got tired of the gap between
-            having a great idea and getting it out into the world. We&rsquo;re
-            a small, independent team focused on one thing: making the content
-            pipeline faster without making it feel less human.
+            {t("team.description")}
           </p>
 
           <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm text-white/40">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            Indie team, shipping daily
+            {t("team.badge")}
           </div>
         </motion.div>
       </section>
@@ -478,21 +432,21 @@ export default function AboutPage() {
             <motion.div variants={staggerChild}>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
                 <Camera className="h-3.5 w-3.5" />
-                KodaPost Philosophy
+                {t("philosophy.badge")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
-                You Create.{" "}
-                <span className="text-white/40">KodaPost Assists.</span>
+                {t("philosophy.heading.youCreate")}{" "}
+                <span className="text-white/40">{t("philosophy.heading.kodaAssists")}</span>
               </h2>
               <div className="space-y-4 text-white/45 text-sm leading-relaxed">
                 <p>
-                  KodaPost is built on the belief that the best creative tools keep humans in the loop. KodaPost never takes over. It works alongside you, handling the tedious parts so you can focus on what matters: your story.
+                  {t("philosophy.p1")}
                 </p>
                 <p>
-                  Every caption, every filter, every crop is a suggestion you can accept, modify, or reject. Your creative vision stays front and center. KodaPost is the assistant, never the artist.
+                  {t("philosophy.p2")}
                 </p>
                 <p>
-                  We believe authentic content comes from real people making real choices, not from fully automated pipelines. That&rsquo;s why every KodaPost phonographic carousel is a collaboration between you and your AI-powered creative assistant. Creator Provenance goes further, embedding your authorship directly into every export so your work stays yours.
+                  {t("philosophy.p3")}
                 </p>
               </div>
             </motion.div>
@@ -501,19 +455,14 @@ export default function AboutPage() {
             <motion.div variants={staggerChild} className="relative">
               <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden">
                 <div className="space-y-5">
-                  {[
-                    { label: "You upload your photos", icon: ImagePlus, color: "text-violet-400", bg: "bg-violet-500/10" },
-                    { label: "KodaPost suggests captions & styles", icon: Sparkles, color: "text-amber-400", bg: "bg-amber-500/10" },
-                    { label: "You review, edit, and approve", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-                    { label: "Publish on your terms", icon: Share2, color: "text-blue-400", bg: "bg-blue-500/10" },
-                  ].map((step, i) => (
-                    <div key={step.label} className="flex items-center gap-4">
+                  {WORKFLOW_META.map((step, i) => (
+                    <div key={i} className="flex items-center gap-4">
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${step.bg}`}>
                         <step.icon className={`h-5 w-5 ${step.color}`} />
                       </div>
                       <div className="flex-1 flex items-center gap-3">
                         <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
-                        <span className="text-sm font-medium text-white/70">{step.label}</span>
+                        <span className="text-sm font-medium text-white/70">{t(`philosophy.workflow.${i}`)}</span>
                       </div>
                     </div>
                   ))}
@@ -545,11 +494,10 @@ export default function AboutPage() {
             </div>
 
             <h2 className="text-2xl font-bold text-white sm:text-3xl">
-              Questions? Let&rsquo;s Talk.
+              {t("cta.heading")}
             </h2>
             <p className="mx-auto mt-4 max-w-md text-white/45">
-              Feedback, partnership ideas, or just want to say hi? We&rsquo;d
-              love to hear from you.
+              {t("cta.description")}
             </p>
 
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
@@ -559,7 +507,7 @@ export default function AboutPage() {
               >
                 <a href="mailto:hello@kodapost.com">
                   <Mail className="mr-2 h-4 w-4" />
-                  Email Us
+                  {tc("button.emailUs")}
                 </a>
               </Button>
               <Button
@@ -568,7 +516,7 @@ export default function AboutPage() {
                 className="rounded-xl border-white/[0.1] bg-white/[0.03] text-white hover:bg-white/[0.06] transition-all"
               >
                 <Link href="/support">
-                  Support Page
+                  {tc("button.supportPage")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

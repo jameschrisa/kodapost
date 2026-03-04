@@ -298,7 +298,8 @@ export function ConfigurationPanel({
         project.storyTranscription,
         audioCtx,
         project.captionStyle,
-        project.customCaptionStyle
+        project.customCaptionStyle,
+        project.language
       );
       if (result.success) {
         setCaptionText(result.data);

@@ -17,6 +17,7 @@ import {
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { LanguageProvider } from "@/i18n/context";
 import { ApiProgressBar } from "@/components/shared/ApiProgressBar";
 import "./globals.css";
 
@@ -159,9 +160,11 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
           <body className={bodyClasses}>
             <ThemeProvider>
-              <ApiProgressBar />
-              {children}
-              <Toaster />
+              <LanguageProvider>
+                <ApiProgressBar />
+                {children}
+                <Toaster />
+              </LanguageProvider>
             </ThemeProvider>
           </body>
         </html>
@@ -173,8 +176,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={bodyClasses}>
         <ThemeProvider>
-          {children}
-          <Toaster />
+          <LanguageProvider>
+            {children}
+            <Toaster />
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -42,107 +42,43 @@ import { springGentle } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
 import { isClerkEnabled, useClerkAuth } from "@/hooks/useClerkAuth";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { useTranslation } from "@/i18n/context";
+import { LanguageSwitcher } from "@/i18n/LanguageSwitcher";
 
 // ---------------------------------------------------------------------------
-// Constants
+// Constants (non-translatable data only)
 // ---------------------------------------------------------------------------
 
-const QUOTES = [
-  { text: "Every image tells a story. Make yours unforgettable.", author: null },
-  { text: "Creativity takes courage.", author: "Henri Matisse" },
-  { text: "Design is intelligence made visible.", author: "Alina Wheeler" },
-  { text: "Every picture is a world.", author: "Hans Christian Andersen" },
-  { text: "Vision is the art of seeing what is invisible to others.", author: "Jonathan Swift" },
-  { text: "A photograph is a secret about a secret.", author: "Diane Arbus" },
-  { text: "Art is not what you see, but what you make others see.", author: "Edgar Degas" },
-  { text: "Light makes photography. Embrace light.", author: "George Eastman" },
-  { text: "To me, photography is an art of observation.", author: "Elliott Erwitt" },
-  { text: "The best stories are lived before they are told.", author: null },
-  { text: "Create with the heart; build with the mind.", author: "Criss Jami" },
-  { text: "In photography there is a reality so subtle that it becomes more real than reality.", author: "Alfred Stieglitz" },
+const QUOTES_META = [
+  { author: null },
+  { author: "Henri Matisse" },
+  { author: "Alina Wheeler" },
+  { author: "Hans Christian Andersen" },
+  { author: "Jonathan Swift" },
+  { author: "Diane Arbus" },
+  { author: "Edgar Degas" },
+  { author: "George Eastman" },
+  { author: "Elliott Erwitt" },
+  { author: null },
+  { author: "Criss Jami" },
+  { author: "Alfred Stieglitz" },
 ];
 
 const WORKFLOW_STEPS = [
-  {
-    icon: ImagePlus,
-    title: "Upload Your Photos",
-    description: "Drag and drop your best shots. Support for JPEG, PNG, WebP and HEIC up to 10 images.",
-    accent: "from-violet-500 to-purple-600",
-    glow: "violet",
-  },
-  {
-    icon: Palette,
-    title: "Style with Vintage Cameras",
-    description: "Choose from 10 iconic camera profiles and 9 retro film filters. KodaPost's AI writes your captions.",
-    accent: "from-fuchsia-500 to-pink-600",
-    glow: "fuchsia",
-  },
-  {
-    icon: Share2,
-    title: "Publish Everywhere",
-    description: "Export for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X. One click, every platform.",
-    accent: "from-amber-500 to-orange-600",
-    glow: "amber",
-  },
+  { icon: ImagePlus, accent: "from-violet-500 to-purple-600", glow: "violet" },
+  { icon: Palette, accent: "from-fuchsia-500 to-pink-600", glow: "fuchsia" },
+  { icon: Share2, accent: "from-amber-500 to-orange-600", glow: "amber" },
 ];
 
 const FEATURES = [
-  {
-    icon: Camera,
-    title: "Vintage Camera Profiles",
-    description: "Sony Mavica, Polaroid 600, Kodak EasyShare and 7 more iconic cameras recreated in code.",
-    span: "md:col-span-2",
-    style: "card" as const,
-  },
-  {
-    icon: Sparkles,
-    title: "Caption Writing Assistant",
-    description: "Tell your story and KodaPost can help draft captions and headlines that match your story.",
-    span: "",
-    style: "accent" as const,
-  },
-  {
-    icon: Layers,
-    title: "Retro Film Filters",
-    description: "1977, Earlybird, Lo-Fi, Nashville and more. Every pixel processed to feel like it came from film.",
-    span: "",
-    style: "card" as const,
-  },
-  {
-    icon: Music,
-    title: "Audio Clips",
-    description: "Browse and add royalty-free music clips with allowable licensing for use in your phonographic carousels.",
-    span: "",
-    style: "card" as const,
-  },
-  {
-    icon: Radio,
-    title: "Nano-Casts",
-    description: "Turn your phonographic carousel into a short-form audio story. Record a voiceover or let KodaPost generate one for you.",
-    span: "",
-    style: "dark" as const,
-  },
-  {
-    icon: LayoutTemplate,
-    title: "Customizable Templates",
-    description: "Start from beautifully designed carousel templates or build your own. Every element is fully customizable.",
-    span: "md:col-span-2",
-    style: "card" as const,
-  },
-  {
-    icon: Shield,
-    title: "Creator Provenance",
-    description: "Every export embeds your name, timestamp, and a unique image fingerprint into the file metadata. Add a visible watermark for instant attribution. Prove you made it first.",
-    span: "",
-    style: "card" as const,
-  },
-  {
-    icon: Calendar,
-    title: "Content Calendar",
-    description: "Schedule your phonographic carousels, track your creative output, and stay consistent without the burnout.",
-    span: "",
-    style: "dark" as const,
-  },
+  { icon: Camera, span: "md:col-span-2", style: "card" as const },
+  { icon: Sparkles, span: "", style: "accent" as const },
+  { icon: Layers, span: "", style: "card" as const },
+  { icon: Music, span: "", style: "card" as const },
+  { icon: Radio, span: "", style: "dark" as const },
+  { icon: LayoutTemplate, span: "md:col-span-2", style: "card" as const },
+  { icon: Shield, span: "", style: "card" as const },
+  { icon: Calendar, span: "", style: "dark" as const },
 ];
 
 const COLOR_CLASSES = {
@@ -163,6 +99,40 @@ function glowClasses(color: AccentColor): string {
 
 
 const SESSION_KEY = "kodapost:splash-shown";
+
+// ---------------------------------------------------------------------------
+// Segment data (non-translatable)
+// ---------------------------------------------------------------------------
+
+const SEGMENTS = [
+  {
+    id: "creators" as const,
+    color: "purple",
+    tagBg: "bg-purple-500/10",
+    tagText: "text-purple-400",
+    activeBg: "bg-purple-500",
+    image: "/assets/landing/creators.png",
+    segmentIndex: 0,
+  },
+  {
+    id: "brands" as const,
+    color: "amber",
+    tagBg: "bg-amber-500/10",
+    tagText: "text-amber-400",
+    activeBg: "bg-amber-500",
+    image: "/assets/landing/brands.png",
+    segmentIndex: 1,
+  },
+  {
+    id: "artists" as const,
+    color: "fuchsia",
+    tagBg: "bg-fuchsia-500/10",
+    tagText: "text-fuchsia-400",
+    activeBg: "bg-fuchsia-500",
+    image: "/assets/landing/artists.png",
+    segmentIndex: 2,
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Animation helpers
@@ -200,63 +170,11 @@ const staggerChild = {
 // Who It's For — Target Segment Tabs
 // ---------------------------------------------------------------------------
 
-const SEGMENTS = [
-  {
-    id: "creators" as const,
-    label: "Content Creators",
-    color: "purple",
-    tagBg: "bg-purple-500/10",
-    tagText: "text-purple-400",
-    activeBg: "bg-purple-500",
-    headline: "Turn your photo library into a content engine.",
-    description: "You already have the eye. KodaPost handles the production work so you can post consistently without burning out.",
-    image: "/assets/landing/creators.png",
-    points: [
-      { title: "Batch-Create a Week of Posts", text: "Upload once, get a full week of styled, captioned phonographic carousels ready to publish." },
-      { title: "AI Captions in Your Voice", text: "KodaPost writes scroll-stopping copy you edit and approve. Your voice, amplified." },
-      { title: "Publish Everywhere at Once", text: "Export optimized for Instagram, TikTok, LinkedIn, YouTube Shorts, Reddit, and X." },
-      { title: "Content Calendar", text: "Schedule carousels, track output, and stay consistent without the burnout." },
-    ],
-  },
-  {
-    id: "brands" as const,
-    label: "Indie Brands",
-    color: "amber",
-    tagBg: "bg-amber-500/10",
-    tagText: "text-amber-400",
-    activeBg: "bg-amber-500",
-    headline: "Your brand voice, amplified across every platform.",
-    description: "KodaPost gives your small team the same polished, consistent content output as brands ten times your size, without losing the authenticity that makes you different.",
-    image: "/assets/landing/brands.png",
-    points: [
-      { title: "Locked-In Brand Aesthetic", text: "Set your camera profile, film filter, fonts, and colors once. Every carousel matches automatically." },
-      { title: "Multi-Platform, No Reformatting", text: "One export covers every social channel with the right dimensions and aspect ratio." },
-      { title: "Creator Provenance", text: "Every export embeds your brand, timestamp, and a unique fingerprint. Prove you made it first." },
-      { title: "Stand Out from Canva Templates", text: "Vintage camera profiles and retro filters give your brand a visual differentiator competitors can't copy." },
-    ],
-  },
-  {
-    id: "artists" as const,
-    label: "Artists",
-    color: "fuchsia",
-    tagBg: "bg-fuchsia-500/10",
-    tagText: "text-fuchsia-400",
-    activeBg: "bg-fuchsia-500",
-    headline: "Your art deserves better than stock templates.",
-    description: "KodaPost's vintage aesthetic and human-in-the-loop approach means your portfolio carousels feel as intentional as the work itself.",
-    image: "/assets/landing/artists.png",
-    points: [
-      { title: "10 Vintage Camera Profiles", text: "Sony Mavica, Polaroid 600, Kodak EasyShare and more. Your work, through an iconic lens." },
-      { title: "Retro Film Filters", text: "1977, Earlybird, Lo-Fi, Nashville. Every pixel processed to feel like it came from film." },
-      { title: "Nano-Casts", text: "Turn your carousel into a short-form audio story. Add a voiceover to walk viewers through your process." },
-      { title: "You Stay in Control", text: "Every caption, crop, and filter is a suggestion you accept, modify, or reject. The assistant, never the artist." },
-    ],
-  },
-];
-
 function WhoItsForSection() {
+  const { t } = useTranslation("splash");
   const [activeTab, setActiveTab] = useState<"creators" | "brands" | "artists">("creators");
   const segment = SEGMENTS.find((s) => s.id === activeTab)!;
+  const si = segment.segmentIndex;
 
   return (
     <section id="who-its-for" className="relative py-16 sm:py-28 px-6 scroll-mt-16" style={{ backgroundImage: "linear-gradient(to bottom, rgba(24,24,27,0.85), rgba(9,9,11,0.9), rgba(24,24,27,0.85)), url('/assets/landing/color-grade.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
@@ -270,14 +188,14 @@ function WhoItsForSection() {
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
             <Users className="h-3.5 w-3.5" />
-            Who It&apos;s For
+            {t("whoItsFor.badge")}
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Built for People Who{" "}
-            <span className="text-white/40">Make Things.</span>
+            {t("whoItsFor.title")}{" "}
+            <span className="text-white/40">{t("whoItsFor.titleFaded")}</span>
           </h2>
           <p className="mt-3 text-white/40 max-w-lg">
-            Whether you&apos;re growing an audience, launching a brand, or sharing your art, KodaPost fits your workflow.
+            {t("whoItsFor.subtitle")}
           </p>
         </motion.div>
 
@@ -294,7 +212,7 @@ function WhoItsForSection() {
                   : "bg-white/[0.05] text-white/50 hover:bg-white/[0.08] hover:text-white/70"
               }`}
             >
-              {seg.label}
+              {t(`segments.${seg.segmentIndex}.label`)}
             </button>
           ))}
         </div>
@@ -312,17 +230,17 @@ function WhoItsForSection() {
             {/* Left — headline + description + image */}
             <div>
               <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${segment.tagBg} ${segment.tagText} text-xs font-bold uppercase tracking-widest mb-4`}>
-                {segment.label}
+                {t(`segments.${si}.label`)}
               </span>
               <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-4">
-                {segment.headline}
+                {t(`segments.${si}.headline`)}
               </h3>
               <p className="text-white/45 text-sm leading-relaxed">
-                {segment.description}
+                {t(`segments.${si}.description`)}
               </p>
               <Image
                 src={segment.image}
-                alt={segment.label}
+                alt={t(`segments.${si}.label`)}
                 width={1080}
                 height={650}
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -332,18 +250,18 @@ function WhoItsForSection() {
 
             {/* Right — value points */}
             <div className="space-y-4">
-              {segment.points.map((point, i) => (
+              {[0, 1, 2, 3].map((pi) => (
                 <div
-                  key={point.title}
+                  key={pi}
                   className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-3">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-[10px] font-bold text-white/30">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(pi + 1).padStart(2, "0")}
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-white">{point.title}</p>
-                      <p className="mt-1 text-xs text-white/40 leading-relaxed">{point.text}</p>
+                      <p className="text-sm font-semibold text-white">{t(`segments.${si}.points.${pi}.title`)}</p>
+                      <p className="mt-1 text-xs text-white/40 leading-relaxed">{t(`segments.${si}.points.${pi}.text`)}</p>
                     </div>
                   </div>
                 </div>
@@ -376,6 +294,8 @@ export function SplashScreen({
   const router = useRouter();
   const { isSignedIn } = useClerkAuth();
   const userInfo = useUserInfo();
+  const { t } = useTranslation("splash");
+  const { t: tc } = useTranslation("common"); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [visible, setVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<"telegram" | "mobileweb">("telegram");
@@ -414,7 +334,7 @@ export function SplashScreen({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Deterministic quote selection — rotates daily, avoids SSR/hydration mismatch flash.
-  const [quote] = useState(() => QUOTES[new Date().getDate() % QUOTES.length]);
+  const [quoteIndex] = useState(() => new Date().getDate() % QUOTES_META.length);
 
   const handleDismiss = () => setVisible(false);
 
@@ -430,6 +350,14 @@ export function SplashScreen({
     setVisible(false);
     onOpenTour?.();
   };
+
+  // Nav links data (non-translatable hrefs + keys for labels)
+  const NAV_LINKS = [
+    { labelKey: "nav.features", href: "#features", isPage: false },
+    { labelKey: "nav.pricing", href: "/billing", isPage: true },
+    { labelKey: "nav.about", href: "/about", isPage: true },
+    { labelKey: "nav.support", href: "/support", isPage: true },
+  ];
 
   return (
     <AnimatePresence onExitComplete={onComplete}>
@@ -451,7 +379,7 @@ export function SplashScreen({
                 type="button"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="flex items-center gap-2.5 cursor-pointer"
-                aria-label="Scroll to top"
+                aria-label={t("nav.scrollToTop")}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <defs>
@@ -465,28 +393,23 @@ export function SplashScreen({
                   <line x1="8" y1="16" x2="16" y2="8" stroke="url(#brand-gradient-nav)" />
                   <line x1="10.5" y1="18" x2="18" y2="10.5" stroke="url(#brand-gradient-nav)" />
                 </svg>
-                <span className="text-base font-bold tracking-tight text-white">KodaPost</span>
+                <span className="text-base font-bold tracking-tight text-white">{t("nav.brand")}</span>
               </button>
 
               {/* Nav links — hidden on mobile */}
               <nav className="hidden md:flex items-center gap-8">
-                {[
-                  { label: "Features", href: "#features", isPage: false },
-                  { label: "Pricing", href: "/billing", isPage: true },
-                  { label: "About", href: "/about", isPage: true },
-                  { label: "Support", href: "/support", isPage: true },
-                ].map((link) =>
+                {NAV_LINKS.map((link) =>
                   link.isPage ? (
                     <Link
-                      key={link.label}
+                      key={link.labelKey}
                       href={link.href}
                       className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </Link>
                   ) : (
                     <a
-                      key={link.label}
+                      key={link.labelKey}
                       href={link.href}
                       onClick={(e) => {
                         e.preventDefault();
@@ -496,7 +419,7 @@ export function SplashScreen({
                       }}
                       className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </a>
                   )
                 )}
@@ -507,13 +430,14 @@ export function SplashScreen({
                 type="button"
                 className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-label={mobileMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
 
               {/* Auth / CTA — hidden on mobile (moved into hamburger menu) */}
               <div className="hidden md:flex items-center gap-3">
+                <LanguageSwitcher compact className="text-white/50 hover:text-white hover:bg-white/[0.06]" />
                 {isClerkEnabled && isSignedIn ? (
                   <>
                     <button
@@ -534,7 +458,7 @@ export function SplashScreen({
                         </div>
                       )}
                       <span className="hidden sm:inline pr-1 font-medium">
-                        {userInfo.firstName || "Account"}
+                        {userInfo.firstName || t("nav.account")}
                       </span>
                     </button>
                     <Button
@@ -542,7 +466,7 @@ export function SplashScreen({
                       onClick={handleGetStarted}
                       className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
                     >
-                      Open App
+                      {t("nav.openApp")}
                     </Button>
                   </>
                 ) : isClerkEnabled ? (
@@ -551,7 +475,7 @@ export function SplashScreen({
                     asChild
                     className="rounded-xl bg-white/[0.08] hover:bg-white/[0.12] px-5 text-sm font-semibold text-white transition-all duration-200"
                   >
-                    <Link href="/sign-in">Log In</Link>
+                    <Link href="/sign-in">{t("nav.logIn")}</Link>
                   </Button>
                 ) : (
                   <Button
@@ -559,7 +483,7 @@ export function SplashScreen({
                     onClick={handleGetStarted}
                     className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
                   >
-                    Launch App
+                    {t("nav.launchApp")}
                   </Button>
                 )}
               </div>
@@ -577,24 +501,19 @@ export function SplashScreen({
                 className="sticky top-[57px] z-40 overflow-hidden md:hidden border-b border-white/[0.06] bg-zinc-950/95 backdrop-blur-xl"
               >
                 <nav className="max-w-5xl mx-auto flex flex-col gap-1 px-6 py-4">
-                  {[
-                    { label: "Features", href: "#features", isPage: false },
-                    { label: "Pricing", href: "/billing", isPage: true },
-                    { label: "About", href: "/about", isPage: true },
-                    { label: "Support", href: "/support", isPage: true },
-                  ].map((link) =>
+                  {NAV_LINKS.map((link) =>
                     link.isPage ? (
                       <Link
-                        key={link.label}
+                        key={link.labelKey}
                         href={link.href}
                         onClick={() => setMobileMenuOpen(false)}
                         className="block rounded-lg px-3 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
                       >
-                        {link.label}
+                        {t(link.labelKey)}
                       </Link>
                     ) : (
                       <a
-                        key={link.label}
+                        key={link.labelKey}
                         href={link.href}
                         onClick={(e) => {
                           e.preventDefault();
@@ -605,10 +524,14 @@ export function SplashScreen({
                         }}
                         className="block rounded-lg px-3 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
                       >
-                        {link.label}
+                        {t(link.labelKey)}
                       </a>
                     )
                   )}
+                  {/* Language switcher in mobile menu */}
+                  <div className="px-3 py-2">
+                    <LanguageSwitcher className="text-white/70 hover:text-white hover:bg-white/[0.06] w-full justify-start" />
+                  </div>
                   {/* Auth CTA in mobile menu */}
                   <div className="mt-2 pt-3 border-t border-white/[0.06] flex flex-col gap-2">
                     {isClerkEnabled && isSignedIn ? (
@@ -617,7 +540,7 @@ export function SplashScreen({
                         onClick={() => { setMobileMenuOpen(false); handleGetStarted(); }}
                         className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 py-3 text-base font-bold text-white shadow-lg shadow-orange-500/20"
                       >
-                        Open App
+                        {t("nav.openApp")}
                       </Button>
                     ) : isClerkEnabled ? (
                       <Button
@@ -625,7 +548,7 @@ export function SplashScreen({
                         asChild
                         className="w-full rounded-xl bg-white/[0.08] hover:bg-white/[0.12] py-3 text-base font-semibold text-white"
                       >
-                        <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                        <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>{t("nav.logIn")}</Link>
                       </Button>
                     ) : (
                       <Button
@@ -633,7 +556,7 @@ export function SplashScreen({
                         onClick={() => { setMobileMenuOpen(false); handleGetStarted(); }}
                         className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 py-3 text-base font-bold text-white shadow-lg shadow-orange-500/20"
                       >
-                        Launch App
+                        {t("nav.launchApp")}
                       </Button>
                     )}
                   </div>
@@ -711,7 +634,7 @@ export function SplashScreen({
               className="absolute top-[22%] left-[6%] hidden lg:block pointer-events-none select-none"
             >
               <div className="bg-purple-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-full font-bold text-base backdrop-blur-sm shadow-lg shadow-purple-500/10">
-                AI Fortified
+                {t("hero.badges.aiFortified")}
               </div>
             </motion.div>
             <motion.div
@@ -721,7 +644,7 @@ export function SplashScreen({
               className="absolute top-[30%] right-[6%] hidden lg:block pointer-events-none select-none"
             >
               <div className="bg-amber-500/20 border border-amber-400/30 text-amber-300 px-6 py-3 rounded-full font-bold text-base backdrop-blur-sm shadow-lg shadow-amber-500/10">
-                Verified Indie
+                {t("hero.badges.verifiedIndie")}
               </div>
             </motion.div>
 
@@ -744,13 +667,13 @@ export function SplashScreen({
                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
               >
                 <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-[1.1]">
-                  Social Media that Feels{" "}
+                  {t("hero.title.line1")}{" "}
                   <br className="hidden sm:block" />
-                  <span className="whitespace-nowrap">Like{" "}
+                  <span className="whitespace-nowrap">{t("hero.title.line2")}{" "}
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
-                    You.
+                    {t("hero.title.gradient")}
                   </span></span>{" "}
-                  <span className="whitespace-nowrap">Not an Algorithm.</span>
+                  <span className="whitespace-nowrap">{t("hero.title.line3")}</span>
                 </h1>
               </motion.div>
 
@@ -761,7 +684,7 @@ export function SplashScreen({
                 transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
                 className="max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
               >
-                KodaPost is the phonographic carousel creator for indie brands and content creators. Transform your photos into nostalgic, scroll-stopping phonographic carousels with vintage camera styles, retro film filters, with a just a little help from AI.
+                {t("hero.description")}
               </motion.p>
 
               {/* Quote — hidden on mobile to keep CTAs above fold */}
@@ -775,11 +698,11 @@ export function SplashScreen({
                   className="text-lg sm:text-xl font-semibold leading-relaxed text-white/80"
                   style={{ fontFamily: "var(--font-playfair), serif" }}
                 >
-                  &ldquo;{quote.text}&rdquo;
+                  &ldquo;{t(`quotes.${quoteIndex}.text`)}&rdquo;
                 </p>
-                {quote.author && (
+                {QUOTES_META[quoteIndex].author && (
                   <p className="mt-2 text-xs font-medium text-white/40">
-                    &ndash; {quote.author}
+                    &ndash; {t(`quotes.${quoteIndex}.author`, QUOTES_META[quoteIndex].author!)}
                   </p>
                 )}
               </motion.div>
@@ -800,7 +723,7 @@ export function SplashScreen({
                         className="w-full sm:w-auto rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
                       >
                         <Link href="/sign-up">
-                          Start Creating Free
+                          {t("hero.cta.startCreating")}
                         </Link>
                       </Button>
                       <Button
@@ -810,7 +733,7 @@ export function SplashScreen({
                       >
                         <Link href="/quickstart">
                           <BookOpen className="h-4 w-4 mr-2" />
-                          Quick Start Guide
+                          {t("hero.cta.quickStart")}
                         </Link>
                       </Button>
                     </>
@@ -821,7 +744,7 @@ export function SplashScreen({
                         onClick={handleGetStarted}
                         className="w-full sm:w-auto rounded-xl bg-orange-500 hover:bg-orange-400 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-xl shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
                       >
-                        Start Creating Free
+                        {t("hero.cta.startCreating")}
                       </Button>
                       <Button
                         size="lg"
@@ -830,7 +753,7 @@ export function SplashScreen({
                       >
                         <Link href="/quickstart">
                           <BookOpen className="h-4 w-4 mr-2" />
-                          Quick Start Guide
+                          {t("hero.cta.quickStart")}
                         </Link>
                       </Button>
                     </>
@@ -848,7 +771,7 @@ export function SplashScreen({
               transition={{ delay: 2.2, duration: 0.8 }}
               className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
             >
-              <span className="text-[11px] uppercase tracking-widest text-white/30 font-medium">Scroll to explore</span>
+              <span className="text-[11px] uppercase tracking-widest text-white/30 font-medium">{t("hero.scrollToExplore")}</span>
               <motion.div
                 animate={{ y: [0, 8, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
@@ -872,11 +795,11 @@ export function SplashScreen({
               >
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold uppercase tracking-widest mb-6">
                   <Sparkles className="h-3.5 w-3.5" />
-                  How KodaPost Works
+                  {t("howItWorks.badge")}
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  Easily Create{" "}
-                  <span className="text-white/40">Phonographic Carousels</span>
+                  {t("howItWorks.title")}{" "}
+                  <span className="text-white/40">{t("howItWorks.titleFaded")}</span>
                 </h2>
               </motion.div>
 
@@ -889,7 +812,7 @@ export function SplashScreen({
               >
                 {WORKFLOW_STEPS.map((step, i) => (
                   <motion.div
-                    key={step.title}
+                    key={i}
                     variants={staggerChild}
                     className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500"
                   >
@@ -903,12 +826,12 @@ export function SplashScreen({
                           <step.icon className="h-5 w-5" />
                         </div>
                         <span className="text-xs font-bold uppercase tracking-widest text-white/30">
-                          Step {i + 1}
+                          {t("howItWorks.stepLabel")} {i + 1}
                         </span>
                       </div>
 
-                      <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-                      <p className="text-sm leading-relaxed text-white/45">{step.description}</p>
+                      <h3 className="text-xl font-bold text-white mb-3">{t(`workflow.${i}.title`)}</h3>
+                      <p className="text-sm leading-relaxed text-white/45">{t(`workflow.${i}.description`)}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -928,7 +851,7 @@ export function SplashScreen({
                   className="rounded-xl bg-purple-600 hover:bg-purple-500 px-8 py-5 sm:py-6 text-base sm:text-lg font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                 >
                   <Play className="h-4 w-4 mr-2" />
-                  KodaPost Walkthrough
+                  {t("howItWorks.walkthroughButton")}
                 </Button>
               </motion.div>
             </div>
@@ -951,10 +874,10 @@ export function SplashScreen({
               >
                 <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight flex items-center gap-3">
                   <Camera className="h-7 w-7 text-purple-400" />
-                  KodaPost Features
+                  {t("featuresSection.title")}
                 </h2>
                 <p className="mt-3 text-white/40 max-w-lg">
-                  Everything indie creators need to turn everyday photos into scroll-stopping phonographic carousels, no design experience required.
+                  {t("featuresSection.subtitle")}
                 </p>
               </motion.div>
 
@@ -965,9 +888,9 @@ export function SplashScreen({
                 viewport={{ once: true, amount: 0.15 }}
                 className="grid grid-cols-1 md:grid-cols-3 gap-5"
               >
-                {FEATURES.map((feature) => (
+                {FEATURES.map((feature, i) => (
                   <motion.div
-                    key={feature.title}
+                    key={i}
                     variants={staggerChild}
                     className={`${feature.span} relative rounded-2xl overflow-hidden transition-all duration-500 group ${
                       feature.style === "accent"
@@ -989,12 +912,12 @@ export function SplashScreen({
                         <feature.icon className="h-5 w-5" />
                       </div>
                       <h3 className="text-xl font-bold mb-2 text-white">
-                        {feature.title}
+                        {t(`features.${i}.title`)}
                       </h3>
                       <p className={`text-sm leading-relaxed ${
                         feature.style === "accent" ? "text-white/80" : "text-white/40"
                       }`}>
-                        {feature.description}
+                        {t(`features.${i}.description`)}
                       </p>
                     </div>
 
@@ -1032,14 +955,14 @@ export function SplashScreen({
               >
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-6">
                   <Fingerprint className="h-3.5 w-3.5" />
-                  Creator Provenance
+                  {t("provenance.badge")}
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  Your Work Is Yours.{" "}
-                  <span className="text-white/40">Prove It.</span>
+                  {t("provenance.title")}{" "}
+                  <span className="text-white/40">{t("provenance.titleFaded")}</span>
                 </h2>
                 <p className="mt-4 text-white/40 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-                  Social media is flooded with AI-generated slop and wholesale copies of original work. KodaPost doesn&apos;t just help you create. It helps you prove you created it first.
+                  {t("provenance.subtitle")}
                 </p>
               </motion.div>
 
@@ -1060,14 +983,14 @@ export function SplashScreen({
                     <div className="h-12 w-12 rounded-xl flex items-center justify-center mb-6 bg-white/20">
                       <Fingerprint className="h-6 w-6 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold mb-3">Digital Fingerprint on Every Export</h3>
+                    <h3 className="text-2xl font-bold mb-3">{t("provenance.mainCard.title")}</h3>
                     <p className="text-white/80 text-sm leading-relaxed">
-                      Every phonographic carousel you export from KodaPost embeds your name, a timestamp, and a unique image fingerprint directly into the file metadata. If someone copies your work, you have the receipt.
+                      {t("provenance.mainCard.description")}
                     </p>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/assets/landing/proven.png"
-                      alt="Creator provenance metadata embedded in exported image"
+                      alt={t("provenance.mainCard.imageAlt")}
                       className="mt-6 w-full h-auto rounded-xl"
                     />
                   </div>
@@ -1076,29 +999,14 @@ export function SplashScreen({
                 {/* Right — supporting points */}
                 <div className="space-y-5">
                   {[
-                    {
-                      icon: Shield,
-                      title: "Protect Your Art from AI Scraping",
-                      text: "Your original photos and designs are your IP. Creator Provenance creates a verifiable chain of authorship that stands up when your content gets reposted, scraped, or fed into AI training sets.",
-                      color: "emerald",
-                    },
-                    {
-                      icon: ScanEye,
-                      title: "Visible Watermarking",
-                      text: "Add a branded watermark to your carousels so attribution is instant and visible. Your audience knows it's yours before they even read the caption.",
-                      color: "blue",
-                    },
-                    {
-                      icon: Lock,
-                      title: "Own Your Creative Identity",
-                      text: "In an era where AI-generated content is indistinguishable from human work, provenance is your proof of authenticity. KodaPost empowers creators, artists, and brands to claim what's theirs.",
-                      color: "violet",
-                    },
+                    { icon: Shield, color: "emerald", index: 0 },
+                    { icon: ScanEye, color: "blue", index: 1 },
+                    { icon: Lock, color: "violet", index: 2 },
                   ].map((point) => {
                     const Icon = point.icon;
                     return (
                       <motion.div
-                        key={point.title}
+                        key={point.index}
                         variants={staggerChild}
                         className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500"
                       >
@@ -1108,8 +1016,8 @@ export function SplashScreen({
                             <Icon className="h-5 w-5" />
                           </div>
                           <div>
-                            <h3 className="text-base font-bold text-white mb-1">{point.title}</h3>
-                            <p className="text-sm leading-relaxed text-white/40">{point.text}</p>
+                            <h3 className="text-base font-bold text-white mb-1">{t(`provenance.cards.${point.index}.title`)}</h3>
+                            <p className="text-sm leading-relaxed text-white/40">{t(`provenance.cards.${point.index}.text`)}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -1141,7 +1049,7 @@ export function SplashScreen({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/assets/landing/kodamobile.png"
-                      alt="KodaPost mobile experience on Telegram"
+                      alt={t("mobile.imageAlt")}
                       className="w-full h-auto"
                     />
                   </div>
@@ -1151,14 +1059,14 @@ export function SplashScreen({
                 <motion.div variants={staggerChild} className="order-1 md:order-2">
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6">
                     <Smartphone className="h-3.5 w-3.5" />
-                    Mobile Content Creation
+                    {t("mobile.badge")}
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
-                    Create Phonographic Carousels from Your Phone with{" "}
-                    <span className="text-white/40">KodaPost + Telegram</span>
+                    {t("mobile.title")}{" "}
+                    <span className="text-white/40">{t("mobile.titleFaded")}</span>
                   </h2>
                   <p className="text-white/45 text-sm leading-relaxed">
-                    Snap photos on your phone and send them straight to your KodaPost content assistant via Telegram. KodaPost receives your images, applies your preferred style, and queues a carousel draft, all while you&apos;re still on the go. No app downloads, no switching between tools. Just open Telegram, send your photos, and pick up where you left off on the KodaPost desktop app when you&apos;re ready to finalize.
+                    {t("mobile.description")}
                   </p>
 
                   {/* Telegram / Mobile Web tabs */}
@@ -1174,7 +1082,7 @@ export function SplashScreen({
                         }`}
                       >
                         <IconBrandTelegram size={16} />
-                        Telegram
+                        {t("mobile.tabs.telegram")}
                       </button>
                       <button
                         type="button"
@@ -1186,7 +1094,7 @@ export function SplashScreen({
                         }`}
                       >
                         <Globe className="h-4 w-4" />
-                        Mobile Web
+                        {t("mobile.tabs.mobileWeb")}
                       </button>
                     </div>
 
@@ -1202,12 +1110,12 @@ export function SplashScreen({
                           {/* Telegram workflow steps */}
                           <div className="space-y-4">
                             {[
-                              { icon: Smartphone, label: "Snap photos on your phone", color: "text-blue-400", bg: "bg-blue-500/10" },
-                              { icon: IconBrandTelegram, label: "Send to KodaPost via Telegram", color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
-                              { icon: Sparkles, label: "KodaPost drafts your carousel", color: "text-purple-400", bg: "bg-purple-500/10" },
-                              { icon: Camera, label: "Review and publish on KodaPost desktop", color: "text-amber-400", bg: "bg-amber-500/10" },
+                              { icon: Smartphone, color: "text-blue-400", bg: "bg-blue-500/10" },
+                              { icon: IconBrandTelegram, color: "text-sky-400", bg: "bg-sky-500/10", tabler: true },
+                              { icon: Sparkles, color: "text-purple-400", bg: "bg-purple-500/10" },
+                              { icon: Camera, color: "text-amber-400", bg: "bg-amber-500/10" },
                             ].map((step, i) => (
-                              <div key={step.label} className="flex items-center gap-4">
+                              <div key={i} className="flex items-center gap-4">
                                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${step.bg}`}>
                                   {step.tabler ? (
                                     <step.icon size={18} className={step.color} />
@@ -1217,20 +1125,20 @@ export function SplashScreen({
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <span className="text-[10px] font-bold text-white/20">{String(i + 1).padStart(2, "0")}</span>
-                                  <span className="text-sm font-medium text-white/70">{step.label}</span>
+                                  <span className="text-sm font-medium text-white/70">{t(`telegram.steps.${i}`)}</span>
                                 </div>
                               </div>
                             ))}
                           </div>
                           <p className="mt-5 text-xs text-white/35 leading-relaxed">
-                            Open Telegram and search for <strong className="text-white/60">@kodacontentbot</strong>. Tap Start, send 1 to 10 photos, describe what the post is about, and choose a vibe. The bot generates your caption and builds the carousel for you. Use the preview link to review slides, copy captions, and download images right from your phone.
+                            {t("telegram.description")}
                           </p>
-                          <div className="mt-5">
+                          <div className="mt-5 flex justify-center">
                             <Link
                               href="/guide#telegram"
                               className="inline-flex items-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-sm font-medium text-sky-400 hover:bg-sky-500/20 transition-colors"
                             >
-                              Learn More
+                              {t("telegram.learnMore")}
                               <ExternalLink className="h-3.5 w-3.5" />
                             </Link>
                           </div>
@@ -1250,32 +1158,32 @@ export function SplashScreen({
                                 <Download className="h-[18px] w-[18px] text-purple-400" />
                               </div>
                               <div className="flex-1">
-                                <h3 className="text-sm font-semibold text-white">Install KodaPost on Your Phone</h3>
+                                <h3 className="text-sm font-semibold text-white">{t("mobileWeb.installTitle")}</h3>
                                 <p className="mt-1 text-xs text-white/40 leading-relaxed">
-                                  Add KodaPost to your home screen for instant, full-screen access. No app store needed. KodaPost works as a Progressive Web App, so it launches in its own window, works offline, and feels just like a native app.
+                                  {t("mobileWeb.installDescription")}
                                 </p>
                               </div>
                             </div>
                             <div className="mt-4 space-y-2.5 pl-12">
                               <div className="flex items-center gap-2.5 text-xs text-white/50">
                                 <Share className="h-3.5 w-3.5 shrink-0 text-blue-400" />
-                                <span><strong className="text-white/70">iPhone:</strong> Open KodaPost in Safari, tap <span className="text-white/70">Share</span>, then <span className="text-white/70">Add to Home Screen</span></span>
+                                <span><strong className="text-white/70">{t("mobileWeb.iphone.label")}</strong> {t("mobileWeb.iphone.instructions")}</span>
                               </div>
                               <div className="flex items-center gap-2.5 text-xs text-white/50">
                                 <PlusSquare className="h-3.5 w-3.5 shrink-0 text-green-400" />
-                                <span><strong className="text-white/70">Android:</strong> Open KodaPost in Chrome, tap <span className="text-white/70">Menu (&#8942;)</span>, then <span className="text-white/70">Add to Home screen</span></span>
+                                <span><strong className="text-white/70">{t("mobileWeb.android.label")}</strong> {t("mobileWeb.android.instructions")}</span>
                               </div>
                             </div>
                           </div>
                           <p className="mt-5 text-xs text-white/35 leading-relaxed">
-                            Once installed, KodaPost opens full-screen from your home screen with no browser bar. You can upload photos, apply filters, edit text overlays, and even publish directly from your phone. Your projects sync automatically, so you can start on mobile and finish on desktop.
+                            {t("mobileWeb.description")}
                           </p>
-                          <div className="mt-5">
+                          <div className="mt-5 flex justify-center">
                             <Link
                               href="/guide#mobile-web"
                               className="inline-flex items-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-sm font-medium text-purple-400 hover:bg-purple-500/20 transition-colors"
                             >
-                              Learn More
+                              {t("mobileWeb.learnMore")}
                               <ExternalLink className="h-3.5 w-3.5" />
                             </Link>
                           </div>
@@ -1316,10 +1224,10 @@ export function SplashScreen({
 
                 <div className="relative z-10">
                   <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
-                    Start Creating Phonographic Carousels with KodaPost, Free
+                    {t("cta.title")}
                   </h2>
                   <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto">
-                    Join indie creators using KodaPost to build authentic, nostalgic social media content that stands out from the algorithm.
+                    {t("cta.subtitle")}
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-4 sm:px-0">
@@ -1330,7 +1238,7 @@ export function SplashScreen({
                         className="w-full sm:w-auto rounded-2xl bg-orange-500 hover:bg-orange-400 px-8 sm:px-12 py-5 sm:py-6 text-base sm:text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
                       >
                         <Link href="/sign-up">
-                          Get Started Now
+                          {t("cta.button")}
                         </Link>
                       </Button>
                     ) : (
@@ -1339,7 +1247,7 @@ export function SplashScreen({
                         onClick={handleGetStarted}
                         className="w-full sm:w-auto rounded-2xl bg-orange-500 hover:bg-orange-400 px-8 sm:px-12 py-5 sm:py-6 text-base sm:text-xl font-black text-white shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300"
                       >
-                        Get Started Now
+                        {t("cta.button")}
                       </Button>
                     )}
                   </div>
@@ -1358,16 +1266,16 @@ export function SplashScreen({
                 <div className="sm:col-span-2 lg:col-span-2">
                   <div className="flex items-center gap-2.5 mb-4">
                     <KodaPostIcon className="h-5 w-5 text-orange-500" />
-                    <span className="text-base font-bold tracking-tight text-orange-500">KodaPost</span>
+                    <span className="text-base font-bold tracking-tight text-orange-500">{t("footer.brand")}</span>
                   </div>
                   <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
-                    KodaPost transforms your everyday photos into stunning nostalgic phonographic carousels with 10 vintage camera profiles, 9 retro film filters, and AI-powered text overlays. The content creation tool designed for indie brands who value authenticity over algorithms.
+                    {t("footer.description")}
                   </p>
                 </div>
 
                 {/* Product links */}
                 <div>
-                  <h4 className="text-sm font-semibold text-white/60 mb-4">Product</h4>
+                  <h4 className="text-sm font-semibold text-white/60 mb-4">{t("footer.product.heading")}</h4>
                   <ul className="space-y-2.5">
                     <li>
                       <a
@@ -1381,7 +1289,7 @@ export function SplashScreen({
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
-                        How It Works
+                        {t("footer.product.howItWorks")}
                       </a>
                     </li>
                     <li>
@@ -1396,7 +1304,7 @@ export function SplashScreen({
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
                       >
                         <Camera className="h-3.5 w-3.5" />
-                        Features
+                        {t("footer.product.features")}
                       </a>
                     </li>
                     <li>
@@ -1405,7 +1313,7 @@ export function SplashScreen({
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
                       >
                         <BookOpen className="h-3.5 w-3.5" />
-                        User Guide
+                        {t("footer.product.userGuide")}
                       </Link>
                     </li>
                     <li>
@@ -1414,7 +1322,7 @@ export function SplashScreen({
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
                       >
                         <HelpCircle className="h-3.5 w-3.5" />
-                        Support
+                        {t("footer.product.support")}
                       </Link>
                     </li>
                   </ul>
@@ -1422,7 +1330,7 @@ export function SplashScreen({
 
                 {/* Legal links */}
                 <div>
-                  <h4 className="text-sm font-semibold text-white/60 mb-4">Legal</h4>
+                  <h4 className="text-sm font-semibold text-white/60 mb-4">{t("footer.legal.heading")}</h4>
                   <ul className="space-y-2.5">
                     <li>
                       <Link
@@ -1430,7 +1338,7 @@ export function SplashScreen({
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
                       >
                         <Shield className="h-3.5 w-3.5" />
-                        Privacy Policy
+                        {t("footer.legal.privacyPolicy")}
                       </Link>
                     </li>
                     <li>
@@ -1439,7 +1347,7 @@ export function SplashScreen({
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
                       >
                         <FileText className="h-3.5 w-3.5" />
-                        Terms of Use
+                        {t("footer.legal.termsOfUse")}
                       </Link>
                     </li>
                     <li>
@@ -1448,7 +1356,7 @@ export function SplashScreen({
                         className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
                       >
                         <Database className="h-3.5 w-3.5" />
-                        Data Policy
+                        {t("footer.legal.dataPolicy")}
                       </Link>
                     </li>
                   </ul>
@@ -1458,10 +1366,10 @@ export function SplashScreen({
               {/* Bottom bar */}
               <div className="mt-12 pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p className="text-xs text-white/20">
-                  &copy; {new Date().getFullYear()} KodaPost. All rights reserved.
+                  &copy; {new Date().getFullYear()} {t("footer.copyright")}
                 </p>
                 <p className="text-xs text-white/15">
-                  Built for creators who refuse to compromise.
+                  {t("footer.tagline")}
                 </p>
               </div>
             </div>

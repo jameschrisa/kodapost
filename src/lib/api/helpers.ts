@@ -92,6 +92,7 @@ export interface GenerateConfig {
   keywords?: string[];
   cameraProfileId?: number;
   captionStyle?: "storyteller" | "minimalist" | "data_driven";
+  language?: string;
   filter?: {
     predefinedFilter?: PredefinedFilterName;
     customParams?: Partial<CameraFilterParams>;
@@ -271,6 +272,7 @@ export function mapToCarouselProject(
     targetPlatforms: config.platforms,
     captionStyle:
       config.captionStyle || DEFAULT_PROJECT_SETTINGS.captionStyle,
+    language: config.language as CarouselProject["language"],
     globalOverlayStyle,
     filterConfig,
   };

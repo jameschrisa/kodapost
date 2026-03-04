@@ -3,6 +3,8 @@
 // Complete type definitions for the carousel builder application
 // =============================================================================
 
+import type { Language } from "@/i18n/types";
+
 // -----------------------------------------------------------------------------
 // Image Analysis Types
 // -----------------------------------------------------------------------------
@@ -70,6 +72,10 @@ export interface TextOverlay {
     secondary?: string;
     /** Accent/highlight text (e.g., numbers, callouts) */
     accent?: string;
+    /** English translation of primary text (when generating in non-English language) */
+    primaryEn?: string;
+    /** English translation of secondary text (when generating in non-English language) */
+    secondaryEn?: string;
   };
   /** Visual styling configuration */
   styling: {
@@ -550,6 +556,10 @@ export interface CarouselProject {
   csvOverrides?: { primary: string }[];
   /** AI-generated social media caption for the post */
   caption?: string;
+  /** English translation of the caption (when generating in non-English language) */
+  captionEn?: string;
+  /** Target language for AI-generated text (defaults to English) */
+  language?: Language;
   /** Audio transcription from voice recording */
   storyTranscription?: string;
   /** Audio clip attached for nano-cast export */

@@ -23,9 +23,10 @@ import type { PostMode, UploadedImage } from "@/lib/types";
 type HeadlineMode = "all" | "first_only" | "none";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const HEIC_MIME_TYPES = ["image/heic", "image/heif"];
 const HEIC_EXTENSIONS = [".heic", ".heif"];
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const RECOMMENDED_COUNT = 4; // for default 5 slides (2:1 ratio guidance)
 
 /**
@@ -36,6 +37,34 @@ function isHeicFile(file: File): boolean {
   if (HEIC_MIME_TYPES.includes(file.type.toLowerCase())) return true;
   const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
   return HEIC_EXTENSIONS.includes(ext);
+}
+
+/**
+ * Detects standard image files (JPEG/PNG/WebP) by MIME type first, then by
+ * file extension as a fallback. Mobile browsers (especially iOS Safari) can
+ * report empty or non-standard MIME types (e.g. "image/jpg", "", or
+ * "application/octet-stream") for JPEG files received via share sheets.
+ */
+function isAcceptedImageFile(file: File): boolean {
+  if (ACCEPTED_TYPES.includes(file.type.toLowerCase())) return true;
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+  return IMAGE_EXTENSIONS.includes(ext);
+}
+
+/** Maps a file extension to the correct MIME type for normalization. */
+function inferMimeFromExtension(filename: string): string {
+  const ext = filename.toLowerCase().slice(filename.lastIndexOf("."));
+  switch (ext) {
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".png":
+      return "image/png";
+    case ".webp":
+      return "image/webp";
+    default:
+      return "image/jpeg";
+  }
 }
 
 /**
@@ -169,12 +198,15 @@ export function ImageUploader({
         newErrors.push(`${file.name}: File exceeds 10 MB limit.`);
         return;
       }
-      if (ACCEPTED_TYPES.includes(file.type)) {
-        // Standard format — accept as-is
+      if (isAcceptedImageFile(file)) {
+        // Standard format — accept as-is (normalize MIME for files detected by extension)
+        const normalizedFile = ACCEPTED_TYPES.includes(file.type.toLowerCase())
+          ? file
+          : new File([file], file.name, { type: inferMimeFromExtension(file.name) });
         validImages.push({
           id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          file,
-          previewUrl: URL.createObjectURL(file),
+          file: normalizedFile,
+          previewUrl: URL.createObjectURL(normalizedFile),
         });
       } else if (isHeicFile(file)) {
         // HEIC/HEIF — queue for server-side conversion
@@ -361,7 +393,7 @@ export function ImageUploader({
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,.heic,.heif,image/heic,image/heif"
+          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,.heic,.heif,image/heic,image/heif"
           multiple
           onChange={handleFileSelect}
           className="hidden"

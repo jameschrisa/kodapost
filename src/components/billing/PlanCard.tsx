@@ -75,7 +75,7 @@ export function PlanCard({
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-2xl border p-6 gap-5",
+        "relative flex flex-col rounded-2xl border p-6 gap-5 min-h-[420px]",
         TIER_ACCENT[tier],
         isCurrentPlan && "ring-2 ring-offset-2 ring-offset-background",
         tier === "standard" && "ring-purple-500",

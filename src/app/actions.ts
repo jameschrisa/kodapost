@@ -10,6 +10,7 @@ import type {
   ImageAnalysis,
   TextOverlay,
 } from "@/lib/types";
+import { LANGUAGE_NAMES } from "@/i18n/types";
 import { generateOverlaySVG } from "@/lib/svg-overlay";
 import { PLATFORM_IMAGE_SPECS, PLATFORM_SAFE_AREA, DEFAULT_OVERLAY_STYLING, DEFAULT_OVERLAY_PADDING, FREE_POSITION_FROM_ALIGNMENT, FREE_POSITION_X_FROM_HORIZONTAL } from "@/lib/constants";
 import {
@@ -234,7 +235,8 @@ async function generateTextOverlay(
   totalSlides: number,
   globalStyle?: GlobalOverlayStyle,
   captionStyle?: "storyteller" | "minimalist" | "data_driven" | "witty" | "educational" | "poetic" | "custom",
-  customCaptionStyle?: string
+  customCaptionStyle?: string,
+  language?: string
 ): Promise<TextOverlay> {
   const styleLines: Record<string, string> = {
     storyteller: "\n- Style: storyteller — warm, personal, narrative tone",
@@ -247,6 +249,17 @@ async function generateTextOverlay(
   const styleLine = captionStyle === "custom" && customCaptionStyle
     ? `\n- Style: ${customCaptionStyle}`
     : styleLines[captionStyle ?? "storyteller"] ?? styleLines.storyteller;
+
+  const isNonEnglish = language && language !== "en" && language in LANGUAGE_NAMES;
+  const langName = isNonEnglish ? LANGUAGE_NAMES[language as keyof typeof LANGUAGE_NAMES] : null;
+
+  const languageInstruction = isNonEnglish
+    ? `\n- Write the headline in ${langName}\n- Also provide an English translation in "primaryEn"`
+    : "";
+
+  const jsonFormat = isNonEnglish
+    ? `{"primary": "... (in ${langName})", "primaryEn": "... (English translation)"}`
+    : `{"primary": "..."}`;
 
   const message = await getAnthropicClient().messages.create({
     model: "claude-sonnet-4-5-20250929",
@@ -267,10 +280,10 @@ Rules:
 - "primary": A punchy headline (max 8 words)
 - For hook slides: grab attention immediately
 - For story slides: continue the narrative
-- For closer slides: include a call-to-action feel${styleLine}
+- For closer slides: include a call-to-action feel${styleLine}${languageInstruction}
 
 Respond with ONLY valid JSON in this exact format:
-{"primary": "..."}`,
+${jsonFormat}`,
           },
         ],
       },
@@ -278,19 +291,23 @@ Respond with ONLY valid JSON in this exact format:
   });
 
   let primary = "Your Story Starts Here";
+  let primaryEn: string | undefined;
 
   try {
     const textBlock = message.content.find((b) => b.type === "text");
     if (textBlock && textBlock.type === "text") {
       const parsed = JSON.parse(extractJSON(textBlock.text));
       primary = parsed.primary || primary;
+      if (isNonEnglish && parsed.primaryEn) {
+        primaryEn = parsed.primaryEn;
+      }
     }
   } catch {
     // Fall back to defaults if parsing fails
   }
 
   return {
-    content: { primary },
+    content: { primary, primaryEn },
     styling: {
       fontFamily: globalStyle?.fontFamily ?? DEFAULT_OVERLAY_STYLING.fontFamily,
       fontSize: {
@@ -396,7 +413,8 @@ export async function generateCarousel(
           project.slideCount,
           project.globalOverlayStyle,
           project.captionStyle,
-          project.customCaptionStyle
+          project.customCaptionStyle,
+          project.language
         );
 
         // Always preserve full AI text in aiGeneratedOverlay
@@ -516,7 +534,8 @@ export async function regenerateSlide(
       project.slideCount,
       project.globalOverlayStyle,
       project.captionStyle,
-      project.customCaptionStyle
+      project.customCaptionStyle,
+      project.language
     );
 
     const updatedSlide: CarouselSlide = {
@@ -569,7 +588,8 @@ export async function generateCaption(
     artistName?: string;
   },
   captionStyle?: "storyteller" | "minimalist" | "data_driven" | "witty" | "educational" | "poetic" | "custom",
-  customCaptionStyle?: string
+  customCaptionStyle?: string,
+  language?: string
 ): Promise<ActionResult<string>> {
   await requireAuth();
   try {
@@ -614,7 +634,7 @@ Rules:
 - End with relevant hashtags, use NO MORE than 5 hashtags total
 - Keep total length under 2200 characters
 - Do NOT use markdown formatting
-- Write ONLY the caption text, nothing else${audioLine ? "\n- If relevant, subtly reference the music vibe (don't force it)" : ""}`,
+- Write ONLY the caption text, nothing else${audioLine ? "\n- If relevant, subtly reference the music vibe (don't force it)" : ""}${language && language !== "en" && language in LANGUAGE_NAMES ? `\n- Write the caption in ${LANGUAGE_NAMES[language as keyof typeof LANGUAGE_NAMES]}. Keep hashtags in English for broader reach.` : ""}`,
         },
       ],
     });

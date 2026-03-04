@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Bot,
   ChevronDown,
+  Globe,
   Instagram,
   Linkedin,
   Save,
@@ -49,6 +50,9 @@ import {
 import { SocialAccountsWizard } from "@/components/shared/SocialAccountsWizard";
 import { cn } from "@/lib/utils";
 import { useUserInfo } from "@/hooks/useUserInfo";
+import { useLanguage } from "@/i18n/context";
+import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from "@/i18n/types";
+import type { Language } from "@/i18n/types";
 import type {
   SocialMediaAccount,
   OAuthConnection,
@@ -60,7 +64,9 @@ import type {
 // Platform groups
 // ---------------------------------------------------------------------------
 
-const PLATFORMS: Platform[] = ["tiktok", "instagram", "youtube", "youtube_shorts", "x", "linkedin"];
+const PLATFORMS: Platform[] = ["tiktok", "instagram", "youtube", "youtube_shorts", "x", "linkedin", "reddit"];
+
+const COMING_SOON_PLATFORMS = new Set<Platform>(["reddit"]);
 
 // ---------------------------------------------------------------------------
 // Platform metadata
@@ -141,6 +147,7 @@ interface PlatformCardProps {
   disconnecting: string | null;
   testState: TestState;
   isOpen: boolean;
+  comingSoon?: boolean;
   onToggleOpen: () => void;
   onToggle: (active: boolean) => void;
   onUsernameChange: (username: string) => void;
@@ -156,6 +163,7 @@ function PlatformCard({
   disconnecting,
   testState,
   isOpen,
+  comingSoon,
   onToggleOpen,
   onToggle,
   onUsernameChange,
@@ -168,34 +176,46 @@ function PlatformCard({
 
   return (
     <motion.div variants={staggerItemVariants}>
-      <div className="rounded-lg border overflow-hidden">
+      <div className={cn("rounded-lg border overflow-hidden", comingSoon && "opacity-60")}>
         {/* Always-visible header — left side toggles collapse */}
         <div
-          className="flex items-center justify-between p-3 cursor-pointer select-none hover:bg-muted/30 transition-colors"
-          onClick={onToggleOpen}
+          className={cn(
+            "flex items-center justify-between p-3 select-none transition-colors",
+            comingSoon ? "cursor-default" : "cursor-pointer hover:bg-muted/30"
+          )}
+          onClick={() => !comingSoon && onToggleOpen()}
         >
           <div className="flex items-center gap-2">
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                !isOpen && "-rotate-90"
-              )}
-            />
+            {!comingSoon && (
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                  !isOpen && "-rotate-90"
+                )}
+              />
+            )}
             <span className="text-muted-foreground">{meta.icon}</span>
             <span className="text-sm font-medium">{meta.label}</span>
-            {isConnected && (
+            {comingSoon && (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                Coming Soon
+              </span>
+            )}
+            {isConnected && !comingSoon && (
               <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
             )}
           </div>
 
           {/* Stop click propagation so Switch doesn't also toggle collapse */}
-          <div onClick={(e) => e.stopPropagation()}>
-            <Switch
-              checked={account.active}
-              onCheckedChange={onToggle}
-              aria-label={`Toggle ${meta.label}`}
-            />
-          </div>
+          {!comingSoon && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <Switch
+                checked={account.active}
+                onCheckedChange={onToggle}
+                aria-label={`Toggle ${meta.label}`}
+              />
+            </div>
+          )}
         </div>
 
         {/* Collapsible body */}
@@ -370,6 +390,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     creatorName: "",
   });
   const { firstName, lastName } = useUserInfo();
+  const { language, setLanguage } = useLanguage();
 
   // Load settings and OAuth status when dialog opens
   useEffect(() => {
@@ -596,6 +617,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             disconnecting={disconnecting}
             testState={testStates[account.platform] || "idle"}
             isOpen={openCards[account.platform] ?? false}
+            comingSoon={COMING_SOON_PLATFORMS.has(account.platform)}
             onToggleOpen={() => toggleCard(account.platform)}
             onToggle={(checked) =>
               updateAccount(account.platform, "active", checked)
@@ -669,6 +691,37 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     ) for creating carousels through conversation. Send your photos
                     and the bot will guide you through the rest.
                   </p>
+                </div>
+
+                {/* Language */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-purple-400" />
+                    <span className="text-sm font-medium">Language</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Choose your preferred language for the app and AI-generated
+                    content.
+                  </p>
+                  <select
+                    value={language}
+                    onChange={(e) =>
+                      setLanguage(e.target.value as Language)
+                    }
+                    className="h-8 w-full rounded border border-muted-foreground/20 bg-transparent px-2 text-sm"
+                  >
+                    {SUPPORTED_LANGUAGES.map((lang) => {
+                      const info = LANGUAGE_LABELS[lang];
+                      return (
+                        <option key={lang} value={lang}>
+                          {info.flag} {info.native}
+                          {info.native !== info.english
+                            ? ` (${info.english})`
+                            : ""}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </div>
               </div>
             </TabsContent>

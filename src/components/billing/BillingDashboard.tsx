@@ -173,7 +173,7 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
 
       {/* ── Plan comparison ── */}
       <div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 pt-4">
           {PLAN_TIER_ORDER.map((tier) => (
             <PlanCard
               key={tier}
