@@ -23,9 +23,8 @@ export async function GET() {
       await client.execute("SELECT 1");
       dbStatus = "connected";
     }
-  } catch (e) {
-    // If connection fails, report as disconnected but don't crash
-    dbStatus = `error: ${e instanceof Error ? e.message : "unknown"}`;
+  } catch {
+    dbStatus = "disconnected";
   }
 
   return NextResponse.json({

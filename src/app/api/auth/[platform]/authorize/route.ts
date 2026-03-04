@@ -47,10 +47,10 @@ export async function GET(
     const url = buildAuthUrl(platform as OAuthPlatform, state, codeChallenge);
     return NextResponse.redirect(url);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Authorization failed";
+    console.error(`[OAuth] Authorization error for ${platform}:`, error instanceof Error ? error.message : error);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     return NextResponse.redirect(
-      `${appUrl}?oauth_error=${encodeURIComponent(message)}&platform=${platform}`
+      `${appUrl}?oauth_error=server_error&platform=${platform}`
     );
   }
 }

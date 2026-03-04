@@ -65,7 +65,7 @@ export async function GET() {
       invoices,
     });
   } catch (error) {
-    console.error("[billing/status] error:", error);
+    console.error("[billing/status] error:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to load billing information. Please try again." },
       { status: 500 }

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Grammy expects a standard Request/Response — pass through the Next.js request
     return await handleUpdate(request);
   } catch (error) {
-    console.error("[KodaPost Telegram] Webhook error:", error);
+    console.error("[KodaPost Telegram] Webhook error:", error instanceof Error ? error.message : "unknown");
 
     // Always return 200 to Telegram to prevent retry storms
     // Telegram will keep retrying failed webhooks, which can cause cascading issues

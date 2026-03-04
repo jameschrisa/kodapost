@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { query } = body;
-    if (!query || query.length < 5) {
+    if (!query || query.length < 5 || query.length > 500) {
       return NextResponse.json({ suggestion: null });
     }
 
@@ -152,6 +152,14 @@ ${FAQ_CONTEXT}`,
       );
     }
 
+    // Input length limits
+    if (name.length > 100 || email.length > 254 || subject.length > 200 || message.length > 5000) {
+      return NextResponse.json(
+        { error: "One or more fields exceed the maximum allowed length." },
+        { status: 400 }
+      );
+    }
+
     // Basic email validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
@@ -173,11 +181,9 @@ ${FAQ_CONTEXT}`,
 
     // Send email via Resend
     if (!RESEND_API_KEY) {
-      // Fallback: log to console when Resend is not configured (PII redacted)
-      console.log("=== CONTACT FORM SUBMISSION (Resend not configured) ===");
-      console.log(`Subject: ${subject}`);
-      console.log(`Message length: ${message.length} chars`);
-      console.log("=====================================================");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[Contact] Submission received (Resend not configured). Message length:", message.length);
+      }
 
       return NextResponse.json({
         success: true,
@@ -258,7 +264,7 @@ ${FAQ_CONTEXT}`,
         message: "Message sent successfully.",
       });
     } catch (err) {
-      console.error("Failed to send email via Resend:", err);
+      console.error("Failed to send email via Resend:", err instanceof Error ? err.message : "unknown");
       return NextResponse.json(
         { error: "Failed to send your message. Please try again later." },
         { status: 500 }

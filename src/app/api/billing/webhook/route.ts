@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
-    console.error("Stripe webhook signature verification failed:", err);
+    console.error("Stripe webhook signature verification failed:", err instanceof Error ? err.message : "unknown");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
         break;
     }
   } catch (err) {
-    console.error(`Error processing Stripe event ${event.type}:`, err);
+    console.error(`Error processing Stripe event ${event.type}:`, err instanceof Error ? err.message : "unknown");
     // Return 200 to prevent Stripe from retrying — log the error instead
   }
 

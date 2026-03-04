@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ posts: results });
   } catch (error) {
-    console.error("[Posts API] Failed to list posts:", error);
+    console.error("[Posts API] Failed to list posts:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to fetch posts" },
       { status: 500 }
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ id, success: true }, { status: 201 });
   } catch (error) {
-    console.error("[Posts API] Failed to create post:", error);
+    console.error("[Posts API] Failed to create post:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to create post" },
       { status: 500 }

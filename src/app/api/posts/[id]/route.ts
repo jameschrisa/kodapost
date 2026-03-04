@@ -70,7 +70,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Posts API] Failed to update post:", error);
+    console.error("[Posts API] Failed to update post:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to update post" },
       { status: 500 }
@@ -117,7 +117,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Posts API] Failed to delete post:", error);
+    console.error("[Posts API] Failed to delete post:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to delete post" },
       { status: 500 }

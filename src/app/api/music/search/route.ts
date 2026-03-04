@@ -272,7 +272,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ tracks, source });
   } catch (error) {
-    console.error("[Music Search] Unexpected error:", error);
+    console.error("[Music Search] Unexpected error:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Music search failed" },
       { status: 500 }

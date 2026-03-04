@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("[billing/checkout] error:", error);
+    console.error("[billing/checkout] error:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Something went wrong creating your checkout session. Please try again." },
       { status: 500 }

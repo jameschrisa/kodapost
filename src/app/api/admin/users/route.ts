@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ users, totalCount: result.totalCount });
   } catch (error) {
-    console.error("Failed to list users:", error);
+    console.error("Failed to list users:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to list users" },
       { status: 500 }

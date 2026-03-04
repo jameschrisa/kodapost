@@ -52,7 +52,7 @@ export async function POST() {
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {
-    console.error("[billing/portal] error:", error);
+    console.error("[billing/portal] error:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to open billing portal. Please try again." },
       { status: 500 }

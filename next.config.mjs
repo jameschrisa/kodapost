@@ -2,7 +2,7 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: "25mb",
+      bodySizeLimit: "10mb",
     },
     // Prevent webpack from bundling @libsql/client's native bindings
     serverComponentsExternalPackages: ["@libsql/client"],
@@ -29,7 +29,7 @@ const nextConfig = {
             value: "camera=(), microphone=(self), geolocation=()",
           },
           {
-            key: "Content-Security-Policy-Report-Only",
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://*.clerk.accounts.dev",

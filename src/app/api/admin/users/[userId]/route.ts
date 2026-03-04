@@ -54,7 +54,7 @@ export async function PATCH(
     await client.users.updateUserMetadata(userId, { publicMetadata });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to update user:", error);
+    console.error("Failed to update user:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Failed to update user" },
       { status: 500 }

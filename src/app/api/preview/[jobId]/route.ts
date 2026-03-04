@@ -85,7 +85,7 @@ export async function GET(
       status: job.status,
     });
   } catch (error) {
-    console.error("[KodaPost Preview] Error fetching job:", error);
+    console.error("[KodaPost Preview] Error fetching job:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

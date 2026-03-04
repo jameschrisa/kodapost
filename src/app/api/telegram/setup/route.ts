@@ -103,23 +103,14 @@ export async function POST(request: NextRequest) {
       console.log(`[Telegram Setup] Auto-generated webhook secret. Add TELEGRAM_WEBHOOK_SECRET to your env.`);
     }
     return NextResponse.json({
-      status: "Webhook registered successfully!",
-      webhookUrl,
-      telegramResponse: result,
-      next_steps: [
-        "Webhook secret has been configured automatically.",
-        "If TELEGRAM_WEBHOOK_SECRET is not set in your env, check server logs.",
-        "Message your bot on Telegram - send /start",
-        "Send photos to test the carousel creation flow",
-      ],
+      status: "configured",
+      message: "Webhook registered successfully.",
     });
   }
 
+  console.error("[Telegram Setup] Webhook registration failed:", JSON.stringify(result));
   return NextResponse.json(
-    {
-      error: "Failed to register webhook with Telegram",
-      telegramResponse: result,
-    },
+    { error: "Failed to register webhook with Telegram" },
     { status: 500 }
   );
 }
@@ -166,8 +157,7 @@ export async function DELETE(request: NextRequest) {
   const result = await response.json();
 
   return NextResponse.json({
-    status: "Webhook removed",
-    telegramResponse: result,
+    status: result.ok ? "removed" : "error",
   });
 }
 
@@ -203,8 +193,10 @@ export async function GET(request: NextRequest) {
   );
   const result = await response.json();
 
+  const info = result.result;
   return NextResponse.json({
     configured: true,
-    webhookInfo: result.result,
+    hasCustomCertificate: info?.has_custom_certificate ?? false,
+    pendingUpdateCount: info?.pending_update_count ?? 0,
   });
 }
