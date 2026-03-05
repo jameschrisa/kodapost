@@ -508,12 +508,12 @@ async function triggerCarouselGeneration(
     const bot = getBot();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    // Download all photos from Telegram
-    const uploadedImages = await Promise.all(
-      session.photoFileIds.map(async (fileId, index) => {
-        return downloadTelegramPhoto(bot, fileId, index);
-      })
-    );
+    // Download photos sequentially to reduce peak memory on serverless
+    const uploadedImages = [];
+    for (let i = 0; i < session.photoFileIds.length; i++) {
+      const img = await downloadTelegramPhoto(bot, session.photoFileIds[i], i);
+      uploadedImages.push(img);
+    }
 
     // Import generation functions
     const { generateId: genId } = await import("@/lib/api/helpers");
@@ -536,7 +536,8 @@ async function triggerCarouselGeneration(
     const db = getDatabase();
     const jobId = genId("tg");
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+    // Telegram projects persist 7 days so users can continue on desktop later
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // Find or create an API key for the Telegram bot
     const apiKeyId = await getOrCreateTelegramApiKey();
@@ -550,8 +551,17 @@ async function triggerCarouselGeneration(
         platforms: config.platforms,
         slideCount: config.slideCount,
         keywords: config.keywords,
+        caption: session.caption,
+        story: session.story,
+        vibes: session.vibes,
         source: "telegram",
         chatId: session.chatId,
+        // Store uploaded images so the project can be imported on desktop
+        uploadedImages: uploadedImages.map((img) => ({
+          id: img.id,
+          url: img.url,
+          filename: img.filename,
+        })),
       } as unknown as Record<string, unknown>,
       createdAt: now.toISOString(),
       expiresAt,
@@ -586,7 +596,7 @@ async function triggerCarouselGeneration(
           (session.caption
             ? `\u{1f4dd} Caption included\n`
             : "") +
-          `\n\u2014\u2014\u2014\n` +
+          `\n\u{1f4bb} *Continue on desktop:* Open the link above and click "Open in Editor" to keep editing with the full KodaPost tools. Your project is saved for 7 days.\n\n` +
           `Say "new" to create another carousel!`,
         {
           parse_mode: "Markdown",

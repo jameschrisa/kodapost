@@ -53,10 +53,30 @@ export async function GET(
 
     // Return status and result
     if (job.status === "completed") {
+      // Include inputConfig for Telegram projects so they can be imported on desktop
+      const inputConfig = job.inputConfig as Record<string, unknown> | null;
+      const isTelegram = inputConfig?.source === "telegram";
+
       return NextResponse.json({
         jobId: job.id,
         status: job.status,
         result: job.result,
+        // Only expose inputConfig for Telegram projects (has uploaded images for import)
+        ...(isTelegram && inputConfig
+          ? {
+              inputConfig: {
+                theme: inputConfig.theme,
+                platforms: inputConfig.platforms,
+                slideCount: inputConfig.slideCount,
+                keywords: inputConfig.keywords,
+                caption: inputConfig.caption,
+                story: inputConfig.story,
+                vibes: inputConfig.vibes,
+                source: inputConfig.source,
+                uploadedImages: inputConfig.uploadedImages,
+              },
+            }
+          : {}),
       });
     }
 

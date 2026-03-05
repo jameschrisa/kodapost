@@ -276,14 +276,26 @@ export default function Home() {
         const drafts = await listDraftMetadata();
         setDraftList(drafts);
 
+        // Step 3b: Check for ?draft= query param (e.g., from Telegram import)
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedDraftId = urlParams.get("draft");
+        if (requestedDraftId) {
+          // Clear the query param from the URL
+          window.history.replaceState({}, "", window.location.pathname);
+        }
+
         // Step 4: Determine onboarding state
         if (drafts.length === 0 && !hasSeenGuide()) {
           setShowOnboarding(true);
         }
 
-        // Step 5: Load most recent draft or fall back to legacy localStorage
+        // Step 5: Load most recent draft (or requested draft) or fall back to legacy localStorage
         if (drafts.length > 0) {
-          const mostRecent = drafts[0]; // sorted by updatedAt desc
+          // Prefer the requested draft if it exists, otherwise most recent
+          const targetDraft = requestedDraftId
+            ? drafts.find((d) => d.id === requestedDraftId) || drafts[0]
+            : drafts[0];
+          const mostRecent = targetDraft; // sorted by updatedAt desc
           const loaded = await loadDraft(mostRecent.id);
           if (loaded) {
             // Restore images from per-draft IDB
@@ -295,6 +307,11 @@ export default function Home() {
                 thumbnailUrl: imageMap.get(`${img.id}:thumb`) || img.thumbnailUrl,
               }));
               loaded.project.slides = loaded.project.slides.map((slide) => {
+                // Restore slide image from per-draft storage (direct slide ID or referenced upload)
+                const directRestore = imageMap.get(slide.id);
+                if (directRestore && (!slide.imageUrl || slide.imageUrl === "")) {
+                  return { ...slide, imageUrl: directRestore };
+                }
                 if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
                   const restored = loaded.project.uploadedImages.find(
                     (img) => img.id === slide.metadata!.referenceImage

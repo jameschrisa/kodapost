@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -11,6 +11,7 @@ import {
   Loader2,
   Copy,
   Check,
+  Pencil,
 } from "lucide-react";
 import { KodaPostIcon } from "@/components/icons";
 
@@ -19,7 +20,7 @@ import { KodaPostIcon } from "@/components/icons";
 //
 // Public page for viewing generated carousels shared via Telegram bot links.
 // Fetches the completed job result and displays slides in a carousel viewer
-// with download capability.
+// with download capability and "Open in Editor" import to local drafts.
 // =============================================================================
 
 interface SlideData {
@@ -27,6 +28,24 @@ interface SlideData {
   slideIndex: number;
   imageBase64: string;
   format: "jpeg" | "png";
+}
+
+interface UploadedImageData {
+  id: string;
+  url: string;
+  filename: string;
+}
+
+interface InputConfig {
+  theme?: string;
+  platforms?: string[];
+  slideCount?: number;
+  keywords?: string[];
+  caption?: string;
+  story?: string;
+  vibes?: string;
+  source?: string;
+  uploadedImages?: UploadedImageData[];
 }
 
 interface JobResult {
@@ -40,11 +59,13 @@ interface JobData {
   jobId: string;
   status: string;
   result?: JobResult;
+  inputConfig?: InputConfig;
   error?: string;
 }
 
 export default function PreviewPage() {
   const params = useParams();
+  const router = useRouter();
   const jobId = params.jobId as string;
 
   const [data, setData] = useState<JobData | null>(null);
@@ -52,6 +73,7 @@ export default function PreviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [captionCopied, setCaptionCopied] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   // Fetch job data
   useEffect(() => {
@@ -61,7 +83,7 @@ export default function PreviewPage() {
         if (!response.ok) {
           if (response.status === 404) {
             setError(
-              "Carousel not found. It may have expired (carousels are available for 1 hour after generation)."
+              "Carousel not found. It may have expired."
             );
           } else {
             setError("Failed to load carousel. Please try again.");
@@ -82,6 +104,7 @@ export default function PreviewPage() {
 
   const slides = data?.result?.slides || [];
   const totalSlides = slides.length;
+  const isTelegram = data?.inputConfig?.source === "telegram";
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -128,6 +151,104 @@ export default function PreviewPage() {
       document.body.removeChild(textarea);
       setCaptionCopied(true);
       setTimeout(() => setCaptionCopied(false), 2000);
+    }
+  }
+
+  /**
+   * Import this Telegram carousel into local IndexedDB as a draft project.
+   * Creates uploaded images from the job's inputConfig and slides from the
+   * generated result, then redirects to the main editor.
+   */
+  async function importToEditor() {
+    if (!data?.result || !data.inputConfig) return;
+    setImporting(true);
+
+    try {
+      // Dynamic import to avoid bundling draft-storage on initial load
+      const { saveDraft, saveDraftImages } = await import(
+        "@/lib/draft-storage"
+      );
+
+      const config = data.inputConfig;
+      const result = data.result;
+      const now = new Date().toISOString();
+      const draftId = `draft-tg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+      // Build uploaded images from Telegram's stored originals
+      const uploadedImages = (config.uploadedImages || []).map((img, i) => ({
+        id: img.id || `tg-img-${i}`,
+        url: img.url,
+        filename: img.filename || `telegram-photo-${i}.jpg`,
+        uploadedAt: now,
+        usedInSlides: [] as number[],
+      }));
+
+      // Build slides from the generated result
+      const slideTypes: Array<"hook" | "story" | "closer"> = [];
+      for (let i = 0; i < result.slides.length; i++) {
+        if (i === 0) slideTypes.push("hook");
+        else if (i === result.slides.length - 1) slideTypes.push("closer");
+        else slideTypes.push("story");
+      }
+
+      const projectSlides = result.slides.map((slide, i) => ({
+        id: `slide-${i}`,
+        position: i,
+        slideType: slideTypes[i],
+        imageUrl: `data:image/${slide.format};base64,${slide.imageBase64}`,
+        status: "ready" as const,
+        metadata: {
+          source: "telegram_import" as const,
+        },
+      }));
+
+      // Assemble the CarouselProject
+      const project = {
+        id: draftId,
+        postMode: "carousel" as const,
+        theme: config.theme || "photo carousel",
+        keywords: config.keywords || [],
+        slideCount: projectSlides.length,
+        cameraProfileId: 0,
+        uploadedImages,
+        slides: projectSlides,
+        analogCreativityMode: "recommended" as const,
+        imageAllocationMode: "sequential" as const,
+        targetPlatforms: (config.platforms || ["instagram"]) as Array<"instagram">,
+        caption: result.caption || config.caption || undefined,
+        captionStyle: "storyteller" as const,
+        projectName: `Telegram - ${config.story?.slice(0, 40) || "Carousel"}`,
+      };
+
+      // Save the draft to IndexedDB
+      await saveDraft(
+        draftId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        project as any,
+        "edit", // Drop into the edit step so user can adjust overlays
+        project.projectName || "Telegram Carousel",
+        null // No expiration for imported projects
+      );
+
+      // Save images separately (IndexedDB splits large blobs)
+      const imagesToSave = [
+        // Uploaded originals
+        ...uploadedImages
+          .filter((img) => img.url.startsWith("data:"))
+          .map((img) => ({ id: img.id, url: img.url })),
+        // Generated slide images
+        ...projectSlides
+          .filter((s) => s.imageUrl?.startsWith("data:"))
+          .map((s) => ({ id: s.id, url: s.imageUrl! })),
+      ];
+      await saveDraftImages(draftId, imagesToSave);
+
+      // Redirect to the main app (it will detect the new draft)
+      router.push(`/?draft=${draftId}`);
+    } catch (err) {
+      console.error("[KodaPost Preview] Import failed:", err);
+      setError("Failed to import project. Please try again.");
+      setImporting(false);
     }
   }
 
@@ -190,6 +311,21 @@ export default function PreviewPage() {
             <span className="font-semibold text-sm">KodaPost</span>
           </div>
           <div className="flex items-center gap-2">
+            {/* Open in Editor — only for Telegram projects with uploadedImages */}
+            {isTelegram && data.inputConfig?.uploadedImages && (
+              <button
+                onClick={importToEditor}
+                disabled={importing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {importing ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Pencil className="h-3.5 w-3.5" />
+                )}
+                {importing ? "Importing..." : "Open in Editor"}
+              </button>
+            )}
             <button
               onClick={() => downloadSlide(current)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-border hover:bg-muted transition-colors"
@@ -200,7 +336,7 @@ export default function PreviewPage() {
             {totalSlides > 1 && (
               <button
                 onClick={downloadAll}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-border hover:bg-muted transition-colors"
               >
                 <Download className="h-3.5 w-3.5" />
                 Save All
@@ -269,6 +405,30 @@ export default function PreviewPage() {
               </div>
             )}
           </div>
+
+          {/* Open in Editor CTA for Telegram projects */}
+          {isTelegram && data.inputConfig?.uploadedImages && (
+            <div className="max-w-md mx-auto">
+              <button
+                onClick={importToEditor}
+                disabled={importing}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {importing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Pencil className="h-4 w-4" />
+                )}
+                {importing
+                  ? "Importing to editor..."
+                  : "Open in Editor - Continue editing on desktop"}
+              </button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Import this carousel into KodaPost to edit overlays, adjust
+                styles, and publish to more platforms.
+              </p>
+            </div>
+          )}
 
           {/* Caption section */}
           {data.result.caption && (

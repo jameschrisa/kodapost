@@ -1,4 +1,5 @@
 import type { Bot } from "grammy";
+import sharp from "sharp";
 import type { UploadedImage } from "@/lib/types";
 
 // =============================================================================
@@ -8,9 +9,29 @@ import type { UploadedImage } from "@/lib/types";
 // the UploadedImage format expected by the KodaPost generation pipeline.
 // =============================================================================
 
+/** Max dimension on longest side (matches web UI client-side resize) */
+const MAX_DIMENSION = 2048;
+/** JPEG quality for resized output */
+const JPEG_QUALITY = 85;
+
 /**
- * Downloads a photo from Telegram by file_id and converts it to an UploadedImage
- * with a base64 data URI (same format as the web UI uploads).
+ * Resizes an image buffer to max 2048px on longest side and compresses to JPEG.
+ * This matches the client-side resize applied to web uploads, keeping Telegram
+ * photos at parity and well under Vercel's 4.5 MB response limit.
+ */
+async function resizeToJpeg(input: Buffer): Promise<Buffer> {
+  return sharp(input)
+    .resize(MAX_DIMENSION, MAX_DIMENSION, {
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .jpeg({ quality: JPEG_QUALITY })
+    .toBuffer();
+}
+
+/**
+ * Downloads a photo from Telegram by file_id, resizes it to max 2048px,
+ * and converts to an UploadedImage with a base64 data URI.
  */
 export async function downloadTelegramPhoto(
   bot: Bot,
@@ -37,23 +58,16 @@ export async function downloadTelegramPhoto(
   }
 
   const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const base64 = buffer.toString("base64");
+  const rawBuffer = Buffer.from(arrayBuffer);
 
-  // Determine mime type from file path
-  const ext = file.file_path.split(".").pop()?.toLowerCase() || "jpg";
-  const mimeMap: Record<string, string> = {
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    png: "image/png",
-    webp: "image/webp",
-  };
-  const mimeType = mimeMap[ext] || "image/jpeg";
+  // Resize to max 2048px JPEG (same as web client-side resize)
+  const resizedBuffer = await resizeToJpeg(rawBuffer);
+  const base64 = resizedBuffer.toString("base64");
 
   return {
     id: `tg-img-${index}`,
-    url: `data:${mimeType};base64,${base64}`,
-    filename: `telegram-photo-${index}.${ext}`,
+    url: `data:image/jpeg;base64,${base64}`,
+    filename: `telegram-photo-${index}.jpg`,
     uploadedAt: new Date().toISOString(),
     usedInSlides: [],
   };
@@ -61,19 +75,19 @@ export async function downloadTelegramPhoto(
 
 /**
  * Converts a Telegram photo (already downloaded as a Buffer) to an UploadedImage.
+ * Resizes to max 2048px JPEG.
  */
-export function telegramPhotoToUploadedImage(
+export async function telegramPhotoToUploadedImage(
   buffer: Buffer,
-  index: number,
-  mimeType: string = "image/jpeg"
-): UploadedImage {
-  const base64 = buffer.toString("base64");
-  const ext = mimeType.split("/")[1] || "jpg";
+  index: number
+): Promise<UploadedImage> {
+  const resizedBuffer = await resizeToJpeg(buffer);
+  const base64 = resizedBuffer.toString("base64");
 
   return {
     id: `tg-img-${index}`,
-    url: `data:${mimeType};base64,${base64}`,
-    filename: `telegram-photo-${index}.${ext}`,
+    url: `data:image/jpeg;base64,${base64}`,
+    filename: `telegram-photo-${index}.jpg`,
     uploadedAt: new Date().toISOString(),
     usedInSlides: [],
   };
