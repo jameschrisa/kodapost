@@ -439,36 +439,23 @@ export function SplashScreen({
               <div className="hidden md:flex items-center gap-3">
                 <LanguageSwitcher compact className="text-white/60 hover:text-white hover:bg-white/[0.06]" />
                 {isClerkEnabled && isSignedIn ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleGetStarted}
-                      className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-sm text-white/70 hover:bg-white/[0.08] hover:text-white transition-all duration-200"
-                    >
-                      {userInfo.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={userInfo.imageUrl}
-                          alt=""
-                          className="h-6 w-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-purple-400">
-                          <UserHexagonIcon className="h-4 w-4" />
-                        </div>
-                      )}
-                      <span className="hidden sm:inline pr-1 font-medium">
-                        {userInfo.firstName || t("nav.account")}
-                      </span>
-                    </button>
-                    <Button
-                      size="sm"
-                      onClick={handleGetStarted}
-                      className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
-                    >
-                      {t("nav.openApp")}
-                    </Button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={handleGetStarted}
+                    className="flex items-center gap-2 rounded-xl bg-orange-500 [@media(hover:hover)]:hover:bg-orange-400 pl-2 pr-4 py-1.5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 [@media(hover:hover)]:hover:shadow-orange-500/30 transition-all duration-200"
+                  >
+                    {userInfo.avatarEmoji ? (
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-sm">{userInfo.avatarEmoji}</span>
+                    ) : userInfo.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={userInfo.avatarUrl} alt="" className="h-7 w-7 rounded-full object-cover ring-1 ring-white/20" />
+                    ) : (
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
+                        <UserHexagonIcon className="h-4 w-4" />
+                      </div>
+                    )}
+                    {t("nav.openApp")}
+                  </button>
                 ) : isClerkEnabled ? (
                   <Button
                     size="sm"
@@ -535,13 +522,23 @@ export function SplashScreen({
                   {/* Auth CTA in mobile menu */}
                   <div className="mt-2 pt-3 border-t border-white/[0.06] flex flex-col gap-2">
                     {isClerkEnabled && isSignedIn ? (
-                      <Button
-                        size="lg"
+                      <button
+                        type="button"
                         onClick={() => { setMobileMenuOpen(false); handleGetStarted(); }}
-                        className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 py-3 text-base font-bold text-white shadow-lg shadow-orange-500/20"
+                        className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-orange-500 [@media(hover:hover)]:hover:bg-orange-400 py-3 text-base font-bold text-white shadow-lg shadow-orange-500/20"
                       >
+                        {userInfo.avatarEmoji ? (
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-sm">{userInfo.avatarEmoji}</span>
+                        ) : userInfo.avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={userInfo.avatarUrl} alt="" className="h-7 w-7 rounded-full object-cover ring-1 ring-white/20" />
+                        ) : (
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
+                            <UserHexagonIcon className="h-4 w-4" />
+                          </div>
+                        )}
                         {t("nav.openApp")}
-                      </Button>
+                      </button>
                     ) : isClerkEnabled ? (
                       <Button
                         size="lg"
