@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, Layers, Upload, X, ImagePlus } from "lucide-react";
+import { AlertCircle, Image as ImageIcon, Layers, Upload, X, ImagePlus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -475,11 +475,15 @@ export function ImageUploader({
 
       {/* Validation errors */}
       {errors.length > 0 && (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {errors.map((err, i) => (
-            <p key={i} className="text-sm text-destructive">
+            <div
+              key={i}
+              className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               {err}
-            </p>
+            </div>
           ))}
         </div>
       )}
@@ -531,7 +535,8 @@ export function ImageUploader({
                       e.stopPropagation();
                       removeImage(img.id);
                     }}
-                    className="absolute right-1.5 top-1.5 flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-100 sm:opacity-0 transition-opacity hover:bg-black/80 sm:group-hover:opacity-100"
+                    aria-label={`Remove ${img.file.name}`}
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-100 sm:opacity-0 transition-opacity [@media(hover:hover)]:hover:bg-black/80 sm:group-hover:opacity-100"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -660,7 +665,7 @@ export function ImageUploader({
           <DialogHeader>
             <DialogTitle>Converting Images</DialogTitle>
             <DialogDescription>
-              Converting HEIC images to JPEG for browser compatibility...
+              Converting HEIC images to JPEG for browser compatibility. Please wait, this may take a moment.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -676,6 +681,9 @@ export function ImageUploader({
               <span className="ml-1.5 tabular-nums">
                 ({(conversionState?.completed ?? 0) + 1} of {conversionState?.total ?? 0})
               </span>
+            </p>
+            <p className="text-xs text-muted-foreground/70 text-center">
+              This dialog will close automatically when done.
             </p>
           </div>
         </DialogContent>

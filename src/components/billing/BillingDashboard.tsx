@@ -211,7 +211,7 @@ export function BillingDashboard({ successParam }: { successParam?: string }) {
           <div className="flex items-center gap-2">
             {loadingStatus && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             {!loadingStatus && (
-              <Button variant="ghost" size="icon" onClick={fetchStatus} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" onClick={fetchStatus} className="h-8 w-8 text-muted-foreground [@media(hover:hover)]:hover:text-foreground" aria-label="Refresh billing status">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
             )}

@@ -52,6 +52,7 @@ function DetailRow({ label, value, copyable }: {
             size="icon"
             className="h-6 w-6 shrink-0"
             onClick={() => copyToClipboard(value, label)}
+            aria-label={`Copy ${label}`}
           >
             <Copy className="h-3 w-3" />
           </Button>
@@ -107,6 +108,7 @@ export default function ProvenanceDialog({ open, onOpenChange, record }: Provena
                   size="icon"
                   className="h-6 w-6 shrink-0"
                   onClick={() => copyToClipboard(hash, `Hash ${i + 1}`)}
+                  aria-label={`Copy hash ${i + 1}`}
                 >
                   <Copy className="h-3 w-3" />
                 </Button>

@@ -66,7 +66,7 @@ export function AvatarPicker() {
       {/* DiceBear styles */}
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground">Illustrated Avatars</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {DICEBEAR_STYLES.map((style) => {
             const selected = isMatch(avatarOverride, { type: "dicebear", style: style.id });
             const isSaving = saving === style.id;
@@ -77,10 +77,10 @@ export function AvatarPicker() {
                 onClick={() => pick({ type: "dicebear", style: style.id })}
                 disabled={!!saving}
                 className={cn(
-                  "relative flex flex-col items-center gap-1.5 rounded-lg border p-2 transition-all",
+                  "relative flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-all",
                   selected
                     ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
-                    : "border-muted-foreground/20 hover:border-muted-foreground/40"
+                    : "border-muted-foreground/20 [@media(hover:hover)]:hover:border-muted-foreground/40"
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -89,7 +89,7 @@ export function AvatarPicker() {
                   alt={style.label}
                   className="h-12 w-12 rounded-full bg-muted/30"
                 />
-                <span className="text-[10px] font-medium">{style.label}</span>
+                <span className="text-xs font-medium">{style.label}</span>
                 {selected && (
                   <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-purple-500 text-white">
                     <Check className="h-2.5 w-2.5" />
@@ -119,11 +119,12 @@ export function AvatarPicker() {
                 type="button"
                 onClick={() => pick({ type: "emoji", emoji })}
                 disabled={!!saving}
+                aria-label={`Select emoji ${emoji}`}
                 className={cn(
-                  "relative flex h-9 w-9 items-center justify-center rounded-lg border text-lg transition-all",
+                  "relative flex h-11 w-11 items-center justify-center rounded-lg border text-lg transition-all",
                   selected
                     ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
-                    : "border-muted-foreground/20 hover:border-muted-foreground/40"
+                    : "border-muted-foreground/20 [@media(hover:hover)]:hover:border-muted-foreground/40"
                 )}
               >
                 {emoji}
@@ -152,7 +153,7 @@ export function AvatarPicker() {
           "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-all",
           !avatarOverride
             ? "border-purple-400 bg-purple-500/10 text-purple-400"
-            : "border-muted-foreground/20 hover:border-muted-foreground/40 text-muted-foreground"
+            : "border-muted-foreground/20 [@media(hover:hover)]:hover:border-muted-foreground/40 text-muted-foreground"
         )}
       >
         <User className="h-4 w-4" />

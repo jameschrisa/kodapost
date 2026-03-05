@@ -173,7 +173,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: easeOutExpo }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-white/45"
+            className="mx-auto mt-6 max-w-2xl text-lg text-white/60"
           >
             {t("hero.description")}
           </motion.p>
@@ -197,10 +197,10 @@ export default function AboutPage() {
             <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
               {t("problem.heading")}
             </h2>
-            <p className="mt-4 text-white/45 leading-relaxed">
+            <p className="mt-4 text-white/60 leading-relaxed">
               {t("problem.p1")}
             </p>
-            <p className="mt-4 text-white/45 leading-relaxed">
+            <p className="mt-4 text-white/60 leading-relaxed">
               {t("problem.p2.before")}
               <span className="text-white font-medium">{t("problem.p2.bold")}</span>
               {t("problem.p2.after")}
@@ -215,7 +215,7 @@ export default function AboutPage() {
             viewport={{ once: true, amount: 0.3 }}
             className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm sm:p-8"
           >
-            <p className="mb-5 text-xs font-bold uppercase tracking-widest text-white/30">
+            <p className="mb-5 text-xs font-bold uppercase tracking-widest text-white/50">
               {t("problem.soundFamiliar")}
             </p>
             <div className="space-y-4">
@@ -255,7 +255,7 @@ export default function AboutPage() {
             {t("mission.heading")}
           </h2>
 
-          <p className="mx-auto mt-5 max-w-2xl text-white/45 leading-relaxed">
+          <p className="mx-auto mt-5 max-w-2xl text-white/60 leading-relaxed">
             {t("mission.description")}
           </p>
 
@@ -264,7 +264,7 @@ export default function AboutPage() {
             <p className="text-xl font-medium italic text-white/80 sm:text-2xl" style={{ fontFamily: "var(--font-playfair, Georgia, serif)" }}>
               &ldquo;{t("mission.quote")}&rdquo;
             </p>
-            <p className="mt-3 text-sm text-white/30">
+            <p className="mt-3 text-sm text-white/50">
               {t("mission.quoteCaption")}
             </p>
           </div>
@@ -322,7 +322,7 @@ export default function AboutPage() {
                   <h3 className={`text-lg font-semibold ${isAccent ? "text-white" : "text-white"}`}>
                     {t(`values.${i}.title`)}
                   </h3>
-                  <p className={`mt-2 text-sm leading-relaxed ${isAccent ? "text-white/80" : "text-white/45"}`}>
+                  <p className={`mt-2 text-sm leading-relaxed ${isAccent ? "text-white/80" : "text-white/60"}`}>
                     {t(`values.${i}.description`)}
                   </p>
                 </motion.div>
@@ -379,7 +379,7 @@ export default function AboutPage() {
                   </div>
 
                   <h3 className="text-base font-semibold text-white">{t(`howItWorks.steps.${i}.title`)}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/45">{t(`howItWorks.steps.${i}.description`)}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/60">{t(`howItWorks.steps.${i}.description`)}</p>
 
                   {/* Arrow connector (desktop, between cards) */}
                   {i < STEPS_META.length - 1 && (
@@ -407,11 +407,11 @@ export default function AboutPage() {
 
           <h2 className="text-3xl font-bold text-white sm:text-4xl">{t("team.heading")}</h2>
 
-          <p className="mx-auto mt-5 max-w-2xl text-white/45 leading-relaxed">
+          <p className="mx-auto mt-5 max-w-2xl text-white/60 leading-relaxed">
             {t("team.description")}
           </p>
 
-          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm text-white/40">
+          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm text-white/60">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             {t("team.badge")}
           </div>
@@ -436,9 +436,9 @@ export default function AboutPage() {
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
                 {t("philosophy.heading.youCreate")}{" "}
-                <span className="text-white/40">{t("philosophy.heading.kodaAssists")}</span>
+                <span className="text-white/60">{t("philosophy.heading.kodaAssists")}</span>
               </h2>
-              <div className="space-y-4 text-white/45 text-sm leading-relaxed">
+              <div className="space-y-4 text-white/60 text-sm leading-relaxed">
                 <p>
                   {t("philosophy.p1")}
                 </p>
@@ -496,7 +496,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold text-white sm:text-3xl">
               {t("cta.heading")}
             </h2>
-            <p className="mx-auto mt-4 max-w-md text-white/45">
+            <p className="mx-auto mt-4 max-w-md text-white/60">
               {t("cta.description")}
             </p>
 

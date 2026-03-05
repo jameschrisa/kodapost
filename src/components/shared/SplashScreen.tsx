@@ -192,9 +192,9 @@ function WhoItsForSection() {
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
             {t("whoItsFor.title")}{" "}
-            <span className="text-white/40">{t("whoItsFor.titleFaded")}</span>
+            <span className="text-white/60">{t("whoItsFor.titleFaded")}</span>
           </h2>
-          <p className="mt-3 text-white/40 max-w-lg">
+          <p className="mt-3 text-white/60 max-w-lg">
             {t("whoItsFor.subtitle")}
           </p>
         </motion.div>
@@ -209,7 +209,7 @@ function WhoItsForSection() {
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                 activeTab === seg.id
                   ? `${seg.activeBg} text-white shadow-lg`
-                  : "bg-white/[0.05] text-white/50 hover:bg-white/[0.08] hover:text-white/70"
+                  : "bg-white/[0.05] text-white/60 hover:bg-white/[0.08] hover:text-white/70"
               }`}
             >
               {t(`segments.${seg.segmentIndex}.label`)}
@@ -235,7 +235,7 @@ function WhoItsForSection() {
               <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-4">
                 {t(`segments.${si}.headline`)}
               </h3>
-              <p className="text-white/45 text-sm leading-relaxed">
+              <p className="text-white/60 text-sm leading-relaxed">
                 {t(`segments.${si}.description`)}
               </p>
               <Image
@@ -256,12 +256,12 @@ function WhoItsForSection() {
                   className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 backdrop-blur-sm"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-[10px] font-bold text-white/30">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-[10px] font-bold text-white/60">
                       {String(pi + 1).padStart(2, "0")}
                     </span>
                     <div>
                       <p className="text-sm font-semibold text-white">{t(`segments.${si}.points.${pi}.title`)}</p>
-                      <p className="mt-1 text-xs text-white/40 leading-relaxed">{t(`segments.${si}.points.${pi}.text`)}</p>
+                      <p className="mt-1 text-xs text-white/60 leading-relaxed">{t(`segments.${si}.points.${pi}.text`)}</p>
                     </div>
                   </div>
                 </div>
@@ -403,7 +403,7 @@ export function SplashScreen({
                     <Link
                       key={link.labelKey}
                       href={link.href}
-                      className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
+                      className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200"
                     >
                       {t(link.labelKey)}
                     </Link>
@@ -417,7 +417,7 @@ export function SplashScreen({
                           .querySelector(link.href)
                           ?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="text-sm font-medium text-white/50 hover:text-white transition-colors duration-200"
+                      className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200"
                     >
                       {t(link.labelKey)}
                     </a>
@@ -437,7 +437,7 @@ export function SplashScreen({
 
               {/* Auth / CTA — hidden on mobile (moved into hamburger menu) */}
               <div className="hidden md:flex items-center gap-3">
-                <LanguageSwitcher compact className="text-white/50 hover:text-white hover:bg-white/[0.06]" />
+                <LanguageSwitcher compact className="text-white/60 hover:text-white hover:bg-white/[0.06]" />
                 {isClerkEnabled && isSignedIn ? (
                   <>
                     <button
@@ -666,7 +666,7 @@ export function SplashScreen({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
               >
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-[1.1]">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1]">
                   {t("hero.title.line1")}{" "}
                   <br className="hidden sm:block" />
                   <span className="whitespace-nowrap">{t("hero.title.line2")}{" "}
@@ -701,7 +701,7 @@ export function SplashScreen({
                   &ldquo;{t(`quotes.${quoteIndex}.text`)}&rdquo;
                 </p>
                 {QUOTES_META[quoteIndex].author && (
-                  <p className="mt-2 text-xs font-medium text-white/40">
+                  <p className="mt-2 text-xs font-medium text-white/60">
                     &ndash; {t(`quotes.${quoteIndex}.author`, QUOTES_META[quoteIndex].author!)}
                   </p>
                 )}
@@ -771,12 +771,12 @@ export function SplashScreen({
               transition={{ delay: 2.2, duration: 0.8 }}
               className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
             >
-              <span className="text-[11px] uppercase tracking-widest text-white/30 font-medium">{t("hero.scrollToExplore")}</span>
+              <span className="text-[11px] uppercase tracking-widest text-white/60 font-medium">{t("hero.scrollToExplore")}</span>
               <motion.div
                 animate={{ y: [0, 8, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <ArrowDown className="h-4 w-4 text-white/30" />
+                <ArrowDown className="h-4 w-4 text-white/60" />
               </motion.div>
             </motion.div>
           </section>
@@ -799,7 +799,7 @@ export function SplashScreen({
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                   {t("howItWorks.title")}{" "}
-                  <span className="text-white/40">{t("howItWorks.titleFaded")}</span>
+                  <span className="text-white/60">{t("howItWorks.titleFaded")}</span>
                 </h2>
               </motion.div>
 
@@ -825,13 +825,13 @@ export function SplashScreen({
                         <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${step.accent} text-white shadow-lg`}>
                           <step.icon className="h-5 w-5" />
                         </div>
-                        <span className="text-xs font-bold uppercase tracking-widest text-white/30">
+                        <span className="text-xs font-bold uppercase tracking-widest text-white/60">
                           {t("howItWorks.stepLabel")} {i + 1}
                         </span>
                       </div>
 
                       <h3 className="text-xl font-bold text-white mb-3">{t(`workflow.${i}.title`)}</h3>
-                      <p className="text-sm leading-relaxed text-white/45">{t(`workflow.${i}.description`)}</p>
+                      <p className="text-sm leading-relaxed text-white/60">{t(`workflow.${i}.description`)}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -876,7 +876,7 @@ export function SplashScreen({
                   <Camera className="h-7 w-7 text-purple-400" />
                   {t("featuresSection.title")}
                 </h2>
-                <p className="mt-3 text-white/40 max-w-lg">
+                <p className="mt-3 text-white/60 max-w-lg">
                   {t("featuresSection.subtitle")}
                 </p>
               </motion.div>
@@ -915,7 +915,7 @@ export function SplashScreen({
                         {t(`features.${i}.title`)}
                       </h3>
                       <p className={`text-sm leading-relaxed ${
-                        feature.style === "accent" ? "text-white/80" : "text-white/40"
+                        feature.style === "accent" ? "text-white/80" : "text-white/60"
                       }`}>
                         {t(`features.${i}.description`)}
                       </p>
@@ -959,9 +959,9 @@ export function SplashScreen({
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
                   {t("provenance.title")}{" "}
-                  <span className="text-white/40">{t("provenance.titleFaded")}</span>
+                  <span className="text-white/60">{t("provenance.titleFaded")}</span>
                 </h2>
-                <p className="mt-4 text-white/40 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
+                <p className="mt-4 text-white/60 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
                   {t("provenance.subtitle")}
                 </p>
               </motion.div>
@@ -1017,7 +1017,7 @@ export function SplashScreen({
                           </div>
                           <div>
                             <h3 className="text-base font-bold text-white mb-1">{t(`provenance.cards.${point.index}.title`)}</h3>
-                            <p className="text-sm leading-relaxed text-white/40">{t(`provenance.cards.${point.index}.text`)}</p>
+                            <p className="text-sm leading-relaxed text-white/60">{t(`provenance.cards.${point.index}.text`)}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -1063,9 +1063,9 @@ export function SplashScreen({
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
                     {t("mobile.title")}{" "}
-                    <span className="text-white/40">{t("mobile.titleFaded")}</span>
+                    <span className="text-white/60">{t("mobile.titleFaded")}</span>
                   </h2>
-                  <p className="text-white/45 text-sm leading-relaxed">
+                  <p className="text-white/60 text-sm leading-relaxed">
                     {t("mobile.description")}
                   </p>
 
@@ -1078,7 +1078,7 @@ export function SplashScreen({
                         className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-all ${
                           mobileTab === "telegram"
                             ? "bg-sky-500/15 text-sky-400 shadow-sm"
-                            : "text-white/40 hover:text-white/60"
+                            : "text-white/60 hover:text-white/60"
                         }`}
                       >
                         <IconBrandTelegram size={16} />
@@ -1090,7 +1090,7 @@ export function SplashScreen({
                         className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-all ${
                           mobileTab === "mobileweb"
                             ? "bg-purple-500/15 text-purple-400 shadow-sm"
-                            : "text-white/40 hover:text-white/60"
+                            : "text-white/60 hover:text-white/60"
                         }`}
                       >
                         <Globe className="h-4 w-4" />
@@ -1159,17 +1159,17 @@ export function SplashScreen({
                               </div>
                               <div className="flex-1">
                                 <h3 className="text-sm font-semibold text-white">{t("mobileWeb.installTitle")}</h3>
-                                <p className="mt-1 text-xs text-white/40 leading-relaxed">
+                                <p className="mt-1 text-xs text-white/60 leading-relaxed">
                                   {t("mobileWeb.installDescription")}
                                 </p>
                               </div>
                             </div>
                             <div className="mt-4 space-y-2.5 pl-12">
-                              <div className="flex items-center gap-2.5 text-xs text-white/50">
+                              <div className="flex items-center gap-2.5 text-xs text-white/60">
                                 <Share className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                                 <span><strong className="text-white/70">{t("mobileWeb.iphone.label")}</strong> {t("mobileWeb.iphone.instructions")}</span>
                               </div>
-                              <div className="flex items-center gap-2.5 text-xs text-white/50">
+                              <div className="flex items-center gap-2.5 text-xs text-white/60">
                                 <PlusSquare className="h-3.5 w-3.5 shrink-0 text-green-400" />
                                 <span><strong className="text-white/70">{t("mobileWeb.android.label")}</strong> {t("mobileWeb.android.instructions")}</span>
                               </div>
@@ -1268,7 +1268,7 @@ export function SplashScreen({
                     <KodaPostIcon className="h-5 w-5 text-orange-500" />
                     <span className="text-base font-bold tracking-tight text-orange-500">{t("footer.brand")}</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-white/30 max-w-sm mb-6">
+                  <p className="text-sm leading-relaxed text-white/60 max-w-sm mb-6">
                     {t("footer.description")}
                   </p>
                 </div>
@@ -1286,7 +1286,7 @@ export function SplashScreen({
                             .querySelector("#how-it-works")
                             ?.scrollIntoView({ behavior: "smooth" });
                         }}
-                        className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/60 transition-colors"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
                         {t("footer.product.howItWorks")}
@@ -1301,7 +1301,7 @@ export function SplashScreen({
                             .querySelector("#features")
                             ?.scrollIntoView({ behavior: "smooth" });
                         }}
-                        className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/60 transition-colors"
                       >
                         <Camera className="h-3.5 w-3.5" />
                         {t("footer.product.features")}
@@ -1310,7 +1310,7 @@ export function SplashScreen({
                     <li>
                       <Link
                         href="/guide"
-                        className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/60 transition-colors"
                       >
                         <BookOpen className="h-3.5 w-3.5" />
                         {t("footer.product.userGuide")}
@@ -1319,7 +1319,7 @@ export function SplashScreen({
                     <li>
                       <Link
                         href="/support"
-                        className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/60 transition-colors"
                       >
                         <HelpCircle className="h-3.5 w-3.5" />
                         {t("footer.product.support")}
@@ -1335,7 +1335,7 @@ export function SplashScreen({
                     <li>
                       <Link
                         href="/legal/privacy"
-                        className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/60 transition-colors"
                       >
                         <Shield className="h-3.5 w-3.5" />
                         {t("footer.legal.privacyPolicy")}
@@ -1344,7 +1344,7 @@ export function SplashScreen({
                     <li>
                       <Link
                         href="/legal/terms"
-                        className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/60 transition-colors"
                       >
                         <FileText className="h-3.5 w-3.5" />
                         {t("footer.legal.termsOfUse")}
@@ -1353,7 +1353,7 @@ export function SplashScreen({
                     <li>
                       <Link
                         href="/legal/data"
-                        className="flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/60 transition-colors"
                       >
                         <Database className="h-3.5 w-3.5" />
                         {t("footer.legal.dataPolicy")}

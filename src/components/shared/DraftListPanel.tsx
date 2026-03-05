@@ -142,7 +142,27 @@ export function DraftListPanel({
     [commitName]
   );
 
-  if (drafts.length === 0) return null;
+  if (drafts.length === 0) {
+    return (
+      <div className="mb-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            Your Drafts (0/{draftLimit})
+          </h3>
+        </div>
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center gap-2 py-6 text-center">
+            <FileText className="h-6 w-6 text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground">No drafts yet</p>
+            <Button size="sm" className="gap-1.5 mt-1" onClick={onNewDraft}>
+              <Plus className="h-3 w-3" />
+              Start a new project
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <motion.div

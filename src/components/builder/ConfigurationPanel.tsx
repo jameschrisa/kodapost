@@ -1050,13 +1050,18 @@ export function ConfigurationPanel({
       </Card>
       </motion.div>
 
-      {/* Validation errors — only shown after the user attempts to generate */}
-      {hasAttemptedGenerate && validation.errors.length > 0 && (
+      {/* Validation errors — softer hints before generate attempt, prominent after */}
+      {validation.errors.length > 0 && (
         <div className="space-y-2">
           {validation.errors.map((err, i) => (
             <div
               key={`err-${i}`}
-              className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              className={cn(
+                "flex items-start gap-2 rounded-md px-3 py-2 text-sm",
+                hasAttemptedGenerate
+                  ? "bg-destructive/10 text-destructive"
+                  : "bg-muted text-muted-foreground"
+              )}
             >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               {err}

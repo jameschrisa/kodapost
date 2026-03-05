@@ -894,10 +894,15 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
                 <SlideTextOverlay overlay={liveOverlay} scale={previewScale} interactive />
               )}
               {/* Drag hint */}
-              {!isDragging && liveOverlay?.content.primary && (
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 rounded-full bg-black/50 px-2.5 py-1 text-[10px] text-white/80 pointer-events-none">
-                  <Move className="h-3 w-3" />
-                  Drag to position
+              {liveOverlay?.content.primary && (
+                <div className={cn(
+                  "absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium pointer-events-none transition-opacity",
+                  isDragging
+                    ? "bg-purple-500/80 text-white opacity-90"
+                    : "bg-black/60 text-white/90 opacity-100"
+                )}>
+                  <Move className="h-3.5 w-3.5" />
+                  {isDragging ? "Drop to place" : "Drag text to reposition"}
                 </div>
               )}
               {!selectedSlide && (

@@ -59,7 +59,7 @@ function MockWindowChrome({ label, step, stepLabel }: { label: string; step: num
         <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
         <div className="h-2.5 w-2.5 rounded-full bg-white/10" />
       </div>
-      <span className="text-xs font-medium text-white/30">
+      <span className="text-xs font-medium text-white/50">
         {stepLabel} {step}: {label}
       </span>
     </div>
@@ -85,14 +85,14 @@ function UploadMockup({ t }: { t: (key: string, fallback?: string) => string; tc
   return (
     <div className="p-5 space-y-4">
       <div className="rounded-xl border-2 border-dashed border-white/10 bg-white/[0.01] p-8 text-center">
-        <ImagePlus className="h-8 w-8 text-white/20 mx-auto mb-3" />
-        <p className="text-sm text-white/30 mb-1">{t("mockup.upload.dropZone")}</p>
-        <p className="text-xs text-white/15">{t("mockup.upload.fileHint")}</p>
+        <ImagePlus className="h-8 w-8 text-white/50 mx-auto mb-3" />
+        <p className="text-sm text-white/50 mb-1">{t("mockup.upload.dropZone")}</p>
+        <p className="text-xs text-white/50">{t("mockup.upload.fileHint")}</p>
       </div>
       <div className="grid grid-cols-5 gap-2">
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className={`aspect-square rounded-lg ${i <= 3 ? "bg-gradient-to-br from-white/8 to-white/4" : "border border-dashed border-white/8"} flex items-center justify-center`}>
-            {i <= 3 ? <Camera className="h-3.5 w-3.5 text-white/20" /> : <span className="text-[10px] text-white/15">+</span>}
+            {i <= 3 ? <Camera className="h-3.5 w-3.5 text-white/50" /> : <span className="text-[10px] text-white/50">+</span>}
           </div>
         ))}
       </div>
@@ -100,7 +100,7 @@ function UploadMockup({ t }: { t: (key: string, fallback?: string) => string; tc
         {["JPEG", "PNG", "WebP", "HEIC"].map((fmt) => (
           <span key={fmt} className="rounded-md bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 text-[10px] font-medium text-white/25">{fmt}</span>
         ))}
-        <span className="text-[10px] text-white/20 ml-auto">{t("mockup.upload.photoCount")}</span>
+        <span className="text-[10px] text-white/50 ml-auto">{t("mockup.upload.photoCount")}</span>
       </div>
       <Callout number={1}>{t("mockup.upload.callout1")}</Callout>
       <Callout number={2}>{t("mockup.upload.callout2")}</Callout>
@@ -113,13 +113,13 @@ function CraftMockup({ t }: { t: (key: string, fallback?: string) => string; tc?
   return (
     <div className="p-5 space-y-4">
       <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">{t("mockup.craft.themeLabel")}</label>
+        <label className="text-[11px] font-medium text-white/50 uppercase tracking-wider">{t("mockup.craft.themeLabel")}</label>
         <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
           <span className="text-sm text-white/40">{t("mockup.craft.themePlaceholder")}</span>
         </div>
       </div>
       <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">{t("mockup.craft.styleLabel")}</label>
+        <label className="text-[11px] font-medium text-white/50 uppercase tracking-wider">{t("mockup.craft.styleLabel")}</label>
         <div className="flex gap-1.5 overflow-hidden">
           {[
             { nameKey: "mockup.craft.styleBoldStatement", color: "bg-white/10" },
@@ -128,21 +128,21 @@ function CraftMockup({ t }: { t: (key: string, fallback?: string) => string; tc?
           ].map((tpl, i) => (
             <div key={i} className={`flex-1 rounded-lg border ${i === 0 ? "border-purple-500/40 ring-1 ring-purple-500/20" : "border-white/[0.06]"} ${tpl.color} px-2 py-2 text-center`}>
               <Palette className="h-3 w-3 text-white/25 mx-auto mb-0.5" />
-              <span className="text-[9px] text-white/30 leading-tight block">{t(tpl.nameKey)}</span>
+              <span className="text-[9px] text-white/50 leading-tight block">{t(tpl.nameKey)}</span>
             </div>
           ))}
         </div>
       </div>
       <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">{t("mockup.craft.filterLabel")}</label>
+        <label className="text-[11px] font-medium text-white/50 uppercase tracking-wider">{t("mockup.craft.filterLabel")}</label>
         <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
           <Camera className="h-3.5 w-3.5 text-amber-400/60" />
           <span className="text-sm text-white/50">{t("mockup.craft.filterValue")}</span>
-          <svg className="h-3 w-3 text-white/20 ml-auto" fill="none" viewBox="0 0 12 12"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg className="h-3 w-3 text-white/50 ml-auto" fill="none" viewBox="0 0 12 12"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </div>
       </div>
       <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">{t("mockup.craft.vibesLabel")}</label>
+        <label className="text-[11px] font-medium text-white/50 uppercase tracking-wider">{t("mockup.craft.vibesLabel")}</label>
         <div className="flex flex-wrap gap-1.5">
           {["relatable", "nostalgic", "warm"].map((vibe) => (
             <span key={vibe} className="inline-flex items-center gap-1 rounded-full bg-purple-500/15 border border-purple-500/20 px-2.5 py-1 text-[11px] font-medium text-purple-300">
@@ -150,7 +150,7 @@ function CraftMockup({ t }: { t: (key: string, fallback?: string) => string; tc?
               {t(`mockup.craft.vibe.${vibe}`, vibe)}
             </span>
           ))}
-          <span className="inline-flex items-center rounded-full border border-dashed border-white/10 px-2.5 py-1 text-[11px] text-white/20">{t("mockup.craft.addVibe")}</span>
+          <span className="inline-flex items-center rounded-full border border-dashed border-white/10 px-2.5 py-1 text-[11px] text-white/50">{t("mockup.craft.addVibe")}</span>
         </div>
       </div>
       <Callout number={1}>{t("mockup.craft.callout1")}</Callout>
@@ -167,12 +167,12 @@ function DesignMockup({ t }: { t: (key: string, fallback?: string) => string; tc
         <img src="/assets/quickstart/slide-main.jpg" alt={t("mockup.design.slidePreviewAlt")} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
         <div className="absolute inset-0 flex items-end p-4"><div className="w-full space-y-1"><div className="h-4 w-3/4 rounded bg-white/20" /><div className="h-3 w-1/2 rounded bg-white/10" /></div></div>
-        <div className="absolute top-3 right-3"><GripVertical className="h-4 w-4 text-white/30" /></div>
+        <div className="absolute top-3 right-3"><GripVertical className="h-4 w-4 text-white/50" /></div>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-center"><Type className="h-3.5 w-3.5 text-white/30 mx-auto mb-1" /><span className="text-[10px] text-white/25">{t("mockup.design.slideAlt", "Font")}</span></div>
-        <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-center"><Sliders className="h-3.5 w-3.5 text-white/30 mx-auto mb-1" /><span className="text-[10px] text-white/25">{t("mockup.design.slideAlt", "Position")}</span></div>
-        <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-center"><Palette className="h-3.5 w-3.5 text-white/30 mx-auto mb-1" /><span className="text-[10px] text-white/25">{t("mockup.design.slideAlt", "Color")}</span></div>
+        <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-center"><Type className="h-3.5 w-3.5 text-white/50 mx-auto mb-1" /><span className="text-[10px] text-white/25">{t("mockup.design.slideAlt", "Font")}</span></div>
+        <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-center"><Sliders className="h-3.5 w-3.5 text-white/50 mx-auto mb-1" /><span className="text-[10px] text-white/25">{t("mockup.design.slideAlt", "Position")}</span></div>
+        <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-2 text-center"><Palette className="h-3.5 w-3.5 text-white/50 mx-auto mb-1" /><span className="text-[10px] text-white/25">{t("mockup.design.slideAlt", "Color")}</span></div>
       </div>
       <div className="flex gap-1.5 overflow-hidden">
         {[1, 2, 3, 4, 5].map((i) => (
@@ -209,7 +209,7 @@ function ReviewMockup({ t }: { t: (key: string, fallback?: string) => string; tc
         ))}
       </div>
       <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
-        <div className="flex items-center gap-2 mb-2"><Music className="h-3.5 w-3.5 text-white/25" /><span className="text-[11px] text-white/30">{t("mockup.review.audioTrack")}</span></div>
+        <div className="flex items-center gap-2 mb-2"><Music className="h-3.5 w-3.5 text-white/25" /><span className="text-[11px] text-white/50">{t("mockup.review.audioTrack")}</span></div>
         <div className="flex items-end gap-px h-6">{Array.from({ length: 40 }).map((_, i) => (<div key={i} className="flex-1 bg-purple-500/20 rounded-t-sm" style={{ height: `${20 + Math.sin(i * 0.5) * 60 + Math.random() * 20}%` }} />))}</div>
       </div>
       <Callout number={1}>{t("mockup.review.callout1")}</Callout>
@@ -223,7 +223,7 @@ function PublishMockup({ t, tc }: { t: (key: string, fallback?: string) => strin
   return (
     <div className="p-5 space-y-4">
       <div className="space-y-2">
-        <label className="text-[11px] font-medium text-white/30 uppercase tracking-wider">{t("mockup.publish.publishToLabel")}</label>
+        <label className="text-[11px] font-medium text-white/50 uppercase tracking-wider">{t("mockup.publish.publishToLabel")}</label>
         {[
           { name: "Instagram", connected: true, checked: true },
           { name: "TikTok", connected: true, checked: true },
@@ -235,7 +235,7 @@ function PublishMockup({ t, tc }: { t: (key: string, fallback?: string) => strin
               {platform.checked && (<svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 10 10"><path d="M2 5L4 7L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>)}
             </div>
             <span className={`text-sm ${platform.checked ? "text-white/60" : "text-white/25"}`}>{platform.name}</span>
-            {!platform.connected && (<span className="text-[10px] text-white/15 ml-auto">{tc("status.notConnected")}</span>)}
+            {!platform.connected && (<span className="text-[10px] text-white/50 ml-auto">{tc("status.notConnected")}</span>)}
           </div>
         ))}
       </div>
@@ -341,7 +341,7 @@ export default function QuickStartPage() {
               {t("hero.description")}
             </motion.p>
 
-            <motion.div variants={staggerChild} className="flex items-center justify-center gap-3 text-sm text-white/30">
+            <motion.div variants={staggerChild} className="flex items-center justify-center gap-3 text-sm text-white/50">
               <Link href="/guide" className="hover:text-white/50 transition-colors">{t("hero.breadcrumb.userGuide")}</Link>
               <span>/</span>
               <Link href="/support" className="hover:text-white/50 transition-colors">{t("hero.breadcrumb.support")}</Link>
@@ -444,7 +444,7 @@ export default function QuickStartPage() {
                     {t("nextSteps.userGuide.description")}
                   </p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
+                <ArrowRight className="h-4 w-4 text-white/50 ml-auto group-hover:text-white/40 transition-colors" />
               </Link>
             </motion.div>
 
@@ -464,7 +464,7 @@ export default function QuickStartPage() {
                     {t("nextSteps.supportFaq.description")}
                   </p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
+                <ArrowRight className="h-4 w-4 text-white/50 ml-auto group-hover:text-white/40 transition-colors" />
               </Link>
             </motion.div>
 
@@ -484,7 +484,7 @@ export default function QuickStartPage() {
                     {t("nextSteps.pricing.description")}
                   </p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/20 ml-auto group-hover:text-white/40 transition-colors" />
+                <ArrowRight className="h-4 w-4 text-white/50 ml-auto group-hover:text-white/40 transition-colors" />
               </Link>
             </motion.div>
           </motion.div>
@@ -494,7 +494,7 @@ export default function QuickStartPage() {
       {/* Footer */}
       <section className="border-t border-white/[0.06]">
         <div className="max-w-5xl mx-auto px-6 py-16 text-center">
-          <p className="text-white/30 text-sm">
+          <p className="text-white/50 text-sm">
             KodaPost &middot; {tc("footer.shortTagline")}
           </p>
         </div>
