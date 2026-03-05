@@ -96,9 +96,11 @@ const MAX_CLIENT_DIMENSION = 2048;
 
 async function convertHeicClientSide(file: File): Promise<Blob | null> {
   try {
+    console.info(`[HEIC-debug] Client-side: attempting createImageBitmap for ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
     // createImageBitmap can decode HEIC on Safari/iOS natively
     const bitmap = await createImageBitmap(file);
     const { width, height } = bitmap;
+    console.info(`[HEIC-debug] Client-side: decoded ${width}x${height}`);
 
     // Scale down to MAX_CLIENT_DIMENSION preserving aspect ratio
     let outW = width;
@@ -116,20 +118,26 @@ async function convertHeicClientSide(file: File): Promise<Blob | null> {
     bitmap.close();
 
     const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
+    console.info(`[HEIC-debug] Client-side: SUCCESS ${file.name} → ${(blob.size / 1024).toFixed(0)}KB JPEG`);
     return blob;
-  } catch {
+  } catch (clientErr) {
+    console.info(`[HEIC-debug] Client-side: FAILED for ${file.name} — ${clientErr instanceof Error ? clientErr.message : "unknown"} (falling back to server)`);
+    // intentional fall-through
     // Browser can't decode HEIC (Chrome, Firefox) — return null to trigger server fallback
     return null;
   }
 }
 
 async function convertHeicServerSide(file: File): Promise<Blob> {
+  console.info(`[HEIC-debug] Server-side: uploading ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
+  const startTime = performance.now();
+
   const formData = new FormData();
   formData.append("file", file);
 
-  // 30-second timeout for large images
+  // 45-second timeout — heic-convert can take 10-20s on serverless cold start
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000);
+  const timeout = setTimeout(() => controller.abort(), 45_000);
 
   let response: Response;
   try {
@@ -140,39 +148,68 @@ async function convertHeicServerSide(file: File): Promise<Blob> {
     });
   } catch (fetchError) {
     clearTimeout(timeout);
+    const elapsed = Math.round(performance.now() - startTime);
+    const errType = fetchError instanceof Error ? `${fetchError.constructor.name}: ${fetchError.message}` : String(fetchError);
+    console.error(`[HEIC-debug] Server-side: fetch FAILED for ${file.name} after ${elapsed}ms — ${errType}`);
+
     if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
-      throw new Error("Conversion timed out. Try a smaller image.");
+      throw new Error(`Conversion timed out after ${elapsed}ms. Try a smaller image.`);
     }
-    throw new Error("Unable to reach the conversion server. Check your connection.");
+    // "TypeError: Failed to fetch" means the server connection was dropped
+    // (function crash, OOM, or network issue)
+    throw new Error(
+      `Server conversion failed for ${file.name} (${errType}, ${elapsed}ms). The server may be overloaded. Try uploading fewer images at once.`
+    );
   } finally {
     clearTimeout(timeout);
   }
 
+  const elapsed = Math.round(performance.now() - startTime);
+
   if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: "" }));
+    const err = await response.json().catch(() => ({ error: "", debug: null }));
+    console.error(
+      `[HEIC-debug] Server-side: HTTP ${response.status} for ${file.name} after ${elapsed}ms`,
+      err.debug || err.error
+    );
     throw new Error(
-      err.error || "Image conversion failed. The file may be corrupted or unsupported."
+      err.error || `Image conversion failed (HTTP ${response.status}).`
     );
   }
 
   const result = await response.json();
   if (!result.success) {
+    console.error(`[HEIC-debug] Server-side: conversion returned failure for ${file.name}`, result.debug);
     throw new Error(
       result.error || "Image conversion failed. The file may be corrupted or unsupported."
     );
   }
 
-  // Convert data URI back to Blob for createObjectURL preview
-  const resp = await fetch(result.dataUri);
-  return resp.blob();
+  console.info(
+    `[HEIC-debug] Server-side: SUCCESS ${file.name} in ${elapsed}ms` +
+    (result.debug ? ` (server: ${result.debug.totalMs}ms, path=${result.debug.conversionPath}, heap=${result.debug.heapMB}MB)` : "")
+  );
+
+  // Convert base64 data URI to Blob (no fetch — avoids data: URI size limits)
+  const base64 = result.dataUri.split(",")[1];
+  const bytes = atob(base64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: "image/jpeg" });
 }
 
 async function convertHeicFile(file: File): Promise<Blob> {
+  console.info(`[HEIC-debug] convertHeicFile START: ${file.name} (${(file.size / 1024).toFixed(0)}KB, type=${file.type || "no-mime"})`);
+
   // Try client-side first (instant on Safari/iOS)
   const clientBlob = await convertHeicClientSide(file);
-  if (clientBlob && clientBlob.size > 0) return clientBlob;
+  if (clientBlob && clientBlob.size > 0) {
+    console.info(`[HEIC-debug] convertHeicFile: using client-side result for ${file.name}`);
+    return clientBlob;
+  }
 
   // Fall back to server for Chrome/Firefox/etc.
+  console.info(`[HEIC-debug] convertHeicFile: falling back to server for ${file.name}`);
   return convertHeicServerSide(file);
 }
 
@@ -320,6 +357,11 @@ export function ImageUploader({
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Processing failed";
+        const errType = err instanceof Error ? err.constructor.name : typeof err;
+        console.error(
+          `[HEIC-debug] processFiles: FAILED ${file.name} (${errType}): ${msg}`,
+          err instanceof Error ? err.stack : err
+        );
         newErrors.push(`${file.name}: ${msg}`);
       }
     }
