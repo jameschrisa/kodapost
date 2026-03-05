@@ -233,12 +233,17 @@ export default function AboutPage() {
       </section>
 
       {/* ═══ 3. OUR MISSION ═══ */}
-      <section className="relative px-6 py-28 bg-zinc-900">
-        {/* Subtle center glow */}
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full opacity-30"
-          style={{ background: "radial-gradient(circle, hsl(270 70% 55% / 0.4) 0%, transparent 70%)", filter: "blur(80px)" }}
+      <section className="relative px-6 py-28 overflow-hidden">
+        {/* Gallery background image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/assets/landing/gallerybg.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
         />
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/75" />
 
         <motion.div
           variants={sectionReveal}
