@@ -103,12 +103,45 @@ const LanguageContext = createContext<LanguageContextValue>({
   dictionaries: {},
 });
 
+/**
+ * Detects the best supported language from the browser's locale preferences.
+ * Checks navigator.languages (ordered by preference) then navigator.language.
+ * Matches exact codes first (e.g. "ko"), then base language from regional
+ * variants (e.g. "zh-CN" → "zh", "ja-JP" → "ja", "tl-PH" → "tl").
+ */
+function detectBrowserLanguage(): Language | null {
+  if (typeof navigator === "undefined") return null;
+  const candidates = navigator.languages?.length
+    ? navigator.languages
+    : navigator.language
+      ? [navigator.language]
+      : [];
+  for (const locale of candidates) {
+    const lower = locale.toLowerCase();
+    // Exact match (e.g. "ko", "zh", "ja", "tl", "en")
+    if ((SUPPORTED_LANGUAGES as readonly string[]).includes(lower)) {
+      return lower as Language;
+    }
+    // Base language from regional variant (e.g. "zh-cn" → "zh", "ko-kr" → "ko")
+    const base = lower.split("-")[0];
+    if ((SUPPORTED_LANGUAGES as readonly string[]).includes(base)) {
+      return base as Language;
+    }
+  }
+  return null;
+}
+
 function getInitialLanguage(): Language {
   if (typeof window === "undefined") return "en";
+  // 1. User's explicit choice always wins
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored && (SUPPORTED_LANGUAGES as readonly string[]).includes(stored)) {
     return stored as Language;
   }
+  // 2. Auto-detect from browser locale on first visit
+  const detected = detectBrowserLanguage();
+  if (detected) return detected;
+  // 3. Default to English
   return "en";
 }
 

@@ -50,6 +50,8 @@ export const PLATFORMS: {
   icon: React.ReactNode;
   specKey: keyof typeof PLATFORM_IMAGE_SPECS;
   formatNote: string;
+  publishMode?: "direct" | "export";
+  comingSoon?: boolean;
 }[] = [
   {
     key: "tiktok",
@@ -61,6 +63,7 @@ export const PLATFORMS: {
     ),
     specKey: "tiktok",
     formatNote: "Photo carousel",
+    publishMode: "direct",
   },
   {
     key: "instagram",
@@ -68,6 +71,7 @@ export const PLATFORMS: {
     icon: <Instagram className="h-4 w-4" />,
     specKey: "instagram_feed",
     formatNote: "Carousel post",
+    publishMode: "direct",
   },
   {
     key: "youtube",
@@ -75,6 +79,7 @@ export const PLATFORMS: {
     icon: <Youtube className="h-4 w-4" />,
     specKey: "youtube_community",
     formatNote: "Community post · 1:1",
+    publishMode: "export",
   },
   {
     key: "youtube_shorts",
@@ -82,6 +87,7 @@ export const PLATFORMS: {
     icon: <Youtube className="h-4 w-4" />,
     specKey: "youtube_shorts",
     formatNote: "Vertical Shorts · 9:16",
+    publishMode: "export",
   },
   {
     key: "x",
@@ -93,6 +99,7 @@ export const PLATFORMS: {
     ),
     specKey: "x_post",
     formatNote: "Image post · max 4 images",
+    publishMode: "export",
   },
   {
     key: "linkedin",
@@ -100,6 +107,20 @@ export const PLATFORMS: {
     icon: <Linkedin className="h-4 w-4" />,
     specKey: "linkedin_pdf",
     formatNote: "PDF document carousel",
+    publishMode: "direct",
+  },
+  {
+    key: "reddit",
+    label: "Reddit",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701z" />
+      </svg>
+    ),
+    specKey: "reddit_gallery",
+    formatNote: "Gallery post",
+    publishMode: "export",
+    comingSoon: true,
   },
 ];
 
@@ -673,24 +694,29 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           {PLATFORMS.map((platform) => {
             const isActive = selected.has(platform.key);
             const spec = PLATFORM_IMAGE_SPECS[platform.specKey];
+            const isComingSoon = platform.comingSoon === true;
 
             return (
               <Card
                 key={platform.key}
                 role="button"
-                tabIndex={0}
-                onClick={() => togglePlatform(platform.key)}
+                tabIndex={isComingSoon ? -1 : 0}
+                onClick={() => !isComingSoon && togglePlatform(platform.key)}
                 onKeyDown={(e) => {
+                  if (isComingSoon) return;
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     togglePlatform(platform.key);
                   }
                 }}
                 className={cn(
-                  "cursor-pointer transition-all",
-                  isActive
+                  "transition-all",
+                  isComingSoon
+                    ? "opacity-60 cursor-default"
+                    : "cursor-pointer",
+                  isActive && !isComingSoon
                     ? "ring-2 ring-primary shadow-sm"
-                    : "hover:ring-1 hover:ring-muted-foreground/30"
+                    : !isComingSoon && "hover:ring-1 hover:ring-muted-foreground/30"
                 )}
               >
                 <CardContent className="p-4">
@@ -698,7 +724,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                     <div className="flex items-center gap-2">
                       <span
                         className={cn(
-                          isActive
+                          isActive && !isComingSoon
                             ? "text-primary"
                             : "text-muted-foreground"
                         )}
@@ -708,17 +734,24 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                       <span className="text-sm font-medium">
                         {platform.label}
                       </span>
-                    </div>
-                    <div
-                      className={cn(
-                        "flex h-5 w-5 items-center justify-center rounded border-2 transition-colors",
-                        isActive
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-muted-foreground/30"
+                      {isComingSoon && (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          Coming Soon
+                        </span>
                       )}
-                    >
-                      {isActive && <Check className="h-3 w-3" />}
                     </div>
+                    {!isComingSoon && (
+                      <div
+                        className={cn(
+                          "flex h-5 w-5 items-center justify-center rounded border-2 transition-colors",
+                          isActive
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-muted-foreground/30"
+                        )}
+                      >
+                        {isActive && <Check className="h-3 w-3" />}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-3 space-y-1 text-xs text-muted-foreground">
@@ -727,6 +760,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
                       {spec.aspectRatio} &middot; {spec.width}&times;
                       {spec.height} &middot; {spec.format}
                     </p>
+                    {platform.publishMode === "export" && !isComingSoon && (
+                      <p className="text-[10px] italic">Export and post manually</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>

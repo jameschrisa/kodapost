@@ -59,7 +59,7 @@ Key facts:
 - 5-step workflow: Upload, Craft, Design, Review, Publish
 - Camera emulation filters: Kodak Gold, Fuji Velvia, Polaroid, and more
 - AI-generated text overlays and captions via Koda assistant
-- Direct publishing to Instagram, TikTok, LinkedIn, YouTube, Reddit, Lemon8
+- Direct publishing to Instagram, TikTok, LinkedIn, YouTube, X/Twitter, Reddit
 - Also works via @kodacontentbot on Telegram
 - Free tier available; premium plans unlock unlimited generation
 - Project data stored in browser local storage

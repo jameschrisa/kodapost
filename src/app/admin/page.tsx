@@ -70,7 +70,7 @@ const FEATURES = [
     category: "Publishing",
     icon: Share2,
     items: [
-      "6 social platforms (Instagram, TikTok, LinkedIn, YouTube, Reddit, Lemon8)",
+      "7 social platforms (Instagram, TikTok, LinkedIn, YouTube, YouTube Shorts, X/Twitter, Reddit)",
       "OAuth connection management",
       "Export individual slides or full carousel",
       "Caption copy-to-clipboard",

@@ -71,14 +71,14 @@ const WORKFLOW_STEPS = [
 ];
 
 const FEATURES = [
-  { icon: Camera, span: "md:col-span-2", style: "card" as const },
-  { icon: Sparkles, span: "", style: "accent" as const },
-  { icon: Layers, span: "", style: "card" as const },
-  { icon: Music, span: "", style: "card" as const },
-  { icon: Radio, span: "", style: "dark" as const },
-  { icon: LayoutTemplate, span: "md:col-span-2", style: "card" as const },
-  { icon: Shield, span: "", style: "card" as const },
-  { icon: Calendar, span: "", style: "dark" as const },
+  { icon: Camera, style: "card" as const },
+  { icon: Sparkles, style: "accent" as const },
+  { icon: Layers, style: "card" as const },
+  { icon: Music, style: "card" as const },
+  { icon: Radio, style: "dark" as const },
+  { icon: LayoutTemplate, style: "card" as const },
+  { icon: Shield, style: "card" as const },
+  { icon: Calendar, style: "dark" as const },
 ];
 
 const COLOR_CLASSES = {
@@ -886,19 +886,19 @@ export function SplashScreen({
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.15 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-5"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5"
               >
                 {FEATURES.map((feature, i) => (
                   <motion.div
                     key={i}
                     variants={staggerChild}
-                    className={`${feature.span} relative rounded-2xl overflow-hidden transition-all duration-500 group ${
+                    className={`relative rounded-2xl overflow-hidden transition-all duration-500 group h-full ${
                       feature.style === "accent"
                         ? "bg-gradient-to-br from-purple-600 to-fuchsia-700 p-8 text-white"
                         : feature.style === "dark"
                         ? "bg-zinc-800/80 border border-white/[0.06] p-8"
                         : "bg-white/[0.03] border border-white/[0.06] p-8 [@media(hover:hover)]:hover:border-white/10"
-                    } ${feature.span ? "border-l-2 border-l-purple-500/20 md:border-l-0" : ""}`}
+                    }`}
                   >
                     {feature.style !== "accent" && (
                       <div className="absolute -bottom-10 -right-10 h-48 w-48 bg-purple-500/[0.03] [@media(hover:hover)]:bg-purple-500/0 [@media(hover:hover)]:group-hover:bg-purple-500/5 rounded-full blur-3xl transition-all duration-700" />

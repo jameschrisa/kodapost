@@ -972,12 +972,15 @@ export function SettingsDialog({ open, onOpenChange, initialAvatarOpen }: Settin
             </TabsContent>
           </Tabs>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <motion.div whileTap={buttonTapScale}>
-              <Button onClick={handleSave} className="gap-2">
+            <motion.div whileTap={buttonTapScale} className="w-full sm:w-auto">
+              <Button
+                onClick={handleSave}
+                className="w-full sm:w-auto gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white hover:opacity-90 animate-pulse hover:animate-none"
+              >
                 <Save className="h-4 w-4" />
                 Save Settings
               </Button>

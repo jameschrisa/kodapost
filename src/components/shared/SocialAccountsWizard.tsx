@@ -53,6 +53,7 @@ interface WizardPlatform {
   icon: React.ReactNode;
   formatNote: string;
   description: string;
+  comingSoon?: boolean;
 }
 
 const WIZARD_PLATFORMS: WizardPlatform[] = [
@@ -97,6 +98,18 @@ const WIZARD_PLATFORMS: WizardPlatform[] = [
     icon: <Linkedin className="h-5 w-5" />,
     formatNote: "4:5 · PDF document carousel",
     description: "Professional document carousels for LinkedIn.",
+  },
+  {
+    id: "reddit",
+    label: "Reddit",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701z" />
+      </svg>
+    ),
+    formatNote: "1:1 · Gallery post",
+    description: "Share gallery posts with Reddit communities.",
+    comingSoon: true,
   },
 ];
 
@@ -309,22 +322,26 @@ function SelectStep({
       <div className="grid grid-cols-2 gap-2">
         {WIZARD_PLATFORMS.map((p) => {
           const isSelected = selected.has(p.id);
+          const isComingSoon = p.comingSoon === true;
           return (
             <button
               key={p.id}
               type="button"
-              onClick={() => onToggle(p.id)}
+              onClick={() => !isComingSoon && onToggle(p.id)}
+              disabled={isComingSoon}
               className={cn(
                 "flex items-center gap-3 rounded-lg border p-3 text-left transition-colors",
-                isSelected
-                  ? "border-primary bg-primary/5"
-                  : "border-border bg-card hover:border-primary/30 hover:bg-muted/40"
+                isComingSoon
+                  ? "border-border bg-card opacity-60 cursor-default"
+                  : isSelected
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card hover:border-primary/30 hover:bg-muted/40"
               )}
             >
               <span
                 className={cn(
                   "shrink-0 transition-colors",
-                  isSelected ? "text-primary" : "text-muted-foreground"
+                  isSelected && !isComingSoon ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 {p.icon}
@@ -333,14 +350,20 @@ function SelectStep({
                 <p
                   className={cn(
                     "text-sm font-medium truncate",
-                    isSelected ? "text-primary" : ""
+                    isSelected && !isComingSoon ? "text-primary" : ""
                   )}
                 >
                   {p.label}
                 </p>
-                <p className="text-[10px] text-muted-foreground truncate">{p.formatNote}</p>
+                {isComingSoon ? (
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    Coming Soon
+                  </span>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground truncate">{p.formatNote}</p>
+                )}
               </div>
-              {isSelected && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
+              {isSelected && !isComingSoon && <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />}
             </button>
           );
         })}
@@ -422,7 +445,11 @@ function ConnectStep({
                 <p className="text-sm font-medium">{p.label}</p>
                 <p className="text-[10px] text-muted-foreground">{p.formatNote}</p>
               </div>
-              {connected ? (
+              {p.comingSoon ? (
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
+                  Coming Soon
+                </span>
+              ) : connected ? (
                 <span className="flex items-center gap-1 text-[11px] text-green-600 font-medium shrink-0">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Connected

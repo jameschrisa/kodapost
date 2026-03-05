@@ -105,7 +105,7 @@ export default function PrivacyPolicyPage() {
           <li>
             <strong>Social Media Platforms:</strong> When publishing, carousel
             images are transmitted to the respective platform (Instagram,
-            TikTok, LinkedIn, YouTube, Reddit, or Lemon8) via their official
+            TikTok, LinkedIn, YouTube, X/Twitter, or Reddit) via their official
             APIs.
           </li>
         </ul>
