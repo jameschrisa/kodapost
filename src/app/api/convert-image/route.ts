@@ -3,16 +3,20 @@ import sharp from "sharp";
 import heicConvert from "heic-convert";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB — matches ImageUploader limit
+const MAX_DIMENSION = 2048; // Cap output to 2048px on longest side
+// Vercel response body limit is 4.5 MB. Keep well under with resized + compressed output.
+const JPEG_QUALITY = 85;
 
 /**
  * POST /api/convert-image
  *
- * Converts HEIC/HEIF images to JPEG.
+ * Converts HEIC/HEIF images to JPEG (resized to max 2048px).
  * Accepts multipart form data with a single "file" field.
  * Returns the converted JPEG as a base64 data URI in JSON.
  *
  * Strategy: Try Sharp first (fast native path). If Sharp lacks the HEVC
- * codec for HEIC decoding, fall back to heic-convert (pure JS decoder).
+ * codec for HEIC decoding, fall back to heic-convert (pure JS decoder),
+ * then pass the raw JPEG through Sharp for resize + compression.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -36,12 +40,13 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const inputBuffer = Buffer.from(arrayBuffer);
 
-    let outputBuffer: Buffer;
+    let decodedBuffer: Buffer;
 
     try {
       // Fast path: Sharp with native HEIC support (if codec is available)
-      outputBuffer = await sharp(inputBuffer)
-        .jpeg({ quality: 92 })
+      decodedBuffer = await sharp(inputBuffer)
+        .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: JPEG_QUALITY })
         .toBuffer();
     } catch (sharpError) {
       const msg =
@@ -54,9 +59,8 @@ export async function POST(request: NextRequest) {
 
       if (!isHeicCodecMissing) throw sharpError; // Re-throw non-HEIC errors
 
-      // Fallback: heic-convert (pure JS HEIC decoder) → JPEG bytes
+      // Fallback: heic-convert (pure JS HEIC decoder) → raw JPEG bytes
       // NOTE: heic-convert v2 expects a Node Buffer (iterable), NOT an ArrayBuffer.
-      // Passing ArrayBuffer causes "Spread syntax requires ...iterable" errors.
       console.info("[KodaPost] Sharp HEIC codec unavailable, using heic-convert fallback");
       const jpegResult = await heicConvert({
         buffer: inputBuffer as unknown as ArrayBufferLike,
@@ -64,10 +68,15 @@ export async function POST(request: NextRequest) {
         quality: 0.92,
       });
 
-      outputBuffer = Buffer.from(jpegResult);
+      // heic-convert outputs full-resolution JPEG. Pass through Sharp to
+      // resize and compress so the response stays under Vercel's 4.5 MB limit.
+      decodedBuffer = await sharp(Buffer.from(jpegResult))
+        .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: JPEG_QUALITY })
+        .toBuffer();
     }
 
-    const base64 = outputBuffer.toString("base64");
+    const base64 = decodedBuffer.toString("base64");
     const dataUri = `data:image/jpeg;base64,${base64}`;
 
     return NextResponse.json({
@@ -75,7 +84,7 @@ export async function POST(request: NextRequest) {
       dataUri,
       format: "jpeg",
       originalSize: file.size,
-      convertedSize: outputBuffer.length,
+      convertedSize: decodedBuffer.length,
     });
   } catch (error) {
     const message =

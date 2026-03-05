@@ -23,56 +23,107 @@ import type { PostMode, UploadedImage } from "@/lib/types";
 type HeadlineMode = "all" | "first_only" | "none";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MAX_UPLOAD_DIMENSION = 2048; // Resize all uploads to max 2048px on longest side
+
+// Standard image formats the browser can render natively
+const STANDARD_MIME_TYPES = [
+  "image/jpeg", "image/jpg", "image/png", "image/webp",
+  "image/avif", "image/tiff", "image/bmp",
+];
+const STANDARD_EXTENSIONS = [
+  ".jpg", ".jpeg", ".png", ".webp", ".avif", ".tif", ".tiff", ".bmp",
+];
+
+// HEIC needs special handling (native on Safari, server fallback on Chrome)
 const HEIC_MIME_TYPES = ["image/heic", "image/heif"];
 const HEIC_EXTENSIONS = [".heic", ".heif"];
-const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+
 const RECOMMENDED_COUNT = 4; // for default 5 slides (2:1 ratio guidance)
 
-/**
- * Detects HEIC/HEIF files by MIME type first, then by file extension
- * as a fallback (some browsers report empty or generic MIME for HEIC).
- */
+function getFileExtension(file: File): string {
+  return file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+}
+
 function isHeicFile(file: File): boolean {
   if (HEIC_MIME_TYPES.includes(file.type.toLowerCase())) return true;
-  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
-  return HEIC_EXTENSIONS.includes(ext);
+  return HEIC_EXTENSIONS.includes(getFileExtension(file));
+}
+
+function isAcceptedImageFile(file: File): boolean {
+  if (STANDARD_MIME_TYPES.includes(file.type.toLowerCase())) return true;
+  return STANDARD_EXTENSIONS.includes(getFileExtension(file));
 }
 
 /**
- * Detects standard image files (JPEG/PNG/WebP) by MIME type first, then by
- * file extension as a fallback. Mobile browsers (especially iOS Safari) can
- * report empty or non-standard MIME types (e.g. "image/jpg", "", or
- * "application/octet-stream") for JPEG files received via share sheets.
+ * Resizes any browser-decodable image to max 2048px and converts to JPEG.
+ * Uses createImageBitmap + OffscreenCanvas for zero-DOM, memory-efficient processing.
+ * Returns null if the browser can't decode the format.
  */
-function isAcceptedImageFile(file: File): boolean {
-  if (ACCEPTED_TYPES.includes(file.type.toLowerCase())) return true;
-  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
-  return IMAGE_EXTENSIONS.includes(ext);
-}
+async function resizeImageClientSide(file: File): Promise<Blob | null> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
 
-/** Maps a file extension to the correct MIME type for normalization. */
-function inferMimeFromExtension(filename: string): string {
-  const ext = filename.toLowerCase().slice(filename.lastIndexOf("."));
-  switch (ext) {
-    case ".jpg":
-    case ".jpeg":
-      return "image/jpeg";
-    case ".png":
-      return "image/png";
-    case ".webp":
-      return "image/webp";
-    default:
-      return "image/jpeg";
+    let outW = width;
+    let outH = height;
+    if (width > MAX_UPLOAD_DIMENSION || height > MAX_UPLOAD_DIMENSION) {
+      const scale = MAX_UPLOAD_DIMENSION / Math.max(width, height);
+      outW = Math.round(width * scale);
+      outH = Math.round(height * scale);
+    }
+
+    const canvas = new OffscreenCanvas(outW, outH);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) { bitmap.close(); return null; }
+    ctx.drawImage(bitmap, 0, 0, outW, outH);
+    bitmap.close();
+
+    return canvas.convertToBlob({ type: "image/jpeg", quality: 0.88 });
+  } catch {
+    return null;
   }
 }
 
 /**
- * Sends a HEIC/HEIF file to the server for conversion to JPEG.
- * Returns a Blob for the converted image.
- * Includes a 30-second timeout and user-friendly error messages.
+ * Converts a HEIC file to JPEG client-side using the browser's native
+ * decoding (Safari/iOS) via Canvas, falling back to the server API route
+ * for browsers that lack HEIC support (Chrome, Firefox).
+ *
+ * Client-side is preferred because it avoids server round-trips, scales
+ * infinitely, and is much faster on Safari (which handles 99% of HEIC uploads).
  */
-async function convertHeicFile(file: File): Promise<Blob> {
+const MAX_CLIENT_DIMENSION = 2048;
+
+async function convertHeicClientSide(file: File): Promise<Blob | null> {
+  try {
+    // createImageBitmap can decode HEIC on Safari/iOS natively
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
+
+    // Scale down to MAX_CLIENT_DIMENSION preserving aspect ratio
+    let outW = width;
+    let outH = height;
+    if (width > MAX_CLIENT_DIMENSION || height > MAX_CLIENT_DIMENSION) {
+      const scale = MAX_CLIENT_DIMENSION / Math.max(width, height);
+      outW = Math.round(width * scale);
+      outH = Math.round(height * scale);
+    }
+
+    const canvas = new OffscreenCanvas(outW, outH);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(bitmap, 0, 0, outW, outH);
+    bitmap.close();
+
+    const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
+    return blob;
+  } catch {
+    // Browser can't decode HEIC (Chrome, Firefox) — return null to trigger server fallback
+    return null;
+  }
+}
+
+async function convertHeicServerSide(file: File): Promise<Blob> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -114,6 +165,15 @@ async function convertHeicFile(file: File): Promise<Blob> {
   // Convert data URI back to Blob for createObjectURL preview
   const resp = await fetch(result.dataUri);
   return resp.blob();
+}
+
+async function convertHeicFile(file: File): Promise<Blob> {
+  // Try client-side first (instant on Safari/iOS)
+  const clientBlob = await convertHeicClientSide(file);
+  if (clientBlob && clientBlob.size > 0) return clientBlob;
+
+  // Fall back to server for Chrome/Firefox/etc.
+  return convertHeicServerSide(file);
 }
 
 interface LocalImage {
@@ -190,65 +250,81 @@ export function ImageUploader({
   const processFiles = useCallback(async (files: FileList | File[]) => {
     const newErrors: string[] = [];
     const validImages: LocalImage[] = [];
-    const heicQueue: File[] = [];
+    const processQueue: { file: File; isHeic: boolean }[] = [];
 
     // Phase 1: Categorize files
     Array.from(files).forEach((file) => {
       if (file.size > MAX_FILE_SIZE) {
         newErrors.push(`${file.name}: File exceeds 10 MB limit.`);
-        return;
-      }
-      if (isAcceptedImageFile(file)) {
-        // Standard format — accept as-is (normalize MIME for files detected by extension)
-        const normalizedFile = ACCEPTED_TYPES.includes(file.type.toLowerCase())
-          ? file
-          : new File([file], file.name, { type: inferMimeFromExtension(file.name) });
-        validImages.push({
-          id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          file: normalizedFile,
-          previewUrl: URL.createObjectURL(normalizedFile),
-        });
       } else if (isHeicFile(file)) {
-        // HEIC/HEIF — queue for server-side conversion
-        heicQueue.push(file);
+        processQueue.push({ file, isHeic: true });
+      } else if (isAcceptedImageFile(file)) {
+        processQueue.push({ file, isHeic: false });
       } else {
-        newErrors.push(`${file.name}: Only JPEG, PNG, WebP, and HEIC files are accepted.`);
+        newErrors.push(`${file.name}: Unsupported format. Use JPEG, PNG, WebP, AVIF, or HEIC.`);
       }
     });
 
-    // Phase 2: Convert HEIC files sequentially
-    if (heicQueue.length > 0) {
+    if (processQueue.length === 0 && newErrors.length > 0) {
+      setErrors(newErrors);
+      toast.error(`${newErrors.length} file${newErrors.length !== 1 ? "s" : ""} rejected`, {
+        description: newErrors[0],
+      });
+      return;
+    }
+
+    // Phase 2: Process all files (resize standard, convert+resize HEIC)
+    const needsConversion = processQueue.filter((q) => q.isHeic);
+    if (needsConversion.length > 0 || processQueue.length > 3) {
       setConversionState({
         open: true,
-        total: heicQueue.length,
+        total: processQueue.length,
         completed: 0,
-        currentFile: heicQueue[0].name,
+        currentFile: processQueue[0].file.name,
       });
+    }
 
-      for (let i = 0; i < heicQueue.length; i++) {
-        const file = heicQueue[i];
-        setConversionState((prev) =>
-          prev ? { ...prev, currentFile: file.name, completed: i } : prev
-        );
+    let convertedCount = 0;
+    for (let i = 0; i < processQueue.length; i++) {
+      const { file, isHeic } = processQueue[i];
+      setConversionState((prev) =>
+        prev ? { ...prev, currentFile: file.name, completed: i } : prev
+      );
 
-        try {
-          const jpegBlob = await convertHeicFile(file);
-          const convertedName = file.name
-            .replace(/\.heic$/i, ".jpg")
-            .replace(/\.heif$/i, ".jpg");
+      try {
+        let jpegBlob: Blob | null = null;
+
+        if (isHeic) {
+          // HEIC: try native decode (Safari), then server fallback
+          jpegBlob = await convertHeicFile(file);
+          convertedCount++;
+        } else {
+          // Standard format: resize client-side via Canvas
+          jpegBlob = await resizeImageClientSide(file);
+        }
+
+        if (jpegBlob && jpegBlob.size > 0) {
+          const outName = file.name.replace(/\.[^.]+$/, ".jpg");
           validImages.push({
             id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            file: new File([jpegBlob], convertedName, { type: "image/jpeg" }),
+            file: new File([jpegBlob], outName, { type: "image/jpeg" }),
             previewUrl: URL.createObjectURL(jpegBlob),
           });
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : "Conversion failed";
-          newErrors.push(`${file.name}: ${msg}`);
+        } else {
+          // Canvas couldn't decode (rare) — use original file as-is
+          validImages.push({
+            id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            file,
+            previewUrl: URL.createObjectURL(file),
+          });
         }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Processing failed";
+        newErrors.push(`${file.name}: ${msg}`);
       }
-
-      setConversionState(null);
     }
+
+    setConversionState(null);
 
     // Phase 3: Apply results
     setErrors(newErrors);
@@ -259,14 +335,11 @@ export function ImageUploader({
     }
     if (validImages.length > 0) {
       setImages((prev) => [...prev, ...validImages]);
-      if (heicQueue.length > 0) {
-        const converted = validImages.length - (Array.from(files).length - heicQueue.length - newErrors.length);
-        if (converted > 0) {
-          toast.success(
-            `${converted} HEIC image${converted !== 1 ? "s" : ""} converted`,
-            { description: "Converted to JPEG for compatibility." }
-          );
-        }
+      if (convertedCount > 0) {
+        toast.success(
+          `${convertedCount} HEIC image${convertedCount !== 1 ? "s" : ""} converted`,
+          { description: "Converted to JPEG for compatibility." }
+        );
       }
     }
   }, []);
@@ -316,29 +389,29 @@ export function ImageUploader({
     try {
       // Convert blob URLs to base64 data URIs so they survive serialization
       // to server actions and can be sent to external APIs.
-      // Images that are already base64 (from existing project) skip conversion.
+      // Images are already resized to max 2048px during upload, so this is fast.
       const { blobUrlToBase64, generateThumbnail } = await import("@/lib/utils");
-      const uploaded: UploadedImage[] = await Promise.all(
-        images.map(async (img) => {
-          const isAlreadyBase64 = img.previewUrl.startsWith("data:");
-          const fullUrl = isAlreadyBase64 ? img.previewUrl : await blobUrlToBase64(img.previewUrl);
-          // Generate lightweight thumbnail for preview rendering
-          let thumbnailUrl: string | undefined;
-          try {
-            thumbnailUrl = await generateThumbnail(fullUrl);
-          } catch {
-            // Fall back to full-res if thumbnail generation fails
-          }
-          return {
-            id: img.id,
-            url: fullUrl,
-            thumbnailUrl,
-            filename: img.file.name,
-            uploadedAt: new Date().toISOString(),
-            usedInSlides: [],
-          };
-        })
-      );
+
+      // Process sequentially to avoid memory spikes on mobile
+      const uploaded: UploadedImage[] = [];
+      for (const img of images) {
+        const isAlreadyBase64 = img.previewUrl.startsWith("data:");
+        const fullUrl = isAlreadyBase64 ? img.previewUrl : await blobUrlToBase64(img.previewUrl);
+        let thumbnailUrl: string | undefined;
+        try {
+          thumbnailUrl = await generateThumbnail(fullUrl);
+        } catch {
+          // Fall back to full-res if thumbnail generation fails
+        }
+        uploaded.push({
+          id: img.id,
+          url: fullUrl,
+          thumbnailUrl,
+          filename: img.file.name,
+          uploadedAt: new Date().toISOString(),
+          usedInSlides: [],
+        });
+      }
       onComplete(uploaded);
     } catch (error) {
       console.error("Failed to process images:", error);
@@ -387,13 +460,13 @@ export function ImageUploader({
             {dragActive ? "Drop your images here" : "Drag & drop images or click to browse"}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            JPEG, PNG, WebP, or HEIC up to 10 MB each
+            JPEG, PNG, WebP, AVIF, or HEIC up to 10 MB each
           </p>
         </div>
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,.heic,.heif,image/heic,image/heif"
+          accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,image/tiff,image/bmp,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif,.tif,.tiff,.bmp"
           multiple
           onChange={handleFileSelect}
           className="hidden"

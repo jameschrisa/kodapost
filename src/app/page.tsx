@@ -223,6 +223,7 @@ export default function Home() {
   const [direction, setDirection] = useState(1); // 1=forward, -1=backward
   const [hydrated, setHydrated] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [avatarPickerMode, setAvatarPickerMode] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [splashDismissed, setSplashDismissed] = useState(false);
@@ -1021,6 +1022,10 @@ export default function Home() {
             onOpenContentBot={() => setContentBotOpen(true)}
             onResetApp={handleResetApp}
             onOpenTour={handleOpenTour}
+            onOpenAvatarPicker={() => {
+              setAvatarPickerMode(true);
+              setSettingsOpen(true);
+            }}
           />
         </div>
       </header>
@@ -1033,7 +1038,14 @@ export default function Home() {
       </Suspense>
 
       {/* Dialogs */}
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={(v) => {
+          setSettingsOpen(v);
+          if (!v) setAvatarPickerMode(false);
+        }}
+        initialAvatarOpen={avatarPickerMode}
+      />
       <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} onOpenTour={handleOpenTour} />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <ContentBotPanel open={contentBotOpen} onOpenChange={setContentBotOpen} />

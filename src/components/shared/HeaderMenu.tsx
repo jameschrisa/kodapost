@@ -21,6 +21,7 @@ import {
   Menu,
   MessageSquare,
   Moon,
+  Palette,
   RefreshCw,
   Settings,
   Shield,
@@ -29,7 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { UserHexagonIcon } from "@/components/icons";
+import { AvatarDisplay } from "@/components/shared/AvatarDisplay";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -51,6 +52,7 @@ interface HeaderMenuProps {
   onOpenContentBot: () => void;
   onResetApp: () => void;
   onOpenTour: () => void;
+  onOpenAvatarPicker?: () => void;
 }
 
 export function HeaderMenu({
@@ -61,6 +63,7 @@ export function HeaderMenu({
   onOpenContentBot,
   onResetApp,
   onOpenTour,
+  onOpenAvatarPicker,
 }: HeaderMenuProps) {
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
@@ -91,34 +94,14 @@ export function HeaderMenu({
               aria-label="Profile menu"
               className="h-11 w-11 sm:h-9 sm:w-9 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
             >
-              {userInfo.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={userInfo.imageUrl}
-                  alt=""
-                  className="h-6 w-6 rounded-full object-cover"
-                />
-              ) : (
-                <UserHexagonIcon className="h-5 w-5" />
-              )}
+              <AvatarDisplay size="sm" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             {/* User info header */}
             <DropdownMenuLabel className="font-normal">
               <div className="flex items-center gap-3">
-                {userInfo.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={userInfo.imageUrl}
-                    alt=""
-                    className="h-8 w-8 shrink-0 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-500/20 text-purple-400">
-                    <User className="h-4 w-4" />
-                  </div>
-                )}
+                <AvatarDisplay size="md" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{displayName}</p>
                   {userInfo.email && (
@@ -136,6 +119,14 @@ export function HeaderMenu({
               <User className="h-4 w-4" />
               Profile
             </DropdownMenuItem>
+
+            {/* Change Avatar */}
+            {onOpenAvatarPicker && (
+              <DropdownMenuItem onClick={onOpenAvatarPicker}>
+                <Palette className="h-4 w-4" />
+                Change Avatar
+              </DropdownMenuItem>
+            )}
 
             {/* Plans and Pricing */}
             <DropdownMenuItem asChild>

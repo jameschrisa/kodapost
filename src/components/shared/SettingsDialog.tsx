@@ -48,6 +48,8 @@ import {
   setAssistantPreference,
 } from "@/components/shared/AssistantBanner";
 import { SocialAccountsWizard } from "@/components/shared/SocialAccountsWizard";
+import { AvatarDisplay } from "@/components/shared/AvatarDisplay";
+import { AvatarPicker } from "@/components/shared/AvatarPicker";
 import { cn } from "@/lib/utils";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { useLanguage } from "@/i18n/context";
@@ -75,6 +77,7 @@ const COMING_SOON_PLATFORMS = new Set<Platform>(["reddit"]);
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialAvatarOpen?: boolean;
 }
 
 const PLATFORM_META: Record<
@@ -369,7 +372,7 @@ function PlatformCard({
 // Main SettingsDialog
 // ---------------------------------------------------------------------------
 
-export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+export function SettingsDialog({ open, onOpenChange, initialAvatarOpen }: SettingsDialogProps) {
   const [accounts, setAccounts] = useState<SocialMediaAccount[]>([]);
   const [connections, setConnections] = useState<OAuthConnection[]>([]);
   const [loadingConnections, setLoadingConnections] = useState(false);
@@ -380,6 +383,17 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [openCards, setOpenCards] = useState<Record<string, boolean>>({});
   // Wizard state
   const [wizardOpen, setWizardOpen] = useState(false);
+  // Avatar picker toggle
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+
+  // Auto-expand avatar picker when opened via "Change Avatar" shortcut
+  useEffect(() => {
+    if (open && initialAvatarOpen) {
+      setAvatarPickerOpen(true);
+    } else if (!open) {
+      setAvatarPickerOpen(false);
+    }
+  }, [open, initialAvatarOpen]);
   // Brand watermark settings
   const [brandWatermark, setBrandWatermark] = useState<BrandWatermarkSettings>({
     logoDataUri: null,
@@ -661,6 +675,44 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             <TabsContent value="general" className="mt-4">
               <div className="space-y-4">
+                {/* Avatar */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <AvatarDisplay size="md" />
+                      <div>
+                        <p className="text-sm font-medium">Avatar</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          Customize your profile picture
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => setAvatarPickerOpen((v) => !v)}
+                    >
+                      {avatarPickerOpen ? "Close" : "Change Avatar"}
+                    </Button>
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {avatarPickerOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-3 border-t">
+                          <AvatarPicker />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <div className="rounded-lg border p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
