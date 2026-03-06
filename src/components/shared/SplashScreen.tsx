@@ -14,6 +14,7 @@ import {
   Calendar,
   Layers,
   ArrowDown,
+  ArrowRight,
   Play,
   Smartphone,
   Shield,
@@ -1021,6 +1022,26 @@ export function SplashScreen({
                     );
                   })}
                 </div>
+              </motion.div>
+
+              {/* Learn More CTA */}
+              <motion.div
+                variants={sectionReveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                className="mt-10 text-center"
+              >
+                <Button
+                  size="lg"
+                  asChild
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-5 text-base font-bold text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-105 transition-all duration-300"
+                >
+                  <Link href="/proof-of-real">
+                    {t("provenance.learnMore")}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                </Button>
               </motion.div>
             </div>
           </section>
