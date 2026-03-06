@@ -191,7 +191,7 @@ function WhoItsForSection() {
             <Users className="h-3.5 w-3.5" />
             {t("whoItsFor.badge")}
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
             {t("whoItsFor.title")}{" "}
             <span className="text-white/60">{t("whoItsFor.titleFaded")}</span>
           </h2>
@@ -795,7 +795,7 @@ export function SplashScreen({
                   <Sparkles className="h-3.5 w-3.5" />
                   {t("howItWorks.badge")}
                 </span>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight">
                   {t("howItWorks.title")}{" "}
                   <span className="text-white/60">{t("howItWorks.titleFaded")}</span>
                 </h2>
@@ -870,7 +870,7 @@ export function SplashScreen({
                 viewport={{ once: true, amount: 0.3 }}
                 className="mb-14"
               >
-                <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight flex items-center gap-3">
+                <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight flex items-center gap-3">
                   <Camera className="h-7 w-7 text-purple-400" />
                   {t("featuresSection.title")}
                 </h2>
@@ -955,7 +955,7 @@ export function SplashScreen({
                   <Fingerprint className="h-3.5 w-3.5" />
                   {t("provenance.badge")}
                 </span>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight">
                   {t("provenance.title")}{" "}
                   <span className="text-white/60">{t("provenance.titleFaded")}</span>
                 </h2>
@@ -1079,7 +1079,7 @@ export function SplashScreen({
                     <Smartphone className="h-3.5 w-3.5" />
                     {t("mobile.badge")}
                   </span>
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
+                  <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight mb-6">
                     {t("mobile.title")}{" "}
                     <span className="text-white/60">{t("mobile.titleFaded")}</span>
                   </h2>
@@ -1241,7 +1241,7 @@ export function SplashScreen({
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-orange-500/10 rounded-full blur-[80px] -z-0" />
 
                 <div className="relative z-10">
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-black text-white tracking-tight mb-6">
                     {t("cta.title")}
                   </h2>
                   <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto">

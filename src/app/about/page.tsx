@@ -194,7 +194,7 @@ export default function AboutPage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-400">
               {t("problem.badge")}
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-serif font-bold text-white sm:text-4xl">
               {t("problem.heading")}
             </h2>
             <p className="mt-4 text-white/60 leading-relaxed">
@@ -256,7 +256,7 @@ export default function AboutPage() {
             <Heart className="h-8 w-8 text-white" />
           </div>
 
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">
+          <h2 className="text-3xl font-serif font-bold text-white sm:text-4xl">
             {t("mission.heading")}
           </h2>
 
@@ -289,7 +289,7 @@ export default function AboutPage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-400">
               {t("values.badge")}
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">{t("values.heading")}</h2>
+            <h2 className="mt-4 text-3xl font-serif font-bold text-white sm:text-4xl">{t("values.heading")}</h2>
           </div>
 
           <motion.div
@@ -351,7 +351,7 @@ export default function AboutPage() {
               <Sparkles className="h-3.5 w-3.5" />
               {t("howItWorks.badge")}
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-serif font-bold text-white sm:text-4xl">
               {t("howItWorks.heading")}
             </h2>
           </div>
@@ -410,7 +410,7 @@ export default function AboutPage() {
             <Users className="h-7 w-7 text-white" />
           </div>
 
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">{t("team.heading")}</h2>
+          <h2 className="text-3xl font-serif font-bold text-white sm:text-4xl">{t("team.heading")}</h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-white/60 leading-relaxed">
             {t("team.description")}
@@ -439,7 +439,7 @@ export default function AboutPage() {
                 <Camera className="h-3.5 w-3.5" />
                 {t("philosophy.badge")}
               </span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-6">
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight mb-6">
                 {t("philosophy.heading.youCreate")}{" "}
                 <span className="text-white/60">{t("philosophy.heading.kodaAssists")}</span>
               </h2>
@@ -498,7 +498,7 @@ export default function AboutPage() {
               <Mail className="h-6 w-6 text-orange-400" />
             </div>
 
-            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+            <h2 className="text-2xl font-serif font-bold text-white sm:text-3xl">
               {t("cta.heading")}
             </h2>
             <p className="mx-auto mt-4 max-w-md text-white/60">

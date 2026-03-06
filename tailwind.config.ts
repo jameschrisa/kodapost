@@ -54,6 +54,9 @@ const config: Config = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		},
+  		fontFamily: {
+  			serif: ['var(--font-playfair)', 'Georgia', 'serif'],
+  		},
   		fontSize: {
   			sm: ['0.9rem', { lineHeight: '1.35rem' }],
   		},

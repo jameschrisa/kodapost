@@ -283,7 +283,7 @@ export default function HumanMadePage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-400">
               The Problem
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-serif font-bold text-white sm:text-4xl">
               Why does this matter?
             </h2>
             <p className="mt-4 text-white/60 max-w-2xl mx-auto leading-relaxed">
@@ -337,7 +337,7 @@ export default function HumanMadePage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-violet-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-violet-400">
               How It Protects You
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-serif font-bold text-white sm:text-4xl">
               What is Human Made?
             </h2>
             <p className="mt-4 text-white/60 max-w-2xl mx-auto leading-relaxed">
@@ -389,7 +389,7 @@ export default function HumanMadePage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-blue-400">
               Is This For You?
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-serif font-bold text-white sm:text-4xl">
               When should you use it?
             </h2>
             <p className="mt-4 text-white/60 max-w-2xl mx-auto leading-relaxed">
@@ -433,7 +433,7 @@ export default function HumanMadePage() {
             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-400">
               Simple as 1-2-3-4
             </span>
-            <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-serif font-bold text-white sm:text-4xl">
               How does it work?
             </h2>
             <p className="mt-4 text-white/60 max-w-2xl mx-auto leading-relaxed">
@@ -487,7 +487,7 @@ export default function HumanMadePage() {
           className="relative z-10 mx-auto max-w-2xl text-center"
         >
           <Fingerprint className="h-10 w-10 text-emerald-400 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4">
+          <h2 className="text-3xl font-serif font-bold text-white sm:text-4xl mb-4">
             Your pixels. Your proof.
           </h2>
           <p className="text-white/60 mb-8 leading-relaxed">
@@ -529,7 +529,7 @@ export default function HumanMadePage() {
           viewport={{ once: true, amount: 0.3 }}
           className="mx-auto max-w-3xl"
         >
-          <h2 className="text-2xl font-bold text-white mb-10 text-center">
+          <h2 className="text-2xl font-serif font-bold text-white mb-10 text-center">
             Common questions
           </h2>
           <div className="space-y-6">
