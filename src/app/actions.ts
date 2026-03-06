@@ -26,6 +26,7 @@ import {
   generateWatermarkSVG,
   applyLogoWatermark,
 } from "@/lib/provenance";
+import { embedC2PAManifest } from "@/lib/provenance/c2pa";
 import { auth } from "@clerk/nextjs/server";
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -870,6 +871,24 @@ export async function compositeSlideImages(
                 console.warn(`[Export] EXIF embedding failed for slide ${i + 1}:`, exifErr);
                 warnings.push(`Provenance metadata could not be embedded in slide ${i + 1}`);
               }
+            }
+
+            // 7. Embed C2PA manifest (industry-standard content provenance)
+            try {
+              const mimeType = format === "png" ? "image/png" : "image/jpeg";
+              outputBuffer = await embedC2PAManifest(
+                outputBuffer,
+                mimeType as "image/jpeg" | "image/png",
+                {
+                  creatorName: provenanceConfig.creatorName,
+                  imageHash,
+                  perceptualHash,
+                  platform,
+                }
+              );
+            } catch (c2paErr) {
+              console.warn(`[Export] C2PA embedding failed for slide ${i + 1}:`, c2paErr);
+              warnings.push(`C2PA manifest could not be embedded in slide ${i + 1}`);
             }
           }
 

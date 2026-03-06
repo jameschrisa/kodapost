@@ -5,7 +5,7 @@ const nextConfig = {
       bodySizeLimit: "10mb",
     },
     // Prevent webpack from bundling @libsql/client's native bindings
-    serverComponentsExternalPackages: ["@libsql/client"],
+    serverComponentsExternalPackages: ["@libsql/client", "c2pa-node"],
   },
   async headers() {
     return [
