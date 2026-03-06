@@ -213,7 +213,7 @@ export default function AboutPage() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
-            className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm sm:p-8"
+            className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm sm:p-8 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-white/10 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-white/[0.02] transition-all duration-300"
           >
             <p className="mb-5 text-xs font-bold uppercase tracking-widest text-white/50">
               {t("problem.soundFamiliar")}
@@ -369,7 +369,7 @@ export default function AboutPage() {
                 <motion.div
                   key={i}
                   variants={staggerChild}
-                  className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10"
+                  className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-white/[0.02]"
                 >
                   {/* Hover glow */}
                   <div

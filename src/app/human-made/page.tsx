@@ -306,7 +306,7 @@ export default function HumanMadePage() {
                 <motion.div
                   key={point.title}
                   variants={staggerChild}
-                  className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm"
+                  className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-white/10 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-white/[0.02] transition-all duration-300"
                 >
                   <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-400 mb-4">
                     <Icon className="h-5 w-5" />
@@ -357,7 +357,7 @@ export default function HumanMadePage() {
               <motion.div
                 key={i}
                 variants={staggerChild}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm"
+                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-white/10 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-white/[0.02] transition-all duration-300"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-500/20 text-violet-400 text-xs font-bold">
@@ -408,7 +408,7 @@ export default function HumanMadePage() {
               <motion.div
                 key={i}
                 variants={staggerChild}
-                className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4"
+                className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-white/10 transition-all duration-300"
               >
                 <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                 <p className="text-sm text-white/80 leading-relaxed">
@@ -453,7 +453,7 @@ export default function HumanMadePage() {
               <motion.div
                 key={item.step}
                 variants={staggerChild}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm"
+                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8 backdrop-blur-sm [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-white/10 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-white/[0.02] transition-all duration-300"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-lg font-bold mb-4">
                   {item.step}
@@ -583,7 +583,7 @@ export default function HumanMadePage() {
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6">
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6 [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-white/10 transition-all duration-300">
       <h3 className="text-sm font-bold text-white mb-2">{question}</h3>
       <p className="text-sm text-white/60 leading-relaxed">{answer}</p>
     </div>

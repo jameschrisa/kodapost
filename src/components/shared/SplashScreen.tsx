@@ -167,6 +167,25 @@ const staggerChild = {
   },
 };
 
+// Word-by-word reveal for hero headline
+const wordRevealContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.3 },
+  },
+};
+
+const wordReveal = {
+  hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.4, ease: easeOutExpo },
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Who It's For — Target Segment Tabs
 // ---------------------------------------------------------------------------
@@ -301,9 +320,10 @@ export function SplashScreen({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<"telegram" | "mobileweb">("telegram");
   // Use window scroll for native mobile scrolling (no fixed container)
-  const { scrollY } = useScroll();
+  const { scrollYProgress, scrollY } = useScroll();
   const orbY = useTransform(scrollY, [0, 600], [0, -120]);
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
 
   useEffect(() => {
@@ -370,6 +390,12 @@ export function SplashScreen({
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="relative z-50 min-h-screen overflow-x-hidden"
         >
+          {/* Scroll progress bar */}
+          <motion.div
+            className="fixed top-0 left-0 right-0 h-[2px] z-[60] origin-left bg-gradient-to-r from-orange-500 via-purple-500 to-emerald-500"
+            style={{ width: progressWidth }}
+          />
+
           {/* ================================================================
               STICKY NAV BAR
               ================================================================ */}
@@ -658,22 +684,35 @@ export function SplashScreen({
                 <KodaPostIcon className="h-8 w-8 text-white" />
               </motion.div>
 
-              {/* Brand */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+              {/* Brand — word-by-word reveal */}
+              <motion.h1
+                variants={wordRevealContainer}
+                initial="hidden"
+                animate="visible"
+                className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1]"
               >
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1]">
-                  {t("hero.title.line1")}{" "}
-                  <br className="hidden sm:block" />
-                  <span className="whitespace-nowrap">{t("hero.title.line2")}{" "}
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
+                {t("hero.title.line1").split(" ").map((word: string, i: number) => (
+                  <motion.span key={i} variants={wordReveal} className="inline-block mr-[0.25em]">
+                    {word}
+                  </motion.span>
+                ))}
+                <br className="hidden sm:block" />
+                <span className="whitespace-nowrap">
+                  <motion.span variants={wordReveal} className="inline-block mr-[0.25em]">
+                    {t("hero.title.line2")}
+                  </motion.span>
+                  <motion.span variants={wordReveal} className="inline-block mr-[0.25em] bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
                     {t("hero.title.gradient")}
-                  </span></span>{" "}
-                  <span className="whitespace-nowrap">{t("hero.title.line3")}</span>
-                </h1>
-              </motion.div>
+                  </motion.span>
+                </span>{" "}
+                <span className="whitespace-nowrap">
+                  {t("hero.title.line3").split(" ").map((word: string, i: number) => (
+                    <motion.span key={i} variants={wordReveal} className="inline-block mr-[0.25em]">
+                      {word}
+                    </motion.span>
+                  ))}
+                </span>
+              </motion.h1>
 
               {/* Tagline */}
               <motion.p
@@ -812,7 +851,7 @@ export function SplashScreen({
                   <motion.div
                     key={i}
                     variants={staggerChild}
-                    className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500"
+                    className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-white/[0.02] transition-all duration-500"
                   >
                     {/* Glow — subtle always-on for touch, hover-enhanced for pointer */}
                     <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full blur-3xl transition-all duration-700 ${glowClasses(step.glow as AccentColor)}`} />
@@ -1006,7 +1045,7 @@ export function SplashScreen({
                       <motion.div
                         key={point.index}
                         variants={staggerChild}
-                        className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 transition-colors duration-500"
+                        className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm overflow-hidden [@media(hover:hover)]:hover:border-white/10 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-white/[0.02] transition-all duration-500"
                       >
                         <div className={`absolute -top-16 -right-16 h-32 w-32 rounded-full blur-3xl transition-all duration-700 ${glowClasses(point.color as AccentColor)}`} />
                         <div className="relative z-10 flex items-start gap-4">
