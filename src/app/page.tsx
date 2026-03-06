@@ -443,7 +443,7 @@ export default function Home() {
     if (currentImageCount !== prevImageCountRef.current) {
       prevImageCountRef.current = currentImageCount;
       const imagesToSave = project.uploadedImages
-        .filter(img => img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:")))
+        .filter(img => img.url && img.url.startsWith("data:"))
         .map(img => ({ id: img.id, url: img.url }));
       if (imagesToSave.length > 0) {
         saveImagesToIDB(imagesToSave).catch(() => {});
@@ -461,7 +461,7 @@ export default function Home() {
 
         // Save images to per-draft storage
         const imgs = project.uploadedImages
-          .filter(img => img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:")))
+          .filter(img => img.url && img.url.startsWith("data:"))
           .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
         if (imgs.length > 0) {
           saveDraftImages(activeDraftId, imgs).catch(() => {});
@@ -841,6 +841,12 @@ export default function Home() {
   // -- Multi-draft handlers --
 
   const handleNewDraft = useCallback(async () => {
+    // Save current draft BEFORE creating new one to prevent data loss
+    if (activeDraftId) {
+      const name = project.projectName || loadProjectName() || "Untitled Project";
+      await saveDraft(activeDraftId, project, step, name).catch(() => {});
+    }
+
     const result = await createNewDraft(userPlan.tier);
     if (!result.success) {
       if (result.error === "limit_reached") {
@@ -851,12 +857,6 @@ export default function Home() {
         toast.error("Failed to create draft");
       }
       return;
-    }
-
-    // Save current draft before switching
-    if (activeDraftId) {
-      const name = project.projectName || loadProjectName() || "Untitled Project";
-      await saveDraft(activeDraftId, project, step, name).catch(() => {});
     }
 
     const newProject = createEmptyProject();
@@ -913,15 +913,29 @@ export default function Home() {
     await deleteDraft(draftId);
     logActivity("draft_discarded", `Deleted "${draftMeta?.name || "Untitled"}"`, draftId, draftMeta?.name);
 
+    const drafts = await listDraftMetadata();
+    setDraftList(drafts);
+
     if (draftId === activeDraftId) {
-      // Deleted the active draft — load another or start fresh
+      // Deleted the active draft — load next available or start fresh
+      const remaining = drafts.filter((d) => d.id !== draftId);
+      if (remaining.length > 0) {
+        const next = remaining[0];
+        const loaded = await loadDraft(next.id);
+        if (loaded) {
+          setProject(loaded.project);
+          setActiveDraftId(next.id);
+          setStep(loaded.step as Step);
+          toast.info("Draft deleted", {
+            description: `Switched to "${next.name || "Untitled"}".`,
+          });
+          return;
+        }
+      }
       setActiveDraftId(null);
       setProject(createEmptyProject());
       setStep("upload");
     }
-
-    const drafts = await listDraftMetadata();
-    setDraftList(drafts);
 
     toast.info("Draft deleted", {
       description: `"${draftMeta?.name || "Untitled"}" has been removed.`,
@@ -934,18 +948,20 @@ export default function Home() {
       prev.map((d) => (d.id === draftId ? { ...d, name: newName } : d))
     );
 
-    // Persist to IndexedDB
-    const loaded = await loadDraft(draftId);
-    if (loaded) {
-      await saveDraft(draftId, loaded.project, loaded.step, newName);
-    }
-
-    // Also update legacy name if this is the active draft
     if (draftId === activeDraftId) {
+      // Use in-memory state for active draft to avoid stale IDB data
       saveProjectName(newName);
-      setProject((prev) => ({ ...prev, projectName: newName }));
+      const updated = { ...project, projectName: newName };
+      setProject(updated);
+      await saveDraft(draftId, updated, step, newName);
+    } else {
+      // Load from IDB for inactive drafts
+      const loaded = await loadDraft(draftId);
+      if (loaded) {
+        await saveDraft(draftId, loaded.project, loaded.step, newName);
+      }
     }
-  }, [activeDraftId]);
+  }, [activeDraftId, project, step]);
 
   const handleContinueProject = useCallback(async (draftId: string) => {
     if (draftId === activeDraftId) {

@@ -12,7 +12,7 @@ import type {
 } from "@/lib/types";
 import { LANGUAGE_NAMES } from "@/i18n/types";
 import { generateOverlaySVG } from "@/lib/svg-overlay";
-import { PLATFORM_IMAGE_SPECS, PLATFORM_SAFE_AREA, DEFAULT_OVERLAY_STYLING, DEFAULT_OVERLAY_PADDING, FREE_POSITION_FROM_ALIGNMENT, FREE_POSITION_X_FROM_HORIZONTAL } from "@/lib/constants";
+import { PLATFORM_IMAGE_SPECS, PLATFORM_RULES, PLATFORM_SAFE_AREA, DEFAULT_OVERLAY_STYLING, DEFAULT_OVERLAY_PADDING, FREE_POSITION_FROM_ALIGNMENT, FREE_POSITION_X_FROM_HORIZONTAL } from "@/lib/constants";
 import {
   calculateImageSourceStrategy,
   getSlideType,
@@ -548,7 +548,16 @@ export async function regenerateSlide(
         ...overlay,
         content: {
           ...overlay.content,
-          primary: project.globalOverlayStyle?.showHeadline === false ? "" : overlay.content.primary,
+          primary: (() => {
+            const mode = resolveHeadlineMode(project.globalOverlayStyle);
+            if (mode === "none") return "";
+            if (mode === "first_only") {
+              const readySlides = project.slides.filter(s => s.status === "ready" || s.status === "generating");
+              const isFirst = readySlides.length === 0 || readySlides[0]?.id === slide.id;
+              return isFirst ? overlay.content.primary : "";
+            }
+            return overlay.content.primary;
+          })(),
           secondary: project.globalOverlayStyle?.showSubtitle === false ? undefined : overlay.content.secondary,
         },
       },
@@ -705,7 +714,17 @@ export async function compositeSlideImages(
       const spec = PLATFORM_IMAGE_SPECS[specKey];
       const format = spec.format === "PNG" ? "png" : "jpeg";
 
+      // Enforce per-platform max image limit
+      const rules = PLATFORM_RULES[platform as keyof typeof PLATFORM_RULES];
+      const maxImages = rules?.maxCarouselImages ?? slides.length;
+
       for (let i = 0; i < slides.length; i++) {
+        if (i >= maxImages) {
+          if (i === maxImages) {
+            warnings.push(`${platform}: limited to ${maxImages} images per platform rules`);
+          }
+          break;
+        }
         const slide = slides[i];
         if (slide.status !== "ready") continue;
 
@@ -856,21 +875,25 @@ export async function compositeSlideImages(
             outputBuffer = await pipeline.jpeg({ quality: spec.quality }).toBuffer();
           }
 
-          // 6. Embed provenance EXIF metadata and compute hashes
+          // 6. Embed provenance metadata and compute hashes
           let imageHash: string | undefined;
           let perceptualHash: string | undefined;
           if (provenanceConfig) {
-            imageHash = computeImageHash(outputBuffer);
+            // Compute perceptual hash on the visual content (before metadata embedding).
+            // Perceptual hash is resilient to re-compression so this is fine.
             perceptualHash = await computePerceptualHash(outputBuffer);
+
             const createdAt = new Date().toISOString();
-            const exifData = generateProvenanceExif(
-              provenanceConfig.creatorName,
-              imageHash,
-              createdAt
-            );
-            // Re-encode with EXIF metadata (JPEG only — PNG doesn't support EXIF via Sharp)
+
+            // Embed EXIF metadata (JPEG only -- PNG doesn't support EXIF via Sharp)
             if (format === "jpeg") {
               try {
+                // Use a placeholder hash in EXIF; the final SHA-256 is in C2PA
+                const exifData = generateProvenanceExif(
+                  provenanceConfig.creatorName,
+                  "pending",
+                  createdAt
+                );
                 outputBuffer = await sharp(outputBuffer)
                   .withMetadata({ exif: { IFD0: exifData } })
                   .jpeg({ quality: spec.quality })
@@ -881,7 +904,7 @@ export async function compositeSlideImages(
               }
             }
 
-            // 7. Embed C2PA manifest (industry-standard content provenance)
+            // Embed C2PA manifest (industry-standard content provenance)
             try {
               const mimeType = format === "png" ? "image/png" : "image/jpeg";
               outputBuffer = await embedC2PAManifest(
@@ -889,7 +912,7 @@ export async function compositeSlideImages(
                 mimeType as "image/jpeg" | "image/png",
                 {
                   creatorName: provenanceConfig.creatorName,
-                  imageHash,
+                  imageHash: "pending",
                   perceptualHash,
                   platform,
                 }
@@ -898,6 +921,9 @@ export async function compositeSlideImages(
               console.warn(`[Export] C2PA embedding failed for slide ${i + 1}:`, c2paErr);
               warnings.push(`C2PA manifest could not be embedded in slide ${i + 1}`);
             }
+
+            // Compute final SHA-256 hash on the fully assembled buffer
+            imageHash = computeImageHash(outputBuffer);
           }
 
           results.push({

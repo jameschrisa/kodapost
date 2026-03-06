@@ -49,6 +49,15 @@ export interface VideoGenParams {
   project: CarouselProject;
   platform: string;
   settings?: VideoSettings;
+  provenanceConfig?: {
+    creatorName: string;
+    watermarkMode: "text" | "logo" | "hidden" | "logo_and_hidden";
+    watermarkText?: string;
+    logoBase64?: string;
+    logoPosition?: string;
+    logoOpacity?: number;
+    logoScale?: number;
+  };
 }
 
 export interface UseVideoGeneratorReturn {
@@ -136,7 +145,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
 
   const generateVideo = useCallback(
     async (params: VideoGenParams): Promise<Blob | null> => {
-      const { project, platform, settings: overrideSettings } = params;
+      const { project, platform, settings: overrideSettings, provenanceConfig } = params;
       const settings = overrideSettings ?? project.videoSettings ?? DEFAULT_VIDEO_SETTINGS;
 
       const abortController = new AbortController();
@@ -178,7 +187,8 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         const compositeResult = await compositeSlideImages(
           lightSlides,
           [platform],
-          project.filterConfig as FilterConfig | undefined
+          project.filterConfig as FilterConfig | undefined,
+          provenanceConfig
         );
 
         if (!compositeResult.success) {

@@ -386,7 +386,26 @@ export function ImageUploader({
       const uploaded: UploadedImage[] = [];
       for (const img of images) {
         const isAlreadyBase64 = img.previewUrl.startsWith("data:");
-        const fullUrl = isAlreadyBase64 ? img.previewUrl : await fileToBase64(img.file);
+        let fullUrl: string;
+        if (isAlreadyBase64) {
+          fullUrl = img.previewUrl;
+        } else if (img.file.size > 0) {
+          fullUrl = await fileToBase64(img.file);
+        } else {
+          // Empty File (seeded from existing images with a URL) -- fetch the URL
+          try {
+            const resp = await fetch(img.previewUrl);
+            const blob = await resp.blob();
+            fullUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          } catch {
+            fullUrl = img.previewUrl; // Keep original URL as fallback
+          }
+        }
         let thumbnailUrl: string | undefined;
         try {
           thumbnailUrl = await generateThumbnail(fullUrl);

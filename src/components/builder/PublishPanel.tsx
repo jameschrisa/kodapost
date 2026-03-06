@@ -570,10 +570,25 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     const platform = Array.from(selected)[0];
 
     try {
+      const videoProvenanceConfig = hasProvenance && provenanceEnabled
+        ? {
+            creatorName,
+            watermarkMode: watermarkMode,
+            watermarkText: watermarkText || "Made with KodaPost",
+            logoBase64: brandWatermark?.logoDataUri
+              ? brandWatermark.logoDataUri.replace(/^data:[^;]+;base64,/, "")
+              : undefined,
+            logoPosition: brandWatermark?.position ?? "southeast",
+            logoOpacity: brandWatermark?.opacity ?? 0.3,
+            logoScale: brandWatermark?.scale ?? 0.15,
+          }
+        : undefined;
+
       const blob = await generateVideo({
         project,
         platform,
         settings: project.videoSettings ?? DEFAULT_VIDEO_SETTINGS,
+        provenanceConfig: videoProvenanceConfig,
       });
 
       if (blob) {
@@ -1051,7 +1066,13 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
               <div className="relative">
                 <Input
                   value={watermarkText}
-                  onChange={(e) => setWatermarkText(e.target.value.slice(0, 50))}
+                  onChange={(e) => {
+                    const text = e.target.value.slice(0, 50);
+                    setWatermarkText(text);
+                    const settings = loadSettings();
+                    const updated = { ...settings.brandWatermark, watermarkText: text };
+                    saveSettings({ ...settings, brandWatermark: updated as BrandWatermarkSettings });
+                  }}
                   maxLength={50}
                   className="h-8 text-xs pr-12"
                   placeholder="Made with KodaPost"

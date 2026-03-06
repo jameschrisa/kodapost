@@ -306,7 +306,7 @@ export async function saveDraftImages(
 
     // Store new images (full-res + thumbnails)
     for (const img of images) {
-      if (img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:"))) {
+      if (img.url && img.url.startsWith("data:")) {
         store.put({
           compoundKey: `${draftId}:${img.id}`,
           draftId,
