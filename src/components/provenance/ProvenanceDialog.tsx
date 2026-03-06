@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Shield } from "lucide-react";
+import { Copy, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -66,13 +66,18 @@ export default function ProvenanceDialog({ open, onOpenChange, record }: Provena
   if (!record) return null;
 
   const hashes = record.imageHashes.split(",");
+  const verifyCode = hashes[0]?.slice(0, 8) ?? "";
+  const verifyUrl = `/v/${verifyCode}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
+            <svg viewBox="0 0 10 10" className="h-4 w-4 text-foreground" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <circle cx="5" cy="5" r="4" />
+              <circle cx="5" cy="5" r="1.8" />
+            </svg>
             Creator Provenance
           </DialogTitle>
           <DialogDescription>
@@ -83,7 +88,11 @@ export default function ProvenanceDialog({ open, onOpenChange, record }: Provena
         <div className="space-y-4 mt-2">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Status:</span>
-            <ProvenanceBadge status={record.status} />
+            <ProvenanceBadge
+              status={record.status}
+              code={verifyCode}
+              variant="dark"
+            />
           </div>
 
           {record.error && (
@@ -125,9 +134,31 @@ export default function ProvenanceDialog({ open, onOpenChange, record }: Provena
             value={new Date(record.createdAt).toLocaleString()}
           />
 
-          <p className="text-xs text-muted-foreground">
-            Verify at: /api/provenance/verify?hash={"<any_hash_above>"}
-          </p>
+          {record.status === "signed" && (
+            <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+              <a
+                href={verifyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-mono"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Public verification page
+              </a>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 ml-auto"
+                onClick={() => {
+                  const fullUrl = `${window.location.origin}${verifyUrl}`;
+                  copyToClipboard(fullUrl, "Verification URL");
+                }}
+                aria-label="Copy verification URL"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

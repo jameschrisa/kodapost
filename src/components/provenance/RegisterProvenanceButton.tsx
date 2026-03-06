@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ProvenanceBadge from "./ProvenanceBadge";
@@ -100,6 +99,8 @@ export default function RegisterProvenanceButton({
       <>
         <ProvenanceBadge
           status={record.status}
+          code={imageHashes[0]?.slice(0, 6)}
+          variant="dark"
           onClick={() => setDialogOpen(true)}
         />
         <ProvenanceDialog
@@ -119,7 +120,10 @@ export default function RegisterProvenanceButton({
       disabled={isRegistering || imageHashes.length === 0}
       className="gap-2"
     >
-      <Shield className="h-3.5 w-3.5" />
+      <svg viewBox="0 0 10 10" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <circle cx="5" cy="5" r="4" />
+        <circle cx="5" cy="5" r="1.8" />
+      </svg>
       {isRegistering ? "Signing..." : "Register Provenance"}
     </Button>
   );
