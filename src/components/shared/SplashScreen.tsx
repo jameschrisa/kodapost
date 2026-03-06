@@ -1037,7 +1037,7 @@ export function SplashScreen({
                   asChild
                   className="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-8 py-5 text-base font-bold text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-105 transition-all duration-300"
                 >
-                  <Link href="/proof-of-real">
+                  <Link href="/human-made">
                     {t("provenance.learnMore")}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>

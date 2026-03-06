@@ -49,7 +49,7 @@ const WHY_POINTS = [
   {
     icon: ScanEye,
     title: "Screenshots get stolen daily",
-    text: "Your art shows up in someone else's feed. No credit, no link, no way to prove it was yours first. Proof of Real changes that.",
+    text: "Your art shows up in someone else's feed. No credit, no link, no way to prove it was yours first. Human Made changes that.",
   },
   {
     icon: Camera,
@@ -59,14 +59,14 @@ const WHY_POINTS = [
   {
     icon: ShieldCheck,
     title: "Your reputation is your livelihood",
-    text: "For indie creators, artists, and challenger brands, credibility is everything. Proof of Real gives you a verifiable record of authorship that no one can fake.",
+    text: "For indie creators, artists, and challenger brands, credibility is everything. Human Made gives you a verifiable record of authorship that no one can fake.",
   },
 ];
 
 const WHAT_POINTS = [
   {
     title: "A unique fingerprint for every image",
-    text: "When you export, KodaPost computes a one-of-a-kind digital fingerprint (SHA-256 hash) of your image. Think of it like a serial number that's mathematically tied to your exact pixels.",
+    text: "When you export, KodaPost computes a one-of-a-kind digital fingerprint of your image. Think of it like a serial number that's mathematically tied to your exact pixels.",
   },
   {
     title: "A visual fingerprint that survives social media",
@@ -96,12 +96,12 @@ const HOW_STEPS = [
   {
     step: "3",
     title: "Export or publish",
-    text: "KodaPost fingerprints every slide, signs the claim, embeds the C2PA credential, and registers your record. All of this happens automatically in seconds.",
+    text: "KodaPost fingerprints every slide, signs the claim, embeds the Content Credential, and registers your record. All of this happens automatically in seconds.",
   },
   {
     step: "4",
     title: "Share your proof",
-    text: "After export, you'll see your Proof of Real badge with a verification link. Share the link, add it to your bio, or keep it for your records. If anyone ever questions your work, you have the receipt.",
+    text: "After export, you'll see your Human Made badge with a verification link. Share the link, add it to your bio, or keep it for your records. If anyone ever questions your work, you have the receipt.",
   },
 ];
 
@@ -116,7 +116,7 @@ const WHEN_SCENARIOS = [
 
 /* ── Page ── */
 
-export default function ProofOfRealPage() {
+export default function HumanMadePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══ HERO ═══ */}
@@ -145,7 +145,7 @@ export default function ProofOfRealPage() {
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400"
           >
             <Fingerprint className="h-3.5 w-3.5" />
-            Proof of Real
+            Human Made
           </motion.div>
 
           <motion.h1
@@ -154,9 +154,9 @@ export default function ProofOfRealPage() {
             transition={{ duration: 0.7, delay: 0.15, ease: easeOutExpo }}
             className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl"
           >
-            <span className="text-white">Your work is real.</span>
+            <span className="text-white">Made by a human.</span>
             <br />
-            <span className="text-white/60">Now you can prove it.</span>
+            <span className="text-white/60">Proven by KodaPost.</span>
           </motion.h1>
 
           <motion.p
@@ -165,10 +165,11 @@ export default function ProofOfRealPage() {
             transition={{ duration: 0.6, delay: 0.3, ease: easeOutExpo }}
             className="mx-auto mt-6 max-w-2xl text-lg text-white/60 leading-relaxed"
           >
-            Proof of Real is how KodaPost protects your creative work.
-            Every image you export gets a digital fingerprint, a cryptographic
-            signature, and an industry-standard content credential. All automatic.
-            All verifiable. All yours.
+            In a world flooded with AI-generated content, your audience deserves
+            to know what&apos;s real. Human Made is how KodaPost protects your
+            creative work with a digital fingerprint, a cryptographic signature,
+            and an industry-standard content credential. All automatic. All
+            verifiable. All yours.
           </motion.p>
         </div>
       </section>
@@ -241,7 +242,7 @@ export default function ProofOfRealPage() {
               How It Protects You
             </span>
             <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
-              What is Proof of Real?
+              What is Human Made?
             </h2>
             <p className="mt-4 text-white/60 max-w-2xl mx-auto leading-relaxed">
               Four layers of protection, built into every export. You don&apos;t need
@@ -296,7 +297,7 @@ export default function ProofOfRealPage() {
               When should you use it?
             </h2>
             <p className="mt-4 text-white/60 max-w-2xl mx-auto leading-relaxed">
-              If any of these sound like you, Proof of Real was built for your situation.
+              If any of these sound like you, Human Made was built for your situation.
             </p>
           </div>
 
@@ -340,7 +341,7 @@ export default function ProofOfRealPage() {
               How does it work?
             </h2>
             <p className="mt-4 text-white/60 max-w-2xl mx-auto leading-relaxed">
-              You don&apos;t need to learn anything new. Proof of Real is a single
+              You don&apos;t need to learn anything new. It&apos;s a single
               toggle in the Publish step. Everything else happens automatically.
             </p>
           </div>
@@ -442,7 +443,7 @@ export default function ProofOfRealPage() {
             />
             <FaqItem
               question="What if someone screenshots my image instead of downloading it?"
-              answer="The perceptual hash (visual fingerprint) still works. Even if someone screenshots, crops, or recompresses your image, the visual fingerprint is close enough to match. That's why it's called Proof of Real, not just proof of file."
+              answer="The perceptual hash (visual fingerprint) still works. Even if someone screenshots, crops, or recompresses your image, the visual fingerprint is close enough to match. Your proof holds up regardless of how the image was captured."
             />
             <FaqItem
               question="What is C2PA and why should I care?"
@@ -457,8 +458,8 @@ export default function ProofOfRealPage() {
               answer="Your verification page (kodapost.com/v/[code]) is public so anyone can verify your work. It shows your creator name, creation date, and signature validity. Your actual images are never stored or displayed on the verification page."
             />
             <FaqItem
-              question="Which plans include Proof of Real?"
-              answer="Creator Provenance (including Proof of Real) is available on Creator Mode ($19/mo) and Monster Mode ($39/mo) plans."
+              question="Which plans include Human Made?"
+              answer="Creator Provenance (including Human Made verification) is available on Creator Mode ($19/mo) and Monster Mode ($39/mo) plans."
             />
           </div>
         </motion.div>

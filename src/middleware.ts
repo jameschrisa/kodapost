@@ -47,6 +47,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/contact",
   "/api/health(.*)",
   "/api/provenance/verify",
+  "/human-made",
+  "/v(.*)",
 ]);
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
