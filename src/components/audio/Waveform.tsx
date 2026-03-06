@@ -73,10 +73,11 @@ export function Waveform({
     if (!audioUrl || analyserNode) return;
 
     const computeWaveform = async () => {
+      let audioContext: AudioContext | null = null;
       try {
         const response = await fetch(audioUrl);
         const arrayBuffer = await response.arrayBuffer();
-        const audioContext = new AudioContext();
+        audioContext = new AudioContext();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         const channelData = audioBuffer.getChannelData(0);
 
@@ -99,10 +100,10 @@ export function Waveform({
         // Normalize to 0-1
         const max = Math.max(...data, 0.01);
         setWaveformData(data.map((v) => v / max));
-
-        await audioContext.close();
       } catch (err) {
         console.warn("Failed to compute waveform:", err);
+      } finally {
+        await audioContext?.close();
       }
     };
 

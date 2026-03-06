@@ -32,6 +32,7 @@ interface ConfigurationPanelProps {
   project: CarouselProject;
   onUpdate: (project: CarouselProject) => void;
   onGenerate: () => void | Promise<void>;
+  onCancelGenerate?: () => void;
   onContinue?: () => void;
   onBack?: () => void;
 }
@@ -40,6 +41,7 @@ export function ConfigurationPanel({
   project,
   onUpdate,
   onGenerate,
+  onCancelGenerate,
   onContinue,
   onBack,
 }: ConfigurationPanelProps) {
@@ -146,10 +148,21 @@ export function ConfigurationPanel({
   const [captionText, setCaptionText] = useState(project.caption ?? "");
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
 
+  // Re-sync caption from project when it changes externally (e.g., draft restore)
+  const lastSyncedCaption = useRef(project.caption ?? "");
+  useEffect(() => {
+    const projectCaption = project.caption ?? "";
+    if (projectCaption !== lastSyncedCaption.current && projectCaption !== captionText) {
+      setCaptionText(projectCaption);
+    }
+    lastSyncedCaption.current = projectCaption;
+  }, [project.caption]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync caption text to project on changes
   useEffect(() => {
     if (captionText !== (project.caption ?? "")) {
       const timer = setTimeout(() => {
+        lastSyncedCaption.current = captionText;
         onUpdate({ ...project, caption: captionText || undefined });
       }, 500);
       return () => clearTimeout(timer);
@@ -403,7 +416,10 @@ export function ConfigurationPanel({
             variant="ghost"
             size="sm"
             className="mt-2 text-xs text-muted-foreground"
-            onClick={() => setIsGenerating(false)}
+            onClick={() => {
+              setIsGenerating(false);
+              onCancelGenerate?.();
+            }}
           >
             Cancel
           </Button>

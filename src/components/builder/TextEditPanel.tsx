@@ -170,6 +170,22 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
   const previewScale = previewWidth / 1080;
   const thumbScale = thumbWidth / 1080;
 
+  // ── Flush pending save immediately when switching slides ──
+  const prevSelectedIdRef = useRef(selectedSlide?.id);
+  const pendingSaveRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (prevSelectedIdRef.current && prevSelectedIdRef.current !== selectedSlide?.id) {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = undefined;
+      }
+      // Execute the pending save synchronously before loading new slide state
+      pendingSaveRef.current?.();
+      pendingSaveRef.current = null;
+    }
+    prevSelectedIdRef.current = selectedSlide?.id;
+  }, [selectedSlide?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Load slide state when selection changes ──
   useEffect(() => {
     if (!selectedSlide) return;
@@ -240,7 +256,9 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
     if (key === lastSavedRef.current) return;
 
     clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => {
+
+    // Build the save function so it can be flushed immediately on slide switch
+    const doSave = () => {
       lastSavedRef.current = key;
       const updatedSlides = project.slides.map((s) => {
         if (s.id !== selectedSlide.id) return s;
@@ -261,7 +279,11 @@ export function TextEditPanel({ project, onEdit, onNext, onBack }: TextEditPanel
         };
       });
       onEdit({ ...project, slides: updatedSlides });
-    }, 300);
+      pendingSaveRef.current = null;
+    };
+
+    pendingSaveRef.current = doSave;
+    saveTimeoutRef.current = setTimeout(doSave, 300);
 
     return () => clearTimeout(saveTimeoutRef.current);
   }, [liveOverlay, selectedSlide, project, onEdit, editTextEnabled]); // eslint-disable-line react-hooks/exhaustive-deps

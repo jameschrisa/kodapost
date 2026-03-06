@@ -64,12 +64,19 @@ export function AudioPlayer({
       setIsPlaying(false);
     };
 
+    const handleError = () => {
+      setIsPlaying(false);
+      console.warn("Audio playback error: source may be invalid or revoked");
+    };
+
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("error", handleError);
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("error", handleError);
       audio.pause();
       audio.src = "";
     };

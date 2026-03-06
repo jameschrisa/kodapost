@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import sharp from "sharp";
 import heicConvert from "heic-convert";
 
 export const maxDuration = 60;
+const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB — matches ImageUploader limit
 const MAX_DIMENSION = 2048; // Cap output to 2048px on longest side
@@ -26,6 +28,14 @@ function memMB(): string {
  * then pass the raw JPEG through Sharp for resize + compression.
  */
 export async function POST(request: NextRequest) {
+  // Require auth when Clerk is enabled to prevent resource abuse
+  if (isClerkEnabled) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   const startTime = Date.now();
   const requestId = Math.random().toString(36).slice(2, 8);
 
@@ -86,22 +96,26 @@ export async function POST(request: NextRequest) {
       );
 
       const heicStart = Date.now();
-      const jpegResult = await heicConvert({
-        buffer: inputBuffer as unknown as ArrayBufferLike,
-        format: "JPEG",
-        quality: 0.92,
-      });
+      let jpegRaw: Buffer = Buffer.from(
+        await heicConvert({
+          buffer: inputBuffer as unknown as ArrayBufferLike,
+          format: "JPEG",
+          quality: 0.92,
+        })
+      );
       console.info(
-        `[convert-image][${requestId}] heic-convert done rawJpeg=${(Buffer.from(jpegResult).length / 1024 / 1024).toFixed(1)}MB +${Date.now() - heicStart}ms ${memMB()}`
+        `[convert-image][${requestId}] heic-convert done rawJpeg=${(jpegRaw.length / 1024 / 1024).toFixed(1)}MB +${Date.now() - heicStart}ms ${memMB()}`
       );
 
       // heic-convert outputs full-resolution JPEG. Pass through Sharp to
       // resize and compress so the response stays under Vercel's 4.5 MB limit.
       const resizeStart = Date.now();
-      decodedBuffer = await sharp(Buffer.from(jpegResult))
+      decodedBuffer = await sharp(jpegRaw)
         .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside", withoutEnlargement: true })
         .jpeg({ quality: JPEG_QUALITY })
         .toBuffer();
+      // Release the full-res buffer immediately to reduce memory pressure
+      jpegRaw = Buffer.alloc(0);
       console.info(
         `[convert-image][${requestId}] Sharp resize done output=${(decodedBuffer.length / 1024).toFixed(0)}KB +${Date.now() - resizeStart}ms ${memMB()}`
       );

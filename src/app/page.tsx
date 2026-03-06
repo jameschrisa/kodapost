@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { Onborda, OnbordaProvider, useOnborda } from "onborda";
 import { TourCard } from "@/components/tour/TourCard";
 import { appTourSteps } from "@/components/tour/tourSteps";
@@ -13,21 +14,26 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SaveProjectButton } from "@/components/shared/SaveProjectButton";
 import { HeaderMenu } from "@/components/shared/HeaderMenu";
 import { SplashScreen } from "@/components/shared/SplashScreen";
-import { SettingsDialog } from "@/components/shared/SettingsDialog";
-import { HelpDialog } from "@/components/shared/HelpDialog";
-import { ProfileDialog } from "@/components/shared/ProfileDialog";
 import { Footer } from "@/components/shared/Footer";
 import { AssistantBanner } from "@/components/shared/AssistantBanner";
-import { ContentBotPanel } from "@/components/shared/ContentBotPanel";
 import { TrialBanner } from "@/components/shared/TrialBanner";
 import { AdminViewBanner } from "@/components/shared/AdminViewBanner";
 import { StepIndicator } from "@/components/builder/StepIndicator";
 import { ImageUploader } from "@/components/builder/ImageUploader";
-import { ConfigurationPanel } from "@/components/builder/ConfigurationPanel";
-import { CarouselPreview } from "@/components/builder/CarouselPreview";
-import { StoryboardPreview } from "@/components/builder/StoryboardPreview";
-import { TextEditPanel } from "@/components/builder/TextEditPanel";
-import { PublishPanel } from "@/components/builder/PublishPanel";
+
+// Lazy-load heavy builder components (only rendered one at a time per step)
+const ConfigurationPanel = dynamic(() => import("@/components/builder/ConfigurationPanel").then(m => ({ default: m.ConfigurationPanel })), { ssr: false });
+const CarouselPreview = dynamic(() => import("@/components/builder/CarouselPreview").then(m => ({ default: m.CarouselPreview })), { ssr: false });
+const StoryboardPreview = dynamic(() => import("@/components/builder/StoryboardPreview").then(m => ({ default: m.StoryboardPreview })), { ssr: false });
+const TextEditPanel = dynamic(() => import("@/components/builder/TextEditPanel").then(m => ({ default: m.TextEditPanel })), { ssr: false });
+const PublishPanel = dynamic(() => import("@/components/builder/PublishPanel").then(m => ({ default: m.PublishPanel })), { ssr: false });
+
+// Lazy-load dialogs and panels (opened on demand)
+const SettingsDialog = dynamic(() => import("@/components/shared/SettingsDialog").then(m => ({ default: m.SettingsDialog })), { ssr: false });
+const HelpDialog = dynamic(() => import("@/components/shared/HelpDialog").then(m => ({ default: m.HelpDialog })), { ssr: false });
+const ProfileDialog = dynamic(() => import("@/components/shared/ProfileDialog").then(m => ({ default: m.ProfileDialog })), { ssr: false });
+const ContentBotPanel = dynamic(() => import("@/components/shared/ContentBotPanel").then(m => ({ default: m.ContentBotPanel })), { ssr: false });
+const AdvancedSettingsDialog = dynamic(() => import("@/components/shared/AdvancedSettingsDialog").then(m => ({ default: m.AdvancedSettingsDialog })), { ssr: false });
 import { generateCarousel } from "@/app/actions";
 import { toast } from "sonner";
 import {
@@ -56,12 +62,13 @@ import {
 import { cn, computeConfigHash } from "@/lib/utils";
 import { SquarePenIcon } from "@/components/icons/animated/square-pen";
 import { CalendarDaysIcon } from "@/components/icons/animated/calendar-days";
-import { ContentSchedule } from "@/components/history/ContentSchedule";
-import { ProjectsView } from "@/components/projects/ProjectsView";
-import { AudioPanel } from "@/components/audio";
 import { SavedDraftCard } from "@/components/shared/SavedDraftCard";
 import { DraftListPanel } from "@/components/shared/DraftListPanel";
-import { AdvancedSettingsDialog } from "@/components/shared/AdvancedSettingsDialog";
+
+// Lazy-load secondary views (only shown when user navigates to them)
+const ContentSchedule = dynamic(() => import("@/components/history/ContentSchedule").then(m => ({ default: m.ContentSchedule })), { ssr: false });
+const ProjectsView = dynamic(() => import("@/components/projects/ProjectsView").then(m => ({ default: m.ProjectsView })), { ssr: false });
+const AudioPanel = dynamic(() => import("@/components/audio").then(m => ({ default: m.AudioPanel })), { ssr: false });
 import { EmptyStateGuide, hasSeenGuide, markGuideSeen } from "@/components/shared/EmptyStateGuide";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useUserPlan } from "@/hooks/useUserPlan";
@@ -563,16 +570,26 @@ export default function Home() {
     }
   }, [project.audioClip?.objectUrl]);
 
+  // Generation ID to discard stale results when user cancels
+  const generationIdRef = useRef(0);
+
+  const cancelGeneration = useCallback(() => {
+    generationIdRef.current++;
+  }, []);
+
   const handleGenerate = useCallback(async () => {
+    // Increment generation ID so any previous in-flight generation is discarded
+    const thisGenId = ++generationIdRef.current;
+
     // Strip base64 image data before sending to server action to avoid
     // exceeding Vercel's request/response size limits. The server only
-    // needs image metadata (id, filename, dimensions) — not the pixels.
+    // needs image metadata (id, filename, dimensions), not the pixels.
     const lightProject: CarouselProject = {
       ...project,
       language: project.language || i18nLanguage,
       uploadedImages: project.uploadedImages.map(img => ({
         ...img,
-        url: "", // Strip base64 — restored client-side after response
+        url: "", // Strip base64, restored client-side after response
       })),
     };
 
@@ -580,11 +597,15 @@ export default function Home() {
     try {
       result = await generateCarousel(lightProject);
     } catch (err) {
+      if (generationIdRef.current !== thisGenId) return; // cancelled
       toast.error("Generation failed", {
         description: err instanceof Error ? err.message : "An unexpected error occurred. Please try again.",
       });
       return;
     }
+
+    // Discard result if user cancelled while we were waiting
+    if (generationIdRef.current !== thisGenId) return;
 
     if (!result || !result.success) {
       toast.error("Generation failed", {
@@ -596,7 +617,7 @@ export default function Home() {
     const data = result.data;
 
     // Restore original uploadedImages (server strips base64 data to stay
-    // within Vercel's response size limit — client already has them).
+    // within Vercel's response size limit, client already has them).
     data.uploadedImages = project.uploadedImages;
 
     // Restore image URLs on slides that reference uploaded images
@@ -1287,6 +1308,7 @@ export default function Home() {
                     project={project}
                     onUpdate={handleProjectUpdate}
                     onGenerate={handleGenerate}
+                    onCancelGenerate={cancelGeneration}
                     onContinue={handleContinueToEdit}
                     onBack={handleBack}
                   />

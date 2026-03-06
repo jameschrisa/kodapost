@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import type { MusicTrack } from "@/lib/types";
+
+const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 // -----------------------------------------------------------------------------
 // Jamendo helpers
@@ -225,6 +228,14 @@ async function searchAudius(
  *   instrumental - "true" to filter instrumental only (Jamendo)
  */
 export async function GET(request: NextRequest) {
+  // Require auth when Clerk is enabled to prevent API key abuse
+  if (isClerkEnabled) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   const { searchParams } = new URL(request.url);
 
   const q = searchParams.get("q")?.trim();

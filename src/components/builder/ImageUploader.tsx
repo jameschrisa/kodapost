@@ -85,132 +85,70 @@ async function resizeImageClientSide(file: File): Promise<Blob | null> {
 }
 
 /**
- * Converts a HEIC file to JPEG client-side using the browser's native
- * decoding (Safari/iOS) via Canvas, falling back to the server API route
- * for browsers that lack HEIC support (Chrome, Firefox).
+ * HEIC → JPEG conversion strategy (all client-side, no server needed):
  *
- * Client-side is preferred because it avoids server round-trips, scales
- * infinitely, and is much faster on Safari (which handles 99% of HEIC uploads).
+ * 1. Safari/iOS: native createImageBitmap decodes HEIC instantly
+ * 2. Chrome/Firefox: lazy-load heic2any (libheif WASM, ~2.7 MB, cached after first use)
+ *
+ * This scales to infinite users with zero server cost.
  */
 const MAX_CLIENT_DIMENSION = 2048;
 
-async function convertHeicClientSide(file: File): Promise<Blob | null> {
-  try {
-    console.info(`[HEIC-debug] Client-side: attempting createImageBitmap for ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
-    // createImageBitmap can decode HEIC on Safari/iOS natively
-    const bitmap = await createImageBitmap(file);
-    const { width, height } = bitmap;
-    console.info(`[HEIC-debug] Client-side: decoded ${width}x${height}`);
-
-    // Scale down to MAX_CLIENT_DIMENSION preserving aspect ratio
-    let outW = width;
-    let outH = height;
-    if (width > MAX_CLIENT_DIMENSION || height > MAX_CLIENT_DIMENSION) {
-      const scale = MAX_CLIENT_DIMENSION / Math.max(width, height);
-      outW = Math.round(width * scale);
-      outH = Math.round(height * scale);
-    }
-
-    const canvas = new OffscreenCanvas(outW, outH);
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-    ctx.drawImage(bitmap, 0, 0, outW, outH);
-    bitmap.close();
-
-    const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
-    console.info(`[HEIC-debug] Client-side: SUCCESS ${file.name} → ${(blob.size / 1024).toFixed(0)}KB JPEG`);
-    return blob;
-  } catch (clientErr) {
-    console.info(`[HEIC-debug] Client-side: FAILED for ${file.name} — ${clientErr instanceof Error ? clientErr.message : "unknown"} (falling back to server)`);
-    // intentional fall-through
-    // Browser can't decode HEIC (Chrome, Firefox) — return null to trigger server fallback
-    return null;
-  }
-}
-
-async function convertHeicServerSide(file: File): Promise<Blob> {
-  console.info(`[HEIC-debug] Server-side: uploading ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
-  const startTime = performance.now();
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  // 45-second timeout — heic-convert can take 10-20s on serverless cold start
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45_000);
-
-  let response: Response;
-  try {
-    response = await fetch("/api/convert-image", {
-      method: "POST",
-      body: formData,
-      signal: controller.signal,
-    });
-  } catch (fetchError) {
-    clearTimeout(timeout);
-    const elapsed = Math.round(performance.now() - startTime);
-    const errType = fetchError instanceof Error ? `${fetchError.constructor.name}: ${fetchError.message}` : String(fetchError);
-    console.error(`[HEIC-debug] Server-side: fetch FAILED for ${file.name} after ${elapsed}ms — ${errType}`);
-
-    if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
-      throw new Error(`Conversion timed out after ${elapsed}ms. Try a smaller image.`);
-    }
-    // "TypeError: Failed to fetch" means the server connection was dropped
-    // (function crash, OOM, or network issue)
-    throw new Error(
-      `Server conversion failed for ${file.name} (${errType}, ${elapsed}ms). The server may be overloaded. Try uploading fewer images at once.`
-    );
-  } finally {
-    clearTimeout(timeout);
+/** Resize a decoded bitmap to max dimension and return as JPEG blob */
+async function bitmapToJpeg(bitmap: ImageBitmap): Promise<Blob> {
+  const { width, height } = bitmap;
+  let outW = width;
+  let outH = height;
+  if (width > MAX_CLIENT_DIMENSION || height > MAX_CLIENT_DIMENSION) {
+    const scale = MAX_CLIENT_DIMENSION / Math.max(width, height);
+    outW = Math.round(width * scale);
+    outH = Math.round(height * scale);
   }
 
-  const elapsed = Math.round(performance.now() - startTime);
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: "", debug: null }));
-    console.error(
-      `[HEIC-debug] Server-side: HTTP ${response.status} for ${file.name} after ${elapsed}ms`,
-      err.debug || err.error
-    );
-    throw new Error(
-      err.error || `Image conversion failed (HTTP ${response.status}).`
-    );
-  }
-
-  const result = await response.json();
-  if (!result.success) {
-    console.error(`[HEIC-debug] Server-side: conversion returned failure for ${file.name}`, result.debug);
-    throw new Error(
-      result.error || "Image conversion failed. The file may be corrupted or unsupported."
-    );
-  }
-
-  console.info(
-    `[HEIC-debug] Server-side: SUCCESS ${file.name} in ${elapsed}ms` +
-    (result.debug ? ` (server: ${result.debug.totalMs}ms, path=${result.debug.conversionPath}, heap=${result.debug.heapMB}MB)` : "")
-  );
-
-  // Convert base64 data URI to Blob (no fetch — avoids data: URI size limits)
-  const base64 = result.dataUri.split(",")[1];
-  const bytes = atob(base64);
-  const arr = new Uint8Array(bytes.length);
-  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-  return new Blob([arr], { type: "image/jpeg" });
+  const canvas = new OffscreenCanvas(outW, outH);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas context unavailable");
+  ctx.drawImage(bitmap, 0, 0, outW, outH);
+  bitmap.close();
+  return canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
 }
 
 async function convertHeicFile(file: File): Promise<Blob> {
-  console.info(`[HEIC-debug] convertHeicFile START: ${file.name} (${(file.size / 1024).toFixed(0)}KB, type=${file.type || "no-mime"})`);
+  console.info(`[HEIC] convertHeicFile: ${file.name} (${(file.size / 1024).toFixed(0)}KB, type=${file.type || "no-mime"})`);
 
-  // Try client-side first (instant on Safari/iOS)
-  const clientBlob = await convertHeicClientSide(file);
-  if (clientBlob && clientBlob.size > 0) {
-    console.info(`[HEIC-debug] convertHeicFile: using client-side result for ${file.name}`);
-    return clientBlob;
+  // Path 1: Native decode (Safari/iOS)
+  try {
+    const bitmap = await createImageBitmap(file);
+    console.info(`[HEIC] Native decode success: ${bitmap.width}x${bitmap.height}`);
+    const blob = await bitmapToJpeg(bitmap);
+    console.info(`[HEIC] Native → ${(blob.size / 1024).toFixed(0)}KB JPEG`);
+    return blob;
+  } catch {
+    console.info(`[HEIC] Native decode unavailable, using WASM fallback`);
   }
 
-  // Fall back to server for Chrome/Firefox/etc.
-  console.info(`[HEIC-debug] convertHeicFile: falling back to server for ${file.name}`);
-  return convertHeicServerSide(file);
+  // Path 2: WASM decode via heic2any (Chrome/Firefox)
+  // Lazy-loaded so Safari users never download the ~2.7 MB WASM bundle
+  const startTime = performance.now();
+  const heic2any = (await import("heic2any")).default;
+  const wasmBlob = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.92,
+  });
+  // heic2any can return a single Blob or an array (for multi-image HEIF)
+  const jpegBlob = Array.isArray(wasmBlob) ? wasmBlob[0] : wasmBlob;
+  console.info(`[HEIC] WASM decode: ${(jpegBlob.size / 1024).toFixed(0)}KB in ${Math.round(performance.now() - startTime)}ms`);
+
+  // Resize if needed (heic2any outputs full resolution)
+  const bitmap = await createImageBitmap(jpegBlob);
+  if (bitmap.width > MAX_CLIENT_DIMENSION || bitmap.height > MAX_CLIENT_DIMENSION) {
+    const resized = await bitmapToJpeg(bitmap);
+    console.info(`[HEIC] Resized ${bitmap.width}x${bitmap.height} → ${(resized.size / 1024).toFixed(0)}KB`);
+    return resized;
+  }
+  bitmap.close();
+  return jpegBlob;
 }
 
 interface LocalImage {
@@ -332,7 +270,7 @@ export function ImageUploader({
         let jpegBlob: Blob | null = null;
 
         if (isHeic) {
-          // HEIC: try native decode (Safari), then server fallback
+          // HEIC: native on Safari, WASM on Chrome/Firefox (all client-side)
           jpegBlob = await convertHeicFile(file);
           convertedCount++;
         } else {
@@ -432,13 +370,23 @@ export function ImageUploader({
       // Convert blob URLs to base64 data URIs so they survive serialization
       // to server actions and can be sent to external APIs.
       // Images are already resized to max 2048px during upload, so this is fast.
-      const { blobUrlToBase64, generateThumbnail } = await import("@/lib/utils");
+      const { generateThumbnail } = await import("@/lib/utils");
+
+      // Read File objects directly as base64. More reliable than fetching blob URLs,
+      // which can become stale on mobile browsers or get intercepted by Service Workers.
+      const fileToBase64 = (file: File): Promise<string> =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
 
       // Process sequentially to avoid memory spikes on mobile
       const uploaded: UploadedImage[] = [];
       for (const img of images) {
         const isAlreadyBase64 = img.previewUrl.startsWith("data:");
-        const fullUrl = isAlreadyBase64 ? img.previewUrl : await blobUrlToBase64(img.previewUrl);
+        const fullUrl = isAlreadyBase64 ? img.previewUrl : await fileToBase64(img.file);
         let thumbnailUrl: string | undefined;
         try {
           thumbnailUrl = await generateThumbnail(fullUrl);
@@ -454,6 +402,13 @@ export function ImageUploader({
           usedInSlides: [],
         });
       }
+      // Revoke blob URLs now that we have base64 copies
+      for (const img of images) {
+        if (!img.previewUrl.startsWith("data:")) {
+          URL.revokeObjectURL(img.previewUrl);
+        }
+      }
+
       onComplete(uploaded);
     } catch (error) {
       console.error("Failed to process images:", error);

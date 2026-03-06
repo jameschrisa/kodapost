@@ -149,22 +149,22 @@ export async function POST(request: NextRequest) {
   // -------------------------------------------------------------------------
   // 3. Convert uploaded files to base64 data URIs (UploadedImage format)
   // -------------------------------------------------------------------------
-  const uploadedImages: UploadedImage[] = await Promise.all(
-    imageFiles.map(async (file, index) => {
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const base64 = buffer.toString("base64");
-      const mimeType = file.type || "image/jpeg";
+  // Convert sequentially to avoid memory spikes (each 10MB file → ~13MB base64)
+  const uploadedImages: UploadedImage[] = [];
+  for (let index = 0; index < imageFiles.length; index++) {
+    const file = imageFiles[index];
+    const arrayBuffer = await file.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mimeType = file.type || "image/jpeg";
 
-      return {
-        id: `api-img-${index}`,
-        url: `data:${mimeType};base64,${base64}`,
-        filename: file.name || `image-${index}.jpg`,
-        uploadedAt: new Date().toISOString(),
-        usedInSlides: [],
-      };
-    })
-  );
+    uploadedImages.push({
+      id: `api-img-${index}`,
+      url: `data:${mimeType};base64,${base64}`,
+      filename: file.name || `image-${index}.jpg`,
+      uploadedAt: new Date().toISOString(),
+      usedInSlides: [],
+    });
+  }
 
   // -------------------------------------------------------------------------
   // 4. Create job record
@@ -192,7 +192,22 @@ export async function POST(request: NextRequest) {
   // -------------------------------------------------------------------------
   // 5. Run generation pipeline (synchronous within this request)
   // -------------------------------------------------------------------------
-  await processGenerationJob(jobId, config, uploadedImages);
+  try {
+    await processGenerationJob(jobId, config, uploadedImages);
+  } catch (err) {
+    // Update job status so it doesn't remain orphaned as "pending"
+    await db
+      .update(jobs)
+      .set({
+        status: "failed",
+        error: err instanceof Error ? err.message : "Generation pipeline crashed",
+      })
+      .where(eq(jobs.id, jobId));
+    return NextResponse.json(
+      { jobId, status: "failed", error: "Generation pipeline failed", code: "GENERATION_FAILED" },
+      { status: 500 }
+    );
+  }
 
   // -------------------------------------------------------------------------
   // 6. Return result

@@ -253,6 +253,9 @@ export function AudioPanel({
           createdAt: new Date().toISOString(),
         };
 
+        // Revoke previous blob URL to prevent memory leak
+        if (stagedClip?.objectUrl) URL.revokeObjectURL(stagedClip.objectUrl);
+
         setStagedClip(clip);
         setIsApplied(false);
         setTrimStart(goldilocks?.start ?? 0);
@@ -279,7 +282,7 @@ export function AudioPanel({
         setIsLoadingTrack(false);
       }
     },
-    [isLoadingTrack, getGoldilocksTrim, slideCount]
+    [isLoadingTrack, getGoldilocksTrim, slideCount, stagedClip]
   );
 
   // Apply staged clip to storyboard
@@ -307,6 +310,7 @@ export function AudioPanel({
   // Remove audio (both staged and applied)
   const handleRemoveAudio = useCallback(() => {
     logActivity("audio_removed", "Removed audio clip");
+    if (stagedClip?.objectUrl) URL.revokeObjectURL(stagedClip.objectUrl);
     onAudioChange(undefined);
     setStagedClip(null);
     setIsApplied(false);
@@ -317,10 +321,11 @@ export function AudioPanel({
     recorder.reset();
     fileLoader.reset();
     toast.info("Audio removed");
-  }, [onAudioChange, recorder, fileLoader]);
+  }, [onAudioChange, recorder, fileLoader, stagedClip]);
 
   // Change track — clear current and go back to selection
   const handleChangeTrack = useCallback(() => {
+    if (stagedClip?.objectUrl) URL.revokeObjectURL(stagedClip.objectUrl);
     onAudioChange(undefined);
     setStagedClip(null);
     setIsApplied(false);
@@ -330,7 +335,7 @@ export function AudioPanel({
     setShowTrimHandles(false);
     recorder.reset();
     fileLoader.reset();
-  }, [onAudioChange, recorder, fileLoader]);
+  }, [onAudioChange, recorder, fileLoader, stagedClip]);
 
   // Go back to audio mode selection from any input mode
   const handleBackToSelection = useCallback(() => {

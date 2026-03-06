@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
 import type { Area, Point } from "react-easy-crop";
 import { Crop, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -43,11 +44,20 @@ export function ImageCropDialog({
     []
   );
 
+  // Reset crop state when a different slide is opened
+  const prevSlideId = useRef(slide.id);
+  useEffect(() => {
+    if (slide.id !== prevSlideId.current) {
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+      prevSlideId.current = slide.id;
+    }
+  }, [slide.id]);
+
   const handleApply = useCallback(() => {
     if (!croppedAreaPixels || !slide.imageUrl) return;
 
-    // We need to get the natural image dimensions to convert to percentages.
-    // react-easy-crop gives us pixel values relative to the image's natural size.
     const img = new window.Image();
     img.onload = () => {
       const naturalWidth = img.naturalWidth;
@@ -62,6 +72,9 @@ export function ImageCropDialog({
 
       onApply(cropPercent);
       onOpenChange(false);
+    };
+    img.onerror = () => {
+      toast.error("Failed to load image for cropping");
     };
     img.src = slide.imageUrl;
   }, [croppedAreaPixels, slide.imageUrl, onApply, onOpenChange]);

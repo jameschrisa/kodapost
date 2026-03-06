@@ -180,6 +180,13 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     if (!watermarkText) setWatermarkText(`Made with ${creatorName}`);
   }, [creatorName]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Clean up video blob URL on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
+
   // Pre-select platforms from saved settings and load brand watermark config
   useEffect(() => {
     const settings = loadSettings();

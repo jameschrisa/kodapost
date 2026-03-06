@@ -117,6 +117,9 @@ export function MusicBrowser({
   // Debounced search
   // -------------------------------------------
 
+  // Abort controller ref to cancel in-flight search requests
+  const searchAbortRef = useRef<AbortController | null>(null);
+
   const performSearch = useCallback(
     async (searchQuery: string, searchSource: SourceFilter, inst: boolean, searchGenre?: string) => {
       const trimmed = searchQuery.trim();
@@ -126,6 +129,11 @@ export function MusicBrowser({
         setError(null);
         return;
       }
+
+      // Abort any previous in-flight search
+      searchAbortRef.current?.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
 
       setIsLoading(true);
       startGlobalLoading("music-search", "Searching music…");
@@ -143,7 +151,9 @@ export function MusicBrowser({
           params.set("genre", searchGenre);
         }
 
-        const res = await fetch(`/api/music/search?${params.toString()}`);
+        const res = await fetch(`/api/music/search?${params.toString()}`, {
+          signal: controller.signal,
+        });
 
         if (!res.ok) {
           throw new Error(`Search failed (${res.status})`);
@@ -152,6 +162,7 @@ export function MusicBrowser({
         const data = await res.json();
         setResults(data.tracks ?? data.results ?? data ?? []);
       } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
         console.error("Music search error:", err);
         setError("Failed to search. Try again.");
         setResults([]);
@@ -177,6 +188,7 @@ export function MusicBrowser({
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
+      searchAbortRef.current?.abort();
     };
   }, [query, source, instrumental, genre, performSearch]);
 

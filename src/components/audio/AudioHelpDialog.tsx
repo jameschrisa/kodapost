@@ -42,7 +42,7 @@ export function AudioHelpDialog({ open, onOpenChange }: AudioHelpDialogProps) {
             <h3 className="text-sm font-semibold mb-2">What Does Audio Do?</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Adding audio transforms your carousel from a set of static images
-              into a <span className="font-medium text-foreground">Nano-Cast package</span> &mdash;
+              into a <span className="font-medium text-foreground">Nano-Cast package</span> &ndash;
               a bundle containing your images, audio track, and a manifest file.
               This package can be used to create video reels, narrated
               slideshows, or audio-visual posts on platforms that support them.
@@ -106,7 +106,7 @@ export function AudioHelpDialog({ open, onOpenChange }: AudioHelpDialogProps) {
                 <Package className="h-4 w-4 mt-0.5 shrink-0 text-purple-400" />
                 <p className="text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">Export format changes</span>{" "}
-                  &mdash; your download becomes a Nano-Cast package (ZIP with
+                  &ndash; your download becomes a Nano-Cast package (ZIP with
                   images, audio file, and manifest.json) instead of a plain
                   image ZIP.
                 </p>
@@ -115,7 +115,7 @@ export function AudioHelpDialog({ open, onOpenChange }: AudioHelpDialogProps) {
                 <Music className="h-4 w-4 mt-0.5 shrink-0 text-purple-400" />
                 <p className="text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">Auto attribution</span>{" "}
-                  &mdash; library tracks automatically append artist credit to
+                  &ndash; library tracks automatically append artist credit to
                   your caption.
                 </p>
               </div>
@@ -123,7 +123,7 @@ export function AudioHelpDialog({ open, onOpenChange }: AudioHelpDialogProps) {
                 <Scissors className="h-4 w-4 mt-0.5 shrink-0 text-purple-400" />
                 <p className="text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">Trim to fit</span>{" "}
-                  &mdash; use the trim handles to match your audio length to
+                  &ndash; use the trim handles to match your audio length to
                   your carousel scroll time.
                 </p>
               </div>
@@ -154,7 +154,7 @@ export function AudioHelpDialog({ open, onOpenChange }: AudioHelpDialogProps) {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-muted-foreground/50 mt-1">&bull;</span>
-                No audio? No problem &mdash; your export will be a standard
+                No audio? No problem &ndash; your export will be a standard
                 image-only ZIP.
               </li>
             </ul>

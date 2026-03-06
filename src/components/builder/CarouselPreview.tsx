@@ -160,13 +160,14 @@ export function CarouselPreview({
     setRetryingSlides(new Set(failedIndices));
     let successCount = 0;
 
+    // Accumulate all updates into a single slides array to avoid stale closure
+    const updatedSlides = [...project.slides];
+
     for (const idx of failedIndices) {
       try {
         const result = await regenerateSlide(project, idx);
         if (result.success) {
-          const updatedSlides = [...project.slides];
           updatedSlides[idx] = result.data;
-          onEdit({ ...project, slides: updatedSlides });
           successCount++;
         }
       } catch {
@@ -178,6 +179,11 @@ export function CarouselPreview({
           return next;
         });
       }
+    }
+
+    // Apply all successful regenerations in a single update
+    if (successCount > 0) {
+      onEdit({ ...project, slides: updatedSlides });
     }
 
     if (successCount === failedIndices.length) {
@@ -364,7 +370,9 @@ export function CarouselPreview({
 
       {/* Slide grid — read-only with drag-to-reorder */}
       <div className={cn("grid gap-4", gridColsClass)}>
-        {paginatedSlides.map((slide) => {
+        {paginatedSlides.map((slide, pageIndex) => {
+          // Use project-level index for drag operations, not slide.position
+          const projectIndex = currentPage * SLIDES_PER_PAGE + pageIndex;
           // Shared slide content renderer to avoid duplication between mobile/normal modes
           const slideContent = (
             <>
@@ -462,8 +470,8 @@ export function CarouselPreview({
             <Card
               key={slide.id}
               draggable
-              onDragStart={() => handleDragStart(slide.position)}
-              onDragEnter={() => handleDragEnter(slide.position)}
+              onDragStart={() => handleDragStart(projectIndex)}
+              onDragEnter={() => handleDragEnter(projectIndex)}
               onDragEnd={handleDragEnd}
               onDragOver={(e) => e.preventDefault()}
               className={cn(
