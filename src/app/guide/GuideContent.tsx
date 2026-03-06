@@ -67,7 +67,7 @@ export default function GuideContent() {
     text: t(`tips.${i}.text`),
   }));
 
-  const provenanceHowItWorksSteps = [0, 1, 2, 3].map((i) =>
+  const provenanceHowItWorksSteps = [0, 1, 2, 3, 4, 5].map((i) =>
     t(`creatorProvenance.howItWorks.steps.${i}`)
   );
 
@@ -244,6 +244,9 @@ export default function GuideContent() {
 
         <h2 id="creator-provenance">{t("creatorProvenance.heading")}</h2>
         <p>{t("creatorProvenance.intro")}</p>
+        <h3>{t("creatorProvenance.proofOfReal.heading")}</h3>
+        <p>{t("creatorProvenance.proofOfReal.p1")}</p>
+        <p>{t("creatorProvenance.proofOfReal.p2")}</p>
         <h3>{t("creatorProvenance.howItWorks.heading")}</h3>
         <ol>
           {provenanceHowItWorksSteps.map((step, i) => (
@@ -259,6 +262,18 @@ export default function GuideContent() {
             </li>
           ))}
         </ul>
+        <h3>{t("creatorProvenance.verificationPage.heading")}</h3>
+        <p>{t("creatorProvenance.verificationPage.p1")}</p>
+        <p>{t("creatorProvenance.verificationPage.p2")}</p>
+        <p>{t("creatorProvenance.verificationPage.p3")}</p>
+        <h3>{t("creatorProvenance.perceptualHashing.heading")}</h3>
+        <p>{t("creatorProvenance.perceptualHashing.p1")}</p>
+        <p>{t("creatorProvenance.perceptualHashing.p2")}</p>
+        <p>{t("creatorProvenance.perceptualHashing.p3")}</p>
+        <h3>{t("creatorProvenance.c2pa.heading")}</h3>
+        <p>{t("creatorProvenance.c2pa.p1")}</p>
+        <p>{t("creatorProvenance.c2pa.p2")}</p>
+        <p>{t("creatorProvenance.c2pa.p3")}</p>
         <h3>{t("creatorProvenance.verification.heading")}</h3>
         <p>{t("creatorProvenance.verification.p1")}</p>
         <p>{t("creatorProvenance.verification.p2")}</p>
