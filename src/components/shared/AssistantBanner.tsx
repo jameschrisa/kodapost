@@ -8,6 +8,8 @@ import { AutomationIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "kodapost:assistant-preference";
+const LOGIN_COUNT_KEY = "kodapost:login-count";
+const MIN_LOGINS_TO_SHOW = 3;
 
 export function AssistantBanner() {
   const [visible, setVisible] = useState(false);
@@ -16,7 +18,12 @@ export function AssistantBanner() {
   useEffect(() => {
     try {
       const preference = localStorage.getItem(STORAGE_KEY);
-      if (!preference) {
+      // Already made a choice, don't show
+      if (preference) return;
+
+      // Only show after the user has logged in at least 3 times
+      const count = parseInt(localStorage.getItem(LOGIN_COUNT_KEY) ?? "0", 10);
+      if (count >= MIN_LOGINS_TO_SHOW) {
         setVisible(true);
       }
     } catch {

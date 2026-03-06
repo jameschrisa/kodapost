@@ -407,8 +407,17 @@ export default function Home() {
   useEffect(() => {
     if (!hydrated || !authLoaded || initialAuthCheckDone.current) return;
     initialAuthCheckDone.current = true;
-    if (isSignedIn && !splashDismissed) {
-      setSplashDismissed(true);
+    if (isSignedIn) {
+      // Track login count for progressive feature disclosure (e.g. AssistantBanner)
+      try {
+        const key = "kodapost:login-count";
+        const count = parseInt(localStorage.getItem(key) ?? "0", 10);
+        localStorage.setItem(key, String(count + 1));
+      } catch { /* localStorage unavailable */ }
+
+      if (!splashDismissed) {
+        setSplashDismissed(true);
+      }
     }
   }, [hydrated, authLoaded, isSignedIn, splashDismissed]);
 

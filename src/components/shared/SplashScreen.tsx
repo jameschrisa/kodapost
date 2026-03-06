@@ -139,14 +139,15 @@ const SEGMENTS = [
 // Animation helpers
 // ---------------------------------------------------------------------------
 
-const easeOutExpo: [number, number, number, number] = [0.22, 1, 0.36, 1];
+// Kaleida-inspired easing: smooth, deliberate entrances
+const smoothCubic: [number, number, number, number] = [0.22, 0.31, 0, 1];
 
 const sectionReveal = {
   hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, ease: easeOutExpo },
+    transition: { duration: 0.9, ease: smoothCubic },
   },
 };
 
@@ -154,7 +155,7 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.075, delayChildren: 0.1 },
   },
 };
 
@@ -163,26 +164,26 @@ const staggerChild = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: easeOutExpo },
+    transition: { duration: 0.9, ease: smoothCubic },
   },
 };
 
-// Word-by-word reveal for hero headline
-const wordRevealContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.3 },
-  },
-};
-
-const wordReveal = {
-  hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
+// Smooth fade-up for hero headline
+const heroFade = {
+  hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.4, ease: easeOutExpo },
+    transition: { duration: 1.2, ease: smoothCubic },
+  },
+};
+
+const heroFadeDelayed = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 1.0, delay: 0.15, ease: smoothCubic },
   },
 };
 
@@ -244,7 +245,7 @@ function WhoItsForSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25, ease: easeOutExpo }}
+            transition={{ duration: 0.25, ease: smoothCubic }}
             className="grid md:grid-cols-2 gap-10 items-start"
           >
             {/* Left — headline + description + image */}
@@ -684,41 +685,27 @@ export function SplashScreen({
                 <KodaPostIcon className="h-8 w-8 text-white" />
               </motion.div>
 
-              {/* Brand — word-by-word reveal */}
+              {/* Brand — smooth fade-up */}
               <motion.h1
-                variants={wordRevealContainer}
+                variants={heroFade}
                 initial="hidden"
                 animate="visible"
                 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1]"
               >
-                {t("hero.title.line1").split(" ").map((word: string, i: number) => (
-                  <motion.span key={i} variants={wordReveal} className="inline-block mr-[0.25em]">
-                    {word}
-                  </motion.span>
-                ))}
-                <br className="hidden sm:block" />
-                <span className="whitespace-nowrap">
-                  <motion.span variants={wordReveal} className="inline-block mr-[0.25em]">
-                    {t("hero.title.line2")}
-                  </motion.span>
-                  <motion.span variants={wordReveal} className="inline-block mr-[0.25em] bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
-                    {t("hero.title.gradient")}
-                  </motion.span>
+                {t("hero.title.line1")}
+                <br className="hidden sm:block" />{" "}
+                {t("hero.title.line2")}{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
+                  {t("hero.title.gradient")}
                 </span>{" "}
-                <span className="whitespace-nowrap">
-                  {t("hero.title.line3").split(" ").map((word: string, i: number) => (
-                    <motion.span key={i} variants={wordReveal} className="inline-block mr-[0.25em]">
-                      {word}
-                    </motion.span>
-                  ))}
-                </span>
+                {t("hero.title.line3")}
               </motion.h1>
 
               {/* Tagline */}
               <motion.p
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.6, ease: "easeOut" }}
+                variants={heroFadeDelayed}
+                initial="hidden"
+                animate="visible"
                 className="max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
               >
                 {t("hero.description")}
@@ -726,9 +713,9 @@ export function SplashScreen({
 
               {/* Quote — hidden on mobile to keep CTAs above fold */}
               <motion.div
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.0, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.4, ease: smoothCubic }}
                 className="max-w-md hidden sm:block"
               >
                 <p
@@ -746,9 +733,9 @@ export function SplashScreen({
 
               {/* CTAs */}
               <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 1.4, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.5, ease: smoothCubic }}
                 className="mt-4 flex flex-col items-center gap-5"
               >
                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto px-4 sm:px-0">
