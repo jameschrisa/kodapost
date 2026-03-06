@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
   let body: {
     postId?: string;
     imageHashes: string[];
+    perceptualHashes?: string[];
     creatorName: string;
     slideCount: number;
     platform?: string;
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { postId, imageHashes, creatorName, slideCount, platform } = body;
+  const { postId, imageHashes, perceptualHashes, creatorName, slideCount, platform } = body;
 
   if (!Array.isArray(imageHashes) || imageHashes.length === 0) {
     return NextResponse.json(
@@ -124,9 +125,29 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Validate perceptual hash format (16-char hex dHash)
+  const phashPattern = /^[a-f0-9]{16}$/;
+  if (perceptualHashes) {
+    if (!Array.isArray(perceptualHashes)) {
+      return NextResponse.json(
+        { error: "perceptualHashes must be an array" },
+        { status: 400 }
+      );
+    }
+    for (const phash of perceptualHashes) {
+      if (!phashPattern.test(phash)) {
+        return NextResponse.json(
+          { error: `Invalid perceptual hash format: ${phash}` },
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   const now = new Date().toISOString();
   const id = `prov_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const hashString = imageHashes.join(",");
+  const phashString = perceptualHashes?.length ? perceptualHashes.join(",") : null;
 
   try {
     const db = getDb();
@@ -162,6 +183,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       postId: postId ?? null,
       imageHashes: hashString,
+      perceptualHashes: phashString,
       creatorName,
       creatorEmail: user.email,
       slideCount,

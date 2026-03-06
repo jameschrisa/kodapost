@@ -21,6 +21,7 @@ import { handleAPIError, parseDataUri } from "@/lib/utils";
 import { applyCameraFilters } from "@/lib/camera-filters-sharp";
 import {
   computeImageHash,
+  computePerceptualHash,
   generateProvenanceExif,
   generateWatermarkSVG,
   applyLogoWatermark,
@@ -660,6 +661,7 @@ interface CompositeResult {
   imageBase64: string;
   format: "jpeg" | "png";
   imageHash?: string;
+  perceptualHash?: string;
 }
 
 const PLATFORM_SPEC_MAP: Record<string, keyof typeof PLATFORM_IMAGE_SPECS> = {
@@ -845,10 +847,12 @@ export async function compositeSlideImages(
             outputBuffer = await pipeline.jpeg({ quality: spec.quality }).toBuffer();
           }
 
-          // 6. Embed provenance EXIF metadata and compute hash
+          // 6. Embed provenance EXIF metadata and compute hashes
           let imageHash: string | undefined;
+          let perceptualHash: string | undefined;
           if (provenanceConfig) {
             imageHash = computeImageHash(outputBuffer);
+            perceptualHash = await computePerceptualHash(outputBuffer);
             const createdAt = new Date().toISOString();
             const exifData = generateProvenanceExif(
               provenanceConfig.creatorName,
@@ -875,6 +879,7 @@ export async function compositeSlideImages(
             imageBase64: outputBuffer.toString("base64"),
             format,
             imageHash,
+            perceptualHash,
           });
         } catch (err) {
           console.error(

@@ -20,6 +20,7 @@ interface ProvenanceRecordResponse {
 
 interface RegisterProvenanceButtonProps {
   imageHashes: string[];
+  perceptualHashes?: string[];
   creatorName: string;
   slideCount: number;
   postId?: string;
@@ -28,6 +29,7 @@ interface RegisterProvenanceButtonProps {
 
 export default function RegisterProvenanceButton({
   imageHashes,
+  perceptualHashes,
   creatorName,
   slideCount,
   postId,
@@ -47,6 +49,7 @@ export default function RegisterProvenanceButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           imageHashes,
+          perceptualHashes,
           creatorName,
           slideCount,
           postId,

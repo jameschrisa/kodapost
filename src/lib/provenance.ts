@@ -72,6 +72,57 @@ export function computeImageHash(buffer: Buffer): string {
 }
 
 /**
+ * Computes a perceptual hash (dHash) of an image buffer using Sharp.
+ * Produces a 64-bit hash as a 16-character hex string.
+ * Survives resizing, mild compression, and format conversion.
+ *
+ * Algorithm: difference hash (dHash)
+ *   1. Resize to 9x8 grayscale
+ *   2. Compare each pixel to its right neighbor
+ *   3. Encode differences as bits
+ */
+export async function computePerceptualHash(buffer: Buffer): Promise<string> {
+  const { data } = await sharp(buffer)
+    .resize(9, 8, { fit: "fill" })
+    .grayscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  let hash = BigInt(0);
+  const one = BigInt(1);
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
+      const left = data[y * 9 + x];
+      const right = data[y * 9 + x + 1];
+      if (left > right) {
+        hash |= one << BigInt(y * 8 + x);
+      }
+    }
+  }
+
+  return hash.toString(16).padStart(16, "0");
+}
+
+/**
+ * Computes the Hamming distance between two perceptual hashes.
+ * Returns the number of differing bits (0 = identical, 64 = completely different).
+ * A distance of <= 10 typically indicates the same image after transformation.
+ */
+export function hammingDistance(hash1: string, hash2: string): number {
+  const a = BigInt("0x" + hash1);
+  const b = BigInt("0x" + hash2);
+  let xor = a ^ b;
+  let distance = 0;
+  const one = BigInt(1);
+  const zero = BigInt(0);
+  while (xor > zero) {
+    distance += Number(xor & one);
+    xor >>= one;
+  }
+  return distance;
+}
+
+/**
  * Maps position strings to Sharp gravity values for logo placement.
  */
 const POSITION_TO_GRAVITY: Record<string, string> = {

@@ -156,6 +156,8 @@ export const provenanceRecords = sqliteTable("provenance_records", {
   postId: text("post_id").references(() => posts.id),
   /** Comma-separated SHA-256 hashes of slide images */
   imageHashes: text("image_hashes").notNull(),
+  /** Comma-separated perceptual hashes (dHash) for fuzzy matching after platform recompression */
+  perceptualHashes: text("perceptual_hashes"),
   /** Creator name in the signed claim */
   creatorName: text("creator_name").notNull(),
   /** Creator email (for records, not exposed to clients) */

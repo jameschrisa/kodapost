@@ -151,6 +151,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   const [watermarkText, setWatermarkText] = useState("");
   const [connectionError, setConnectionError] = useState(false);
   const [provenanceHashes, setProvenanceHashes] = useState<string[]>([]);
+  const [provenancePerceptualHashes, setProvenancePerceptualHashes] = useState<string[]>([]);
   const [provenancePlatform, setProvenancePlatform] = useState<string | undefined>();
   const [provenancePostId, setProvenancePostId] = useState<string | undefined>();
   const cancelExportRef = useRef(false);
@@ -307,8 +308,12 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         const hashes = result.data
           .filter((item) => item.imageHash)
           .map((item) => item.imageHash as string);
+        const pHashes = result.data
+          .filter((item) => item.perceptualHash)
+          .map((item) => item.perceptualHash as string);
         if (hashes.length > 0) {
           setProvenanceHashes(hashes);
+          setProvenancePerceptualHashes(pHashes);
           setProvenancePlatform(platform);
           setProvenancePostId(publishData.postId ?? publishData.id);
         }
@@ -503,8 +508,12 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       const hashes = result.data
         .filter((item) => item.imageHash)
         .map((item) => item.imageHash as string);
+      const pHashes = result.data
+        .filter((item) => item.perceptualHash)
+        .map((item) => item.perceptualHash as string);
       if (hashes.length > 0) {
         setProvenanceHashes(hashes);
+        setProvenancePerceptualHashes(pHashes);
         setProvenancePlatform(platforms[0]);
       }
 
@@ -1443,6 +1452,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             <div className="flex items-center gap-2 pt-2 border-t border-border/50">
               <RegisterProvenanceButton
                 imageHashes={provenanceHashes}
+                perceptualHashes={provenancePerceptualHashes}
                 creatorName={creatorName}
                 slideCount={readySlides.length}
                 postId={provenancePostId}
