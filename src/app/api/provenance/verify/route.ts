@@ -127,11 +127,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(result);
     }
 
-    const result: ProvenanceVerification & {
-      publicKey?: string;
-      confidence?: string;
-      matchDistance?: number;
-    } = {
+    const result: ProvenanceVerification = {
       verified: true,
       creatorName: record.creatorName,
       createdAt: record.createdAt,

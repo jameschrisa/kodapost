@@ -266,6 +266,7 @@ export interface ProvenanceRecord {
   userId: string;
   postId: string | null;
   imageHashes: string;
+  perceptualHashes: string | null;
   creatorName: string;
   slideCount: number;
   platform: string | null;
@@ -283,6 +284,12 @@ export interface ProvenanceVerification {
   createdAt?: string;
   platform?: string;
   signature?: string;
+  /** Match confidence: "exact" for SHA-256 match, "visual_match" for perceptual hash */
+  confidence?: "exact" | "visual_match";
+  /** Hamming distance when confidence is "visual_match" (0-64, lower = more similar) */
+  matchDistance?: number;
+  /** App's public key in PEM format (only when ?publickey=true) */
+  publicKey?: string;
 }
 
 // -----------------------------------------------------------------------------

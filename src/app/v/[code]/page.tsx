@@ -9,6 +9,11 @@ interface PageProps {
 }
 
 async function findRecord(code: string) {
+  // Validate: must be hex characters only, minimum 6 chars
+  if (!/^[a-f0-9]{6,64}$/.test(code)) {
+    return null;
+  }
+
   const db = getDb();
 
   // Try exact prefix match on SHA-256 hashes first
@@ -20,8 +25,8 @@ async function findRecord(code: string) {
 
   if (records.length > 0) return records[0];
 
-  // Try perceptual hash prefix match
-  if (/^[a-f0-9]{8,16}$/.test(code)) {
+  // Try perceptual hash prefix match (only for 8-16 char codes)
+  if (code.length >= 8 && code.length <= 16) {
     const candidates = await db
       .select()
       .from(provenanceRecords)
@@ -77,13 +82,13 @@ export default async function VerifyPage({ params }: PageProps) {
       }}
     >
       {/* Film sprocket holes - left */}
-      <div className="hidden sm:flex fixed left-4 top-0 bottom-0 flex-col justify-center gap-3 opacity-10">
+      <div className="hidden sm:flex fixed left-4 top-0 bottom-0 flex-col justify-center gap-3 opacity-10" aria-hidden="true">
         {Array.from({ length: 16 }).map((_, i) => (
           <div key={i} className="w-1 h-2 rounded-sm bg-white" />
         ))}
       </div>
       {/* Film sprocket holes - right */}
-      <div className="hidden sm:flex fixed right-4 top-0 bottom-0 flex-col justify-center gap-3 opacity-10">
+      <div className="hidden sm:flex fixed right-4 top-0 bottom-0 flex-col justify-center gap-3 opacity-10" aria-hidden="true">
         {Array.from({ length: 16 }).map((_, i) => (
           <div key={i} className="w-1 h-2 rounded-sm bg-white" />
         ))}
@@ -157,7 +162,7 @@ function VerifiedContent({
               <circle cx="5" cy="5" r="4" />
               <circle cx="5" cy="5" r="1.8" />
             </svg>
-            <span className="text-sm text-white/90 font-medium">{record.creatorName}</span>
+            <span className="text-sm text-white/90 font-medium break-all">{record.creatorName}</span>
           </div>
         </DetailRow>
 

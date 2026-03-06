@@ -9,45 +9,51 @@
  * PEM-encoded certificate chain and private key.
  */
 
-// Dynamic import to avoid sharp version conflicts with c2pa-node's bundled sharp
+// Dynamic import to avoid sharp version conflicts with c2pa-node's bundled sharp.
+// Promise-based caching prevents race conditions on concurrent requests.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let c2paModule: any = null;
+let c2paModulePromise: Promise<any> | null = null;
 
-async function getC2paModule() {
-  if (!c2paModule) {
-    c2paModule = await import("c2pa-node");
+function getC2paModule() {
+  if (!c2paModulePromise) {
+    c2paModulePromise = import("c2pa-node");
   }
-  return c2paModule;
+  return c2paModulePromise;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let cachedSigner: any = null;
+let signerPromise: Promise<any> | null = null;
 
 /**
  * Gets or creates the C2PA signer.
  * Uses env vars C2PA_CERTIFICATE and C2PA_PRIVATE_KEY if available,
- * falls back to the built-in test signer.
+ * falls back to the built-in test signer (with TSA disabled to avoid
+ * outbound HTTP calls in serverless environments).
  */
-async function getSigner() {
-  if (cachedSigner) return cachedSigner;
+function getSigner() {
+  if (!signerPromise) {
+    signerPromise = (async () => {
+      const { createTestSigner, SigningAlgorithm } = await getC2paModule();
 
-  const { createTestSigner, SigningAlgorithm } = await getC2paModule();
+      const certBase64 = process.env.C2PA_CERTIFICATE;
+      const keyBase64 = process.env.C2PA_PRIVATE_KEY;
 
-  const certBase64 = process.env.C2PA_CERTIFICATE;
-  const keyBase64 = process.env.C2PA_PRIVATE_KEY;
+      if (certBase64 && keyBase64) {
+        return {
+          type: "local" as const,
+          certificate: Buffer.from(certBase64, "base64"),
+          privateKey: Buffer.from(keyBase64, "base64"),
+          algorithm: SigningAlgorithm.ES256,
+        };
+      }
 
-  if (certBase64 && keyBase64) {
-    cachedSigner = {
-      type: "local" as const,
-      certificate: Buffer.from(certBase64, "base64"),
-      privateKey: Buffer.from(keyBase64, "base64"),
-      algorithm: SigningAlgorithm.ES256,
-    };
-  } else {
-    cachedSigner = await createTestSigner();
+      // Use test signer but override tsaUrl to avoid outbound HTTP calls
+      const testSigner = await createTestSigner();
+      testSigner.tsaUrl = undefined;
+      return testSigner;
+    })();
   }
-
-  return cachedSigner;
+  return signerPromise;
 }
 
 /**
@@ -139,7 +145,6 @@ export async function readC2PAManifest(
   mimeType: "image/jpeg" | "image/png"
 ) {
   const { createC2pa } = await getC2paModule();
-  const signer = await getSigner();
-  const c2pa = createC2pa({ signer });
+  const c2pa = createC2pa();
   return c2pa.read({ buffer: imageBuffer, mimeType });
 }
