@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Fingerprint,
   ShieldCheck,
@@ -10,8 +11,17 @@ import {
   ArrowRight,
   CheckCircle2,
   ExternalLink,
+  Menu,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Pricing", href: "/billing" },
+  { label: "Support", href: "/support" },
+];
 
 /* ── Animation helpers ── */
 
@@ -117,8 +127,94 @@ const WHEN_SCENARIOS = [
 /* ── Page ── */
 
 export default function HumanMadePage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="overflow-hidden">
+      {/* ═══ NAV ═══ */}
+      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+          <Link href="/" className="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" strokeWidth="1.8">
+              <defs>
+                <linearGradient id="brand-hm" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f97316" />
+                  <stop offset="100%" stopColor="#a855f7" />
+                </linearGradient>
+              </defs>
+              <rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="url(#brand-hm)" />
+              <line x1="8" y1="16" x2="16" y2="8" stroke="url(#brand-hm)" />
+              <line x1="10.5" y1="18" x2="18" y2="10.5" stroke="url(#brand-hm)" />
+            </svg>
+            <span className="text-base font-bold tracking-tight text-white">KodaPost</span>
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <button
+            type="button"
+            className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+          <div className="hidden md:block">
+            <Button
+              size="sm"
+              asChild
+              className="rounded-xl bg-orange-500 hover:bg-orange-400 px-5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200"
+            >
+              <Link href="/sign-up">Get Started</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="sticky top-[57px] z-40 overflow-hidden md:hidden border-b border-white/[0.06] bg-zinc-950/95 backdrop-blur-xl"
+          >
+            <nav className="max-w-5xl mx-auto flex flex-col gap-1 px-6 py-4">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block rounded-lg px-3 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link
+                href="/sign-up"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-2 block rounded-xl bg-orange-500 px-3 py-3 text-center text-sm font-bold text-white"
+              >
+                Get Started
+              </Link>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ═══ HERO ═══ */}
       <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden px-6 py-28 sm:py-36">
         <div
