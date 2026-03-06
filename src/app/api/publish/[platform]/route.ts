@@ -16,6 +16,8 @@ import { getDb } from "@/lib/db/client";
 import { posts } from "@/lib/db/schema";
 import type { OAuthPlatform } from "@/lib/constants";
 
+export const maxDuration = 60;
+
 const VALID_PLATFORMS = ["instagram", "tiktok", "linkedin", "youtube", "youtube_shorts", "reddit", "x"] as const;
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 

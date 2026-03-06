@@ -25,16 +25,19 @@ const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const inter = Inter({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-inter",
 });
 
 const montserrat = Montserrat({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-montserrat",
 });
 
 const poppins = Poppins({
   subsets: ["latin"],
+  display: "swap",
   weight: ["400", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-poppins",
@@ -42,11 +45,13 @@ const poppins = Poppins({
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-playfair",
 });
 
 const merriweather = Merriweather({
   subsets: ["latin"],
+  display: "swap",
   weight: ["400", "700"],
   style: ["normal", "italic"],
   variable: "--font-merriweather",
@@ -54,11 +59,13 @@ const merriweather = Merriweather({
 
 const lora = Lora({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-lora",
 });
 
 const bodoniModa = Bodoni_Moda({
   subsets: ["latin"],
+  display: "swap",
   weight: ["400", "700"],
   style: ["normal", "italic"],
   variable: "--font-bodoni-moda",
@@ -67,17 +74,20 @@ const bodoniModa = Bodoni_Moda({
 
 const cinzel = Cinzel({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-cinzel",
 });
 
 const abrilFatface = Abril_Fatface({
   subsets: ["latin"],
+  display: "swap",
   weight: ["400"],
   variable: "--font-abril-fatface",
 });
 
 const dmSerifDisplay = DM_Serif_Display({
   subsets: ["latin"],
+  display: "swap",
   weight: ["400"],
   style: ["normal", "italic"],
   variable: "--font-dm-serif-display",
@@ -85,24 +95,23 @@ const dmSerifDisplay = DM_Serif_Display({
 
 const prata = Prata({
   subsets: ["latin"],
+  display: "swap",
   weight: ["400"],
   variable: "--font-prata",
 });
 
 const syne = Syne({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-syne",
 });
 
 const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
+  display: "swap",
   weight: ["400"],
   variable: "--font-bebas-neue",
 });
-
-// The root layout wraps ClerkProvider (when configured) which requires
-// runtime context, so we always use dynamic rendering.
-export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   viewportFit: "cover",
@@ -154,6 +163,14 @@ export default function RootLayout({
 
   // When Clerk is configured, ClerkProvider wraps the entire tree (required
   // by Clerk — must be the outermost provider above any useAuth/useUser calls).
+  const swScript = (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))`,
+      }}
+    />
+  );
+
   if (clerkPubKey) {
     return (
       <ClerkProvider publishableKey={clerkPubKey}>
@@ -166,6 +183,7 @@ export default function RootLayout({
                 <Toaster />
               </LanguageProvider>
             </ThemeProvider>
+            {swScript}
           </body>
         </html>
       </ClerkProvider>
@@ -181,6 +199,7 @@ export default function RootLayout({
             <Toaster />
           </LanguageProvider>
         </ThemeProvider>
+        {swScript}
       </body>
     </html>
   );

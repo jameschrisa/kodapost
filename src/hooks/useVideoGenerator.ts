@@ -56,6 +56,7 @@ export interface UseVideoGeneratorReturn {
   progress: number;
   stage: VideoGenStage;
   stageLabel: string;
+  errorMessage: string | null;
   cancel: () => void;
   isGenerating: boolean;
 }
@@ -123,12 +124,14 @@ async function getFFmpeg(
 export function useVideoGenerator(): UseVideoGeneratorReturn {
   const [stage, setStage] = useState<VideoGenStage>("idle");
   const [progress, setProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();
     setStage("idle");
     setProgress(0);
+    setErrorMessage(null);
   }, []);
 
   const generateVideo = useCallback(
@@ -138,12 +141,14 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
 
       const abortController = new AbortController();
       abortRef.current = abortController;
+      setErrorMessage(null);
 
       const readySlides = project.slides.filter(
         (s: CarouselSlide) => s.status === "ready"
       );
       if (readySlides.length === 0) {
         setStage("error");
+        setErrorMessage("No ready slides found. Generate slides first.");
         return null;
       }
 
@@ -366,8 +371,10 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         return outputBlob;
       } catch (err) {
         if (abortController.signal.aborted) return null;
-        console.error("[KodaPost] Video generation failed:", err);
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        console.error("[KodaPost] Video generation failed:", msg, err);
         setStage("error");
+        setErrorMessage(msg);
         return null;
       }
     },
@@ -379,6 +386,7 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
     progress,
     stage,
     stageLabel: STAGE_LABELS[stage],
+    errorMessage,
     cancel,
     isGenerating: stage !== "idle" && stage !== "done" && stage !== "error",
   };

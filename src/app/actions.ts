@@ -119,7 +119,7 @@ function getAnthropicClient(): Anthropic {
 
 type ActionResult<T> =
   | { success: true; data: T; warnings?: string[] }
-  | { success: false; error: string };
+  | { success: false; error: string; warnings?: string[] };
 
 // -----------------------------------------------------------------------------
 // Image Analysis
@@ -672,6 +672,7 @@ const PLATFORM_SPEC_MAP: Record<string, keyof typeof PLATFORM_IMAGE_SPECS> = {
   youtube: "youtube_community",
   youtube_shorts: "youtube_shorts",
   reddit: "reddit_gallery",
+  x: "x_post",
 };
 
 /**
@@ -725,8 +726,15 @@ export async function compositeSlideImages(
               const resp = await fetch(slide.imageUrl);
               const arrayBuf = await resp.arrayBuffer();
               imageBuffer = Buffer.from(arrayBuf);
+            } else if (slide.imageUrl.startsWith("blob:")) {
+              // Blob URLs are client-side only and cannot be resolved server-side.
+              // This means the slide image was not converted to a data URI before export.
+              console.warn(`[Export] Skipping slide ${i + 1}: blob URL cannot be resolved server-side`);
+              warnings.push(`Slide ${i + 1} has a temporary image URL. Please re-upload or regenerate.`);
+              continue;
             } else {
-              continue; // Skip slides with no usable image source
+              console.warn(`[Export] Skipping slide ${i + 1}: unrecognized URL scheme`);
+              continue;
             }
 
             // 2a. Apply crop if set, then resize to the platform dimensions
@@ -911,9 +919,12 @@ export async function compositeSlideImages(
     }
 
     if (results.length === 0) {
+      const platformList = platforms.join(", ");
+      const slideCount = slides.filter((s) => s.status === "ready").length;
       return {
         success: false,
-        error: "No images could be composited. Check that slides have valid images.",
+        error: `No images could be composited for ${platformList}. ${slideCount} ready slide(s) found but none had valid image data. Try re-uploading your images.`,
+        warnings: warnings.length > 0 ? warnings : undefined,
       };
     }
 

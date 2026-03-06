@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import Anthropic from "@anthropic-ai/sdk";
 
+export const maxDuration = 30;
+
 /* ------------------------------------------------------------------ */
 /*  Configuration                                                      */
 /* ------------------------------------------------------------------ */
@@ -24,15 +26,29 @@ function escapeHtml(str: string): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Simple rate limiting (in-memory, per-IP, resets on cold start)     */
+/*  Rate limiting (in-memory with size cap and auto-cleanup)           */
+/*  Note: resets on serverless cold start, but with the size cap and   */
+/*  cleanup this is safe against memory leaks. For production scale,   */
+/*  consider migrating to Redis (Upstash) or Vercel KV.               */
 /* ------------------------------------------------------------------ */
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
 const RATE_LIMIT_MAX = 5; // 5 submissions per hour per IP
+const RATE_LIMIT_MAX_ENTRIES = 10_000; // Cap map size to prevent memory leak
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
+
+  // Periodic cleanup: evict expired entries when map gets large
+  if (rateLimitMap.size > RATE_LIMIT_MAX_ENTRIES) {
+    rateLimitMap.forEach((val, key) => {
+      if (now > val.resetAt) rateLimitMap.delete(key);
+    });
+    // If still too large after cleanup, reject (possible attack)
+    if (rateLimitMap.size > RATE_LIMIT_MAX_ENTRIES) return false;
+  }
+
   const entry = rateLimitMap.get(ip);
 
   if (!entry || now > entry.resetAt) {
@@ -46,6 +62,16 @@ function checkRateLimit(ip: string): boolean {
 
   entry.count++;
   return true;
+}
+
+/** Extract client IP from Vercel/proxy headers with basic validation */
+function getClientIp(request: NextRequest): string {
+  // x-real-ip is set by Vercel and is harder to spoof than x-forwarded-for
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return "unknown";
 }
 
 /* ------------------------------------------------------------------ */
@@ -74,10 +100,7 @@ Key facts:
 /* ------------------------------------------------------------------ */
 
 export async function POST(request: NextRequest) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown";
+  const ip = getClientIp(request);
 
   let body: Record<string, string>;
   try {

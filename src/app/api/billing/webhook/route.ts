@@ -4,6 +4,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import type { PlanTier } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 /**
  * POST /api/billing/webhook
@@ -34,13 +35,37 @@ function mapPriceToTier(priceId: string): PlanTier {
   return "trial";
 }
 
-async function findClerkUserByStripeCustomer(customerId: string): Promise<string | null> {
+/**
+ * Find the Clerk user associated with a Stripe customer ID.
+ *
+ * Strategy (fast path first):
+ *   1. Ask Stripe for the customer's metadata.clerkUserId (set at checkout)
+ *   2. If missing, search Clerk users with a small batch (graceful fallback)
+ *
+ * The checkout flow stores clerkUserId in Stripe customer metadata, so path 1
+ * is O(1) and avoids iterating through all Clerk users.
+ */
+async function findClerkUserByStripeCustomer(
+  customerId: string,
+  stripe: Stripe
+): Promise<string | null> {
+  try {
+    // Fast path: look up clerkUserId stored on the Stripe customer object
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!customer.deleted) {
+      const clerkUserId = customer.metadata?.clerkUserId;
+      if (clerkUserId) return clerkUserId;
+    }
+  } catch {
+    // Stripe lookup failed — fall through to Clerk search
+  }
+
+  // Fallback: search Clerk users (handles customers created before this fix)
   try {
     const client = await clerkClient();
     let offset = 0;
-    const limit = 500;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+    const limit = 100;
+    for (let page = 0; page < 20; page++) {
       const { data: users, totalCount } = await client.users.getUserList({ limit, offset });
       const match = users.find((u) => {
         const priv = u.privateMetadata as { stripeCustomerId?: string };
@@ -150,7 +175,7 @@ export async function POST(request: NextRequest) {
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
-        const clerkUserId = await findClerkUserByStripeCustomer(customerId);
+        const clerkUserId = await findClerkUserByStripeCustomer(customerId, stripe);
         if (!clerkUserId) break;
 
         const priceId = subscription.items.data[0]?.price.id ?? "";
@@ -171,7 +196,7 @@ export async function POST(request: NextRequest) {
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
-        const clerkUserId = await findClerkUserByStripeCustomer(customerId);
+        const clerkUserId = await findClerkUserByStripeCustomer(customerId, stripe);
         if (!clerkUserId) break;
 
         // Revert to trial, clear subscription fields

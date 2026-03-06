@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 /**
  * GET /api/billing/status

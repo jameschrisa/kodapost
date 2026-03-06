@@ -504,6 +504,8 @@ export interface BrandWatermarkSettings {
   scale: number;
   /** Creator/brand name for text watermark and EXIF */
   creatorName: string;
+  /** Custom watermark text (default: "Made with KodaPost") */
+  watermarkText?: string;
 }
 
 /** User-level settings persisted across sessions */
