@@ -281,8 +281,13 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       const allData: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
       const allWarnings: string[] = [];
 
-      for (let batchStart = 0; batchStart < readySlides.length; batchStart += BATCH_SIZE) {
-        const batch = readySlides.slice(batchStart, batchStart + BATCH_SIZE);
+      // Enforce per-platform max carousel images client-side
+      const rules = PLATFORM_RULES[platform as PlatformRulesKey];
+      const maxImages = rules?.maxCarouselImages ?? readySlides.length;
+      const platformSlides = readySlides.slice(0, maxImages);
+
+      for (let batchStart = 0; batchStart < platformSlides.length; batchStart += BATCH_SIZE) {
+        const batch = platformSlides.slice(batchStart, batchStart + BATCH_SIZE);
         const batchResult = await compositeSlideImages(batch, [platform], project.filterConfig, provenanceConfig);
 
         if (!batchResult) {
@@ -403,33 +408,46 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             logoScale: brandWatermark?.scale ?? 0.15,
           } as const
         : undefined;
-      // Batch compositing: process 2 slides per server call to stay within
-      // Vercel's 6MB response body limit for serverless functions.
+      // Batch compositing: process 2 slides per platform per server call.
+      // Iterate per-platform to stay within Vercel's 6MB response limit
+      // (2 slides × 1 platform ≈ 0.5-1.5MB, well under the limit).
       const BATCH_SIZE = 2;
       const allResults: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
       const allWarnings: string[] = [];
 
-      for (let batchStart = 0; batchStart < readySlides.length; batchStart += BATCH_SIZE) {
+      for (const platform of platforms) {
         if (cancelExportRef.current) return;
 
-        const batch = readySlides.slice(batchStart, batchStart + BATCH_SIZE);
-        const result = await compositeSlideImages(batch, platforms, project.filterConfig, provenanceConfig);
-
-        if (!result) {
-          toast.error("Export failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
-          return;
-        }
-        if (!result.success) {
-          toast.error("Export failed", { description: result.error });
-          return;
+        // Enforce per-platform max carousel images client-side
+        const rules = PLATFORM_RULES[platform as PlatformRulesKey];
+        const maxImages = rules?.maxCarouselImages ?? readySlides.length;
+        const platformSlides = readySlides.slice(0, maxImages);
+        if (platformSlides.length < readySlides.length) {
+          allWarnings.push(`${platform}: limited to ${maxImages} images per platform rules`);
         }
 
-        // Remap slideIndex to the global index
-        for (const item of result.data) {
-          allResults.push({ ...item, slideIndex: batchStart + item.slideIndex });
-        }
-        if (result.warnings?.length) {
-          allWarnings.push(...result.warnings);
+        for (let batchStart = 0; batchStart < platformSlides.length; batchStart += BATCH_SIZE) {
+          if (cancelExportRef.current) return;
+
+          const batch = platformSlides.slice(batchStart, batchStart + BATCH_SIZE);
+          const batchResult = await compositeSlideImages(batch, [platform], project.filterConfig, provenanceConfig);
+
+          if (!batchResult) {
+            toast.error("Export failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
+            return;
+          }
+          if (!batchResult.success) {
+            toast.error("Export failed", { description: batchResult.error });
+            return;
+          }
+
+          // Remap slideIndex to the global index
+          for (const item of batchResult.data) {
+            allResults.push({ ...item, slideIndex: batchStart + item.slideIndex });
+          }
+          if (batchResult.warnings?.length) {
+            allWarnings.push(...batchResult.warnings);
+          }
         }
       }
 

@@ -233,7 +233,9 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         setStage("rendering");
         setProgress(0);
 
-        const slideOverrides = readySlides.map((s) => s.durationOverride);
+        // Align duration overrides with successfully composited slides
+        // (some slides may have been skipped by the server due to missing images)
+        const slideOverrides = sortedResults.map((r) => readySlides[r.slideIndex]?.durationOverride);
         const timing = calculateVideoTiming(
           slideImages.length,
           project.audioClip,
