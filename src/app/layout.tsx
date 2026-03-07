@@ -113,6 +113,10 @@ const bebasNeue = Bebas_Neue({
   variable: "--font-bebas-neue",
 });
 
+// Allow server actions (generation, compositing) up to 60s on Vercel Pro.
+// Without this, the default 10s timeout causes silent failures for large carousels.
+export const maxDuration = 60;
+
 export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: [

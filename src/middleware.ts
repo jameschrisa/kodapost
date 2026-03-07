@@ -37,7 +37,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/v1(.*)",
   "/api/auth(.*)",
   "/api/media(.*)",
-  "/api/publish(.*)",
+  // "/api/publish(.*)", — removed: publish routes have internal auth but should also be middleware-guarded
   "/api/telegram(.*)",
   "/api/preview(.*)",
   "/api/billing/webhook",
@@ -52,10 +52,17 @@ const isPublicRoute = createRouteMatcher([
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 if (!isClerkEnabled) {
-  console.warn(
-    "[Security] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set. " +
-    "All authentication is DISABLED. This should only occur in development."
-  );
+  if (process.env.NODE_ENV === "production") {
+    console.error(
+      "[FATAL] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set in production. " +
+      "All authentication is DISABLED. This is a critical security issue."
+    );
+  } else {
+    console.warn(
+      "[Security] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set. " +
+      "All authentication is DISABLED. This should only occur in development."
+    );
+  }
 }
 
 const clerkHandler = clerkMiddleware(async (auth, request) => {
@@ -69,6 +76,15 @@ export default function middleware(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (clerkHandler as any)(request);
   }
+
+  // In production without Clerk, block non-public routes as a safety net
+  if (process.env.NODE_ENV === "production" && !isPublicRoute(request)) {
+    return NextResponse.json(
+      { error: "Authentication is not configured. Contact the administrator." },
+      { status: 503 }
+    );
+  }
+
   return NextResponse.next();
 }
 

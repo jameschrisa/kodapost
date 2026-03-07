@@ -915,6 +915,12 @@ export default function Home() {
   const handleSwitchDraft = useCallback(async (targetDraftId: string) => {
     if (targetDraftId === activeDraftId) return;
 
+    // Cancel any pending auto-save to prevent writing to the wrong draft
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+
     const name = project.projectName || loadProjectName() || "Untitled Project";
     const result = await switchDraft(
       activeDraftId,
@@ -962,17 +968,26 @@ export default function Home() {
     setDraftList(drafts);
 
     if (draftId === activeDraftId) {
+      // Cancel pending auto-save for the deleted draft
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+
       // Deleted the active draft — load next available or start fresh
       const remaining = drafts.filter((d) => d.id !== draftId);
       if (remaining.length > 0) {
         const next = remaining[0];
-        const loaded = await loadDraft(next.id);
-        if (loaded) {
-          setProject(loaded.project);
+        // Use switchDraft to properly restore images and audio
+        const result = await switchDraft(null, project, step, "", next.id);
+        if (result.success) {
+          const loadedName = result.name || "Untitled Project";
+          setProject({ ...result.project!, projectName: loadedName });
           setActiveDraftId(next.id);
-          setStep(loaded.step as Step);
+          saveProjectName(loadedName);
+          setStep(result.step as Step);
           toast.info("Draft deleted", {
-            description: `Switched to "${next.name || "Untitled"}".`,
+            description: `Switched to "${loadedName}".`,
           });
           return;
         }
