@@ -20,7 +20,6 @@ import type { NextRequest } from "next/server";
  *  - /sign-in, /sign-up  Clerk auth pages
  *  - /api/v1/*      Headless API (uses its own API-key auth)
  *  - /api/auth/*    OAuth callback routes for social platforms
- *  - /api/convert-image  Image conversion utility
  *  - /api/media/*   Media serving
  */
 const isPublicRoute = createRouteMatcher([
@@ -37,7 +36,6 @@ const isPublicRoute = createRouteMatcher([
   "/preview(.*)",
   "/api/v1(.*)",
   "/api/auth(.*)",
-  "/api/convert-image",
   "/api/media(.*)",
   "/api/publish(.*)",
   "/api/telegram(.*)",
