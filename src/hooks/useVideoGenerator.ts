@@ -176,35 +176,44 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
         setStage("compositing");
         setProgress(0);
 
-        // Build lightweight slides (strip base64 images to avoid payload size issues)
-        const lightSlides: CarouselSlide[] = readySlides.map((s) => ({
-          ...s,
-          imageUrl: s.imageUrl?.startsWith("data:")
-            ? s.imageUrl  // keep data URIs — server needs them
-            : s.imageUrl,
-        }));
+        // Batch compositing: process 2 slides per server call to stay within
+        // Vercel's 6MB response body limit for serverless functions.
+        const BATCH_SIZE = 2;
+        const allComposited: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png" }[] = [];
 
-        const compositeResult = await compositeSlideImages(
-          lightSlides,
-          [platform],
-          project.filterConfig as FilterConfig | undefined,
-          provenanceConfig
-        );
+        for (let batchStart = 0; batchStart < readySlides.length; batchStart += BATCH_SIZE) {
+          if (abortController.signal.aborted) return null;
 
-        if (!compositeResult) {
-          throw new Error("Server returned an empty response. Your slides may be too large. Try fewer or smaller images.");
-        }
-        if (!compositeResult.success) {
-          throw new Error(
-            ("error" in compositeResult ? (compositeResult as { error?: string }).error : undefined)
-              ?? "Compositing failed"
+          const batch = readySlides.slice(batchStart, batchStart + BATCH_SIZE);
+          const batchResult = await compositeSlideImages(
+            batch,
+            [platform],
+            project.filterConfig as FilterConfig | undefined,
+            provenanceConfig
           );
+
+          if (!batchResult) {
+            throw new Error("Server returned an empty response. Your slides may be too large. Try fewer or smaller images.");
+          }
+          if (!batchResult.success) {
+            throw new Error(
+              ("error" in batchResult ? (batchResult as { error?: string }).error : undefined)
+                ?? "Compositing failed"
+            );
+          }
+
+          for (const item of batchResult.data) {
+            allComposited.push({ ...item, slideIndex: batchStart + item.slideIndex });
+          }
+
+          setProgress(Math.round(((batchStart + batch.length) / readySlides.length) * 100));
         }
+
         if (abortController.signal.aborted) return null;
 
         // Decode base64 images to ImageBitmaps
         const slideImages: ImageBitmap[] = [];
-        const sortedResults = compositeResult.data
+        const sortedResults = allComposited
           .filter((r) => r.platform === platform)
           .sort((a, b) => a.slideIndex - b.slideIndex);
 

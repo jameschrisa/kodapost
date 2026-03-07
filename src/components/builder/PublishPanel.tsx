@@ -276,22 +276,39 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             logoScale: brandWatermark?.scale ?? 0.15,
           } as const
         : undefined;
-      const result = await compositeSlideImages(readySlides, [platform], project.filterConfig, provenanceConfig);
+      // Batch compositing: process 2 slides per call to stay within response limits
+      const BATCH_SIZE = 2;
+      const allData: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
+      const allWarnings: string[] = [];
 
-      if (!result) {
-        toast.error("Post failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
-        return;
-      }
-      if (!result.success) {
-        toast.error("Post failed", { description: result.error });
-        return;
+      for (let batchStart = 0; batchStart < readySlides.length; batchStart += BATCH_SIZE) {
+        const batch = readySlides.slice(batchStart, batchStart + BATCH_SIZE);
+        const batchResult = await compositeSlideImages(batch, [platform], project.filterConfig, provenanceConfig);
+
+        if (!batchResult) {
+          toast.error("Post failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
+          return;
+        }
+        if (!batchResult.success) {
+          toast.error("Post failed", { description: batchResult.error });
+          return;
+        }
+
+        for (const item of batchResult.data) {
+          allData.push({ ...item, slideIndex: batchStart + item.slideIndex });
+        }
+        if (batchResult.warnings?.length) {
+          allWarnings.push(...batchResult.warnings);
+        }
       }
 
-      if (result.warnings?.length) {
+      if (allWarnings.length > 0) {
         toast.warning("Export completed with warnings", {
-          description: result.warnings.join("; "),
+          description: allWarnings.join("; "),
         });
       }
+
+      const result = { success: true as const, data: allData, warnings: allWarnings.length > 0 ? allWarnings : undefined };
 
       // 2. Extract base64 images for this platform
       const slideImages = result.data
@@ -386,25 +403,51 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             logoScale: brandWatermark?.scale ?? 0.15,
           } as const
         : undefined;
-      const result = await compositeSlideImages(readySlides, platforms, project.filterConfig, provenanceConfig);
+      // Batch compositing: process 2 slides per server call to stay within
+      // Vercel's 6MB response body limit for serverless functions.
+      const BATCH_SIZE = 2;
+      const allResults: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
+      const allWarnings: string[] = [];
 
-      // Check if user cancelled while compositing
+      for (let batchStart = 0; batchStart < readySlides.length; batchStart += BATCH_SIZE) {
+        if (cancelExportRef.current) return;
+
+        const batch = readySlides.slice(batchStart, batchStart + BATCH_SIZE);
+        const result = await compositeSlideImages(batch, platforms, project.filterConfig, provenanceConfig);
+
+        if (!result) {
+          toast.error("Export failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
+          return;
+        }
+        if (!result.success) {
+          toast.error("Export failed", { description: result.error });
+          return;
+        }
+
+        // Remap slideIndex to the global index
+        for (const item of result.data) {
+          allResults.push({ ...item, slideIndex: batchStart + item.slideIndex });
+        }
+        if (result.warnings?.length) {
+          allWarnings.push(...result.warnings);
+        }
+      }
+
       if (cancelExportRef.current) return;
 
-      if (!result) {
-        toast.error("Export failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
-        return;
-      }
-      if (!result.success) {
-        toast.error("Export failed", { description: result.error });
+      if (allResults.length === 0) {
+        toast.error("Export failed", { description: "No images could be composited. Try re-uploading your images." });
         return;
       }
 
-      if (result.warnings?.length) {
+      if (allWarnings.length > 0) {
         toast.warning("Export completed with warnings", {
-          description: result.warnings.join("; "),
+          description: allWarnings.join("; "),
         });
       }
+
+      // Create a result-like object for the packaging step below
+      const result = { success: true as const, data: allResults, warnings: allWarnings.length > 0 ? allWarnings : undefined };
 
       // 2. Package into a ZIP with folders per platform
       const JSZip = (await import("jszip")).default;
