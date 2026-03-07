@@ -525,7 +525,7 @@ export default function Home() {
   const handleOpenSettings = useCallback(() => setSettingsOpen(true), []);
 
   const handleUploadComplete = useCallback(
-    (images: UploadedImage[]) => {
+    async (images: UploadedImage[]) => {
       const isSingle = images.length === 1;
       setProject((prev) => ({
         ...prev,
@@ -533,6 +533,16 @@ export default function Home() {
         postMode: isSingle ? "single" : prev.postMode,
         slideCount: isSingle ? 1 : Math.max(2, Math.min(12, images.length)),
       }));
+
+      // Auto-create a draft if none exists so the project persists in the draft list
+      if (!activeDraftId) {
+        const result = await createNewDraft(userPlan.tier);
+        if (result.success && result.draftId) {
+          setActiveDraftId(result.draftId);
+          const drafts = await listDraftMetadata();
+          setDraftList(drafts);
+        }
+      }
 
       // Mark onboarding as seen after first upload
       if (showOnboarding) {
@@ -551,7 +561,7 @@ export default function Home() {
         }
       );
     },
-    [navigateToStep, activeDraftId, showOnboarding]
+    [navigateToStep, activeDraftId, showOnboarding, userPlan.tier]
   );
 
   const handleProjectUpdate = useCallback((updated: CarouselProject) => {
@@ -998,14 +1008,28 @@ export default function Home() {
   }, [activeDraftId, handleSwitchDraft]);
 
   // -- Keyboard shortcuts --
-  const handleSaveShortcut = useCallback(() => {
+  const handleSaveShortcut = useCallback(async () => {
     if (step === "configure" || step === "edit") {
       const name = project.projectName || loadProjectName() || "Untitled Project";
       saveProject({ ...project, projectName: name });
       saveProjectName(name);
+
+      // Also save to draft system for persistence in draft list
+      if (activeDraftId) {
+        await saveDraft(activeDraftId, project, step, name).catch(() => {});
+        const imgs = project.uploadedImages
+          .filter(img => img.url && img.url.startsWith("data:"))
+          .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
+        if (imgs.length > 0) {
+          saveDraftImages(activeDraftId, imgs).catch(() => {});
+        }
+        const drafts = await listDraftMetadata();
+        setDraftList(drafts);
+      }
+
       toast.success("Project saved", { duration: 2000 });
     }
-  }, [step, project]);
+  }, [step, project, activeDraftId]);
 
   useKeyboardShortcuts({
     onSave: handleSaveShortcut,
