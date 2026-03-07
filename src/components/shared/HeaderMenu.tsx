@@ -12,7 +12,9 @@ import {
   Activity,
   BookOpen,
   Bot,
+  Bug,
   CreditCard,
+  Download,
   Eye,
   EyeOff,
   HelpCircle,
@@ -31,6 +33,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AvatarDisplay } from "@/components/shared/AvatarDisplay";
+import { useTestMode } from "@/hooks/useTestMode";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -71,6 +74,7 @@ export function HeaderMenu({
   const role = useUserRole();
   const userInfo = useUserInfo();
   const userPlan = useUserPlan();
+  const testMode = useTestMode();
   const [mounted, setMounted] = useState(false);
 
   // Avoid hydration mismatch — render placeholder until mounted
@@ -84,6 +88,18 @@ export function HeaderMenu({
 
   return (
     <div className="flex items-center gap-2">
+      {/* Test Mode indicator */}
+      {testMode.enabled && (
+        <button
+          onClick={testMode.download}
+          className="flex items-center gap-1 rounded-full bg-orange-500/15 px-2 py-0.5 text-[10px] font-mono text-orange-400 hover:bg-orange-500/25 transition-colors"
+          title="Test Mode active. Click to download debug log."
+        >
+          <Bug className="h-3 w-3" />
+          TEST
+          <span className="tabular-nums">{testMode.logCount}</span>
+        </button>
+      )}
       {/* ── Profile Dropdown (signed-in users) ── */}
       <SignedIn>
         <DropdownMenu>
@@ -165,6 +181,22 @@ export function HeaderMenu({
                     </>
                   )}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={testMode.toggle}>
+                  <Bug className="h-4 w-4" />
+                  {testMode.enabled ? "Disable Test Mode" : "Enable Test Mode"}
+                  {testMode.enabled && (
+                    <span className="ml-auto text-[10px] font-mono text-orange-400">
+                      {testMode.logCount}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+                {testMode.enabled && (
+                  <DropdownMenuItem onClick={testMode.download}>
+                    <Download className="h-4 w-4" />
+                    Download Debug Log
+                  </DropdownMenuItem>
+                )}
               </>
             )}
 

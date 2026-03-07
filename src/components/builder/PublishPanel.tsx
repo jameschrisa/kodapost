@@ -40,6 +40,7 @@ import { trimAudioBlob, hasTrimApplied } from "@/lib/audio-utils";
 import { useVideoGenerator } from "@/hooks/useVideoGenerator";
 import { DEFAULT_VIDEO_SETTINGS } from "@/lib/constants";
 import { logActivity } from "@/lib/activity-log";
+import { logExport, addEntry, isTestModeEnabled } from "@/lib/test-mode";
 import { useLoadingStore } from "@/lib/stores/loading-store";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useUserInfo } from "@/hooks/useUserInfo";
@@ -280,6 +281,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       const platformSpec = PLATFORM_IMAGE_SPECS[PLATFORMS.find(p => p.key === platform)?.specKey ?? "instagram_feed"];
       const BATCH_SIZE = (platformSpec && platformSpec.height >= 1920) ? 1 : 2;
       console.log(`[Publish] Starting publish: ${readySlides.length} slides for ${platform}, batchSize=${BATCH_SIZE}`);
+      if (isTestModeEnabled()) {
+        logExport("Publish started", { platform, slides: readySlides.length, batchSize: BATCH_SIZE, spec: platformSpec });
+      }
       const allData: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
       const allWarnings: string[] = [];
 
@@ -301,7 +305,11 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
         if (!batchResult) {
           const isTimeout = batchElapsed >= 54_000;
-          console.error(`[Publish] ${isTimeout ? "Timeout" : "Empty response"} for batch starting at slide ${batchStart + 1} (${batchElapsed}ms)`);
+          const errMsg = isTimeout ? "Timeout" : "Empty response";
+          console.error(`[Publish] ${errMsg} for batch starting at slide ${batchStart + 1} (${batchElapsed}ms)`);
+          if (isTestModeEnabled()) {
+            addEntry("error", "publish", `${errMsg} at slide ${batchStart + 1}`, { batchElapsed, batchSize: BATCH_SIZE, platform });
+          }
           toast.error("Post failed", {
             description: isTimeout
               ? "Processing timed out. Try disabling filters or watermarks, or use fewer slides."
@@ -311,6 +319,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         }
         if (!batchResult.success) {
           console.error(`[Publish] Batch error: ${batchResult.error}`);
+          if (isTestModeEnabled()) {
+            addEntry("error", "publish", `Batch error: ${batchResult.error}`, { batchElapsed, platform });
+          }
           toast.error("Post failed", { description: batchResult.error });
           return;
         }
@@ -433,6 +444,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       });
       const BATCH_SIZE = is916 ? 1 : 2;
       console.log(`[Export] Starting export: ${readySlides.length} slides, ${platforms.length} platforms, batchSize=${BATCH_SIZE}`);
+      if (isTestModeEnabled()) {
+        logExport("Export started", { platforms, slides: readySlides.length, batchSize: BATCH_SIZE, is916 });
+      }
       const allResults: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
       const allWarnings: string[] = [];
 
@@ -462,7 +476,11 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
           if (!batchResult) {
             const isTimeout = batchElapsed >= 54_000;
-            console.error(`[Export] ${platform}: ${isTimeout ? "timeout" : "empty response"} for batch at slide ${batchStart + 1} (${batchElapsed}ms)`);
+            const errMsg = isTimeout ? "timeout" : "empty response";
+            console.error(`[Export] ${platform}: ${errMsg} for batch at slide ${batchStart + 1} (${batchElapsed}ms)`);
+            if (isTestModeEnabled()) {
+              addEntry("error", "export", `${platform}: ${errMsg} at slide ${batchStart + 1}`, { batchElapsed, batchSize: BATCH_SIZE, platform });
+            }
             toast.error("Export failed", {
               description: isTimeout
                 ? "Processing timed out. Try disabling filters or watermarks, or use fewer slides."
@@ -472,6 +490,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           }
           if (!batchResult.success) {
             console.error(`[Export] ${platform}: batch error: ${batchResult.error}`);
+            if (isTestModeEnabled()) {
+              addEntry("error", "export", `${platform}: ${batchResult.error}`, { batchElapsed, platform });
+            }
             toast.error("Export failed", { description: batchResult.error });
             return;
           }

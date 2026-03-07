@@ -558,6 +558,11 @@ export function clearAllStorage(): void {
     localStorage.removeItem(FILTER_TEMPLATES_KEY);
     localStorage.removeItem("kodapost:admin-view-mode");
     localStorage.removeItem("kodapost:assistant-preference");
+    localStorage.removeItem("kodapost:language");
+    localStorage.removeItem("kodapost:has-seen-guide");
+    localStorage.removeItem("kodapost:login-count");
+    localStorage.removeItem(MIGRATION_FLAG);
+    localStorage.removeItem("kodapost:test-mode");
   } catch {
     // Ignore localStorage failures
   }

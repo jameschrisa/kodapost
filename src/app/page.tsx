@@ -88,6 +88,7 @@ import {
 } from "@/lib/draft-storage";
 import { createNewDraft, switchDraft } from "@/lib/draft-manager";
 import { DEFAULT_GLOBAL_OVERLAY_STYLE } from "@/lib/constants";
+import { logStep, isTestModeEnabled } from "@/lib/test-mode";
 import type { AudioClip, CarouselProject, CarouselSlide, DraftMetadata, PostMode, UploadedImage, VideoSettings } from "@/lib/types";
 import { TourContext } from "@/components/tour/TourContext";
 
@@ -259,6 +260,13 @@ export default function Home() {
   // Undo/redo stack for project edits
   const undoRedo = useUndoRedo(20);
   const undoPushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Test Mode: log workflow step transitions
+  useEffect(() => {
+    if (isTestModeEnabled()) {
+      logStep(step, `slides=${project.slides.filter(s => s.status === "ready").length}, images=${project.uploadedImages.length}`);
+    }
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Prefetch key routes so navigation feels instant
   useEffect(() => {
