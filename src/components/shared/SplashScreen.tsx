@@ -695,7 +695,7 @@ export function SplashScreen({
                 {t("hero.title.line1")}
                 <br className="hidden sm:block" />{" "}
                 {t("hero.title.line2")}{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-purple-500 italic" style={{ fontFamily: "var(--font-playfair), serif" }}>
                   {t("hero.title.gradient")}
                 </span>{" "}
                 {t("hero.title.line3")}
