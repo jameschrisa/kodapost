@@ -2,7 +2,7 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "30mb",
     },
     // Prevent webpack from bundling @libsql/client's native bindings
     serverComponentsExternalPackages: ["@libsql/client", "c2pa-node"],

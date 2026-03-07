@@ -278,6 +278,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         : undefined;
       const result = await compositeSlideImages(readySlides, [platform], project.filterConfig, provenanceConfig);
 
+      if (!result) {
+        toast.error("Post failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
+        return;
+      }
       if (!result.success) {
         toast.error("Post failed", { description: result.error });
         return;
@@ -387,6 +391,10 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       // Check if user cancelled while compositing
       if (cancelExportRef.current) return;
 
+      if (!result) {
+        toast.error("Export failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
+        return;
+      }
       if (!result.success) {
         toast.error("Export failed", { description: result.error });
         return;

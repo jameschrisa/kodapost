@@ -191,6 +191,9 @@ export function useVideoGenerator(): UseVideoGeneratorReturn {
           provenanceConfig
         );
 
+        if (!compositeResult) {
+          throw new Error("Server returned an empty response. Your slides may be too large. Try fewer or smaller images.");
+        }
         if (!compositeResult.success) {
           throw new Error(
             ("error" in compositeResult ? (compositeResult as { error?: string }).error : undefined)
