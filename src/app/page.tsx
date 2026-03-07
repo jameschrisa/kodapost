@@ -535,13 +535,13 @@ export default function Home() {
     }
     window.addEventListener("popstate", handlePopState);
 
-    // Set initial hash on mount (replace, don't push)
-    if (!window.location.hash && step) {
+    // Set initial hash only when the user is in the app (not on the splash/landing page)
+    if (splashDismissed && !window.location.hash && step) {
       window.history.replaceState({ step }, "", `#${step}`);
     }
 
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [step]);
+  }, [step, splashDismissed]);
 
   // -- Direction-aware step navigation --
 
