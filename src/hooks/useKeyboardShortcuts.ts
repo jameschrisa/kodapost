@@ -7,6 +7,10 @@ interface ShortcutConfig {
   onSave?: () => void;
   /** Ctrl/Cmd + Enter — Generate / Continue */
   onGenerate?: () => void;
+  /** Ctrl/Cmd + Z — Undo */
+  onUndo?: () => void;
+  /** Ctrl/Cmd + Shift + Z — Redo */
+  onRedo?: () => void;
   /** Left arrow — Previous slide (when not in an input) */
   onPreviousSlide?: () => void;
   /** Right arrow — Next slide (when not in an input) */
@@ -49,6 +53,20 @@ export function useKeyboardShortcuts(config: ShortcutConfig) {
       if (mod && e.key === "s") {
         e.preventDefault();
         cfg.onSave?.();
+        return;
+      }
+
+      // Cmd/Ctrl + Shift + Z — Redo (must check before plain Z)
+      if (mod && e.shiftKey && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        cfg.onRedo?.();
+        return;
+      }
+
+      // Cmd/Ctrl + Z — Undo
+      if (mod && !e.shiftKey && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        cfg.onUndo?.();
         return;
       }
 

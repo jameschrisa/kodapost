@@ -373,7 +373,12 @@ function openImageDB(): Promise<IDBDatabase> {
         db.createObjectStore(IDB_STORE, { keyPath: "id" });
       }
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const db = request.result;
+      // Close connection when another tab triggers a version upgrade
+      db.onversionchange = () => { db.close(); };
+      resolve(db);
+    };
     request.onerror = () => reject(request.error);
   });
 }
@@ -395,7 +400,8 @@ export async function saveImagesToIDB(
 
     // Store each image
     for (const img of images) {
-      if (img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:"))) {
+      // Only persist data: URIs — blob: URLs are session-scoped and invalid after reload
+      if (img.url && img.url.startsWith("data:")) {
         store.put({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl });
       }
     }

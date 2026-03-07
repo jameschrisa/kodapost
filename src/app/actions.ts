@@ -27,7 +27,8 @@ import {
   applyLogoWatermark,
 } from "@/lib/provenance";
 import { embedC2PAManifest } from "@/lib/provenance/c2pa";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { PLAN_CONFIGS, type PlanTier } from "@/lib/plans";
 
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -58,6 +59,72 @@ async function requireAuth(): Promise<string> {
   if (!userId) throw new Error("Unauthorized");
   checkActionRateLimit(userId);
   return userId;
+}
+
+// -----------------------------------------------------------------------------
+// Generation Limit Enforcement
+// -----------------------------------------------------------------------------
+
+/**
+ * Returns the current year-month key, e.g. "2026-03".
+ */
+function currentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/**
+ * Checks and increments the user's monthly generation count.
+ * Stores the count in Clerk publicMetadata under `generationCounts`.
+ *
+ * Returns { allowed: true } if the user can proceed, or
+ * { allowed: false, error: string } if the limit is reached.
+ *
+ * The "dev" userId (Clerk disabled) always bypasses limits.
+ * Admin users (role === "admin") also bypass limits.
+ */
+async function checkAndIncrementGenerationCount(
+  userId: string
+): Promise<{ allowed: true } | { allowed: false; error: string }> {
+  // Dev mode bypasses limits
+  if (userId === "dev") return { allowed: true };
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  const pubMeta = user.publicMetadata as {
+    plan?: PlanTier;
+    role?: string;
+    generationCounts?: Record<string, number>;
+  };
+
+  // Admins bypass limits
+  if (pubMeta.role === "admin") return { allowed: true };
+
+  const plan: PlanTier = pubMeta.plan || "trial";
+  const limit = PLAN_CONFIGS[plan].maxGenerationsPerMonth;
+
+  // Unlimited plan (-1)
+  if (limit === -1) return { allowed: true };
+
+  const monthKey = currentMonthKey();
+  const counts = pubMeta.generationCounts || {};
+  const currentCount = counts[monthKey] || 0;
+
+  if (currentCount >= limit) {
+    return {
+      allowed: false,
+      error: `Monthly generation limit reached (${currentCount}/${limit}). Upgrade your plan for more.`,
+    };
+  }
+
+  // Increment and save. Only keep the current month to avoid metadata bloat.
+  await client.users.updateUserMetadata(userId, {
+    publicMetadata: {
+      generationCounts: { [monthKey]: currentCount + 1 },
+    },
+  });
+
+  return { allowed: true };
 }
 
 function isAllowedImageUrl(url: string): boolean {
@@ -347,7 +414,14 @@ ${jsonFormat}`,
 export async function generateCarousel(
   project: CarouselProject
 ): Promise<ActionResult<CarouselProject>> {
-  await requireAuth();
+  const userId = await requireAuth();
+
+  // Enforce monthly generation limit
+  const limitCheck = await checkAndIncrementGenerationCount(userId);
+  if (!limitCheck.allowed) {
+    return { success: false, error: limitCheck.error };
+  }
+
   console.log("[generateCarousel] Starting generation for", project.slideCount, "slides");
   try {
     // 1. Calculate image source strategy
@@ -387,77 +461,99 @@ export async function generateCarousel(
     // Resolve headline mode once for the entire run
     const headlineMode = resolveHeadlineMode(project.globalOverlayStyle);
 
-    // 3. Process each slide: assign images and generate overlays
+    // 3. Process slides in parallel batches to avoid sequential API call delays.
+    //    Batch size of 3 to respect API rate limits while still parallelizing.
+    const BATCH_SIZE = 3;
+
+    // First, assign images synchronously (no API calls needed)
     for (const slide of slides) {
-      try {
-        slide.status = "generating";
+      slide.status = "generating";
 
-        if (slide.metadata?.source === "user_upload") {
-          const refId = slide.metadata.referenceImage;
-          const uploaded = project.uploadedImages.find(
-            (img) => img.id === refId
-          );
-          if (uploaded) {
-            slide.imageUrl = uploaded.url;
-            slide.metadata.originalFilename = uploaded.filename;
-          }
-        }
-        // text_only slides: no imageUrl — these will render as styled
-        // text-on-background during preview and get a solid color
-        // background during export compositing.
-
-        // Generate text overlay for every slide
-        const overlay = await generateTextOverlay(
-          project.theme,
-          project.keywords,
-          slide.slideType,
-          slide.position,
-          project.slideCount,
-          project.globalOverlayStyle,
-          project.captionStyle,
-          project.customCaptionStyle,
-          project.language
+      if (slide.metadata?.source === "user_upload") {
+        const refId = slide.metadata.referenceImage;
+        const uploaded = project.uploadedImages.find(
+          (img) => img.id === refId
         );
-
-        // Always preserve full AI text in aiGeneratedOverlay
-        slide.aiGeneratedOverlay = overlay;
-        // Apply headline mode visibility per slide
-        const showOnThisSlide =
-          headlineMode === "all" ||
-          (headlineMode === "first_only" && slide.position === 0);
-        slide.textOverlay = {
-          ...overlay,
-          content: {
-            ...overlay.content,
-            primary: showOnThisSlide ? overlay.content.primary : "",
-            secondary: undefined,
-          },
-        };
-
-        // Apply CSV overrides if available
-        const csvRow = project.csvOverrides?.[slide.position];
-        if (csvRow) {
-          slide.textOverlay.content.primary = csvRow.primary;
+        if (uploaded) {
+          slide.imageUrl = uploaded.url;
+          slide.metadata.originalFilename = uploaded.filename;
         }
+      }
+      // text_only slides: no imageUrl — these will render as styled
+      // text-on-background during preview and get a solid color
+      // background during export compositing.
+    }
 
-        slide.textOverlayState = {
-          slideId: slide.id,
-          enabled: true,
-          source: csvRow ? "user_override" : "ai_generated",
-          lastModified: new Date().toISOString(),
-          customizations: {
-            textEdited: false,
-            styleEdited: false,
-            positionEdited: false,
-          },
-        };
+    // Then, generate text overlays in parallel batches
+    for (let batchStart = 0; batchStart < slides.length; batchStart += BATCH_SIZE) {
+      const batch = slides.slice(batchStart, batchStart + BATCH_SIZE);
+      console.log(`[generateCarousel] Processing batch ${Math.floor(batchStart / BATCH_SIZE) + 1}: slides ${batchStart + 1}-${batchStart + batch.length}`);
 
-        slide.status = "ready";
-      } catch (error) {
-        slide.status = "error";
-        errorCount++;
-        const msg = handleAPIError(error);
-        if (!firstError) firstError = msg;
+      const results = await Promise.allSettled(
+        batch.map(async (slide) => {
+          const overlay = await generateTextOverlay(
+            project.theme,
+            project.keywords,
+            slide.slideType,
+            slide.position,
+            project.slideCount,
+            project.globalOverlayStyle,
+            project.captionStyle,
+            project.customCaptionStyle,
+            project.language
+          );
+          return { slide, overlay };
+        })
+      );
+
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        if (result.status === "fulfilled") {
+          const { slide, overlay } = result.value;
+
+          // Always preserve full AI text in aiGeneratedOverlay
+          slide.aiGeneratedOverlay = overlay;
+          // Apply headline mode visibility per slide
+          const showOnThisSlide =
+            headlineMode === "all" ||
+            (headlineMode === "first_only" && slide.position === 0);
+          slide.textOverlay = {
+            ...overlay,
+            content: {
+              ...overlay.content,
+              primary: showOnThisSlide ? overlay.content.primary : "",
+              secondary: undefined,
+            },
+          };
+
+          // Apply CSV overrides if available
+          const csvRow = project.csvOverrides?.[slide.position];
+          if (csvRow) {
+            slide.textOverlay.content.primary = csvRow.primary;
+          }
+
+          slide.textOverlayState = {
+            slideId: slide.id,
+            enabled: true,
+            source: csvRow ? "user_override" : "ai_generated",
+            lastModified: new Date().toISOString(),
+            customizations: {
+              textEdited: false,
+              styleEdited: false,
+              positionEdited: false,
+            },
+          };
+
+          slide.status = "ready";
+        } else {
+          // result.status === "rejected"
+          const failedSlide = batch[i];
+          const msg = handleAPIError(result.reason);
+          console.error(`[generateCarousel] Slide ${failedSlide.position + 1} failed:`, msg);
+          failedSlide.status = "error";
+          errorCount++;
+          if (!firstError) firstError = msg;
+        }
       }
     }
 
@@ -510,7 +606,14 @@ export async function regenerateSlide(
   project: CarouselProject,
   slideIndex: number
 ): Promise<ActionResult<CarouselSlide>> {
-  await requireAuth();
+  const userId = await requireAuth();
+
+  // Enforce monthly generation limit
+  const limitCheck = await checkAndIncrementGenerationCount(userId);
+  if (!limitCheck.allowed) {
+    return { success: false, error: limitCheck.error };
+  }
+
   try {
     const slide = project.slides[slideIndex];
     if (!slide) {

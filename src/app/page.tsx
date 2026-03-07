@@ -71,6 +71,7 @@ const ProjectsView = dynamic(() => import("@/components/projects/ProjectsView").
 const AudioPanel = dynamic(() => import("@/components/audio").then(m => ({ default: m.AudioPanel })), { ssr: false });
 import { EmptyStateGuide, hasSeenGuide, markGuideSeen } from "@/components/shared/EmptyStateGuide";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useLanguage } from "@/i18n/context";
 import { logActivity } from "@/lib/activity-log";
@@ -255,6 +256,10 @@ export default function Home() {
   // Sync i18n language preference into project for AI generation
   const { language: i18nLanguage } = useLanguage();
 
+  // Undo/redo stack for project edits
+  const undoRedo = useUndoRedo(20);
+  const undoPushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Prefetch key routes so navigation feels instant
   useEffect(() => {
     router.prefetch("/introduction");
@@ -417,6 +422,15 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Seed the undo stack with the initial project state after hydration
+  const undoSeeded = useRef(false);
+  useEffect(() => {
+    if (hydrated && !undoSeeded.current) {
+      undoSeeded.current = true;
+      undoRedo.pushState(project);
+    }
+  }, [hydrated]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-dismiss splash for signed-in users returning from auth (initial load only).
   // Uses a ref to ensure this only fires once and doesn't interfere with
   // user-triggered splash (brand click, Start Fresh).
@@ -508,14 +522,45 @@ export default function Home() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [project.slides]);
 
+  // Handle browser back/forward to navigate between steps
+  useEffect(() => {
+    function handlePopState(e: PopStateEvent) {
+      const targetStep = e.state?.step as Step | undefined;
+      if (targetStep && STEP_ORDER.includes(targetStep)) {
+        const currentIdx = STEP_ORDER.indexOf(step);
+        const newIdx = STEP_ORDER.indexOf(targetStep);
+        setDirection(newIdx >= currentIdx ? 1 : -1);
+        setStep(targetStep);
+      }
+    }
+    window.addEventListener("popstate", handlePopState);
+
+    // Set initial hash on mount (replace, don't push)
+    if (!window.location.hash && step) {
+      window.history.replaceState({ step }, "", `#${step}`);
+    }
+
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [step]);
+
   // -- Direction-aware step navigation --
 
   const navigateToStep = useCallback(
-    (newStep: Step) => {
+    (newStep: Step, replaceState = false) => {
       const currentIdx = STEP_ORDER.indexOf(step);
       const newIdx = STEP_ORDER.indexOf(newStep);
       setDirection(newIdx >= currentIdx ? 1 : -1);
       setStep(newStep);
+
+      // Push step to browser history so back/forward buttons navigate between steps
+      const hash = `#${newStep}`;
+      if (window.location.hash !== hash) {
+        if (replaceState) {
+          window.history.replaceState({ step: newStep }, "", hash);
+        } else {
+          window.history.pushState({ step: newStep }, "", hash);
+        }
+      }
     },
     [step]
   );
@@ -566,7 +611,60 @@ export default function Home() {
 
   const handleProjectUpdate = useCallback((updated: CarouselProject) => {
     setProject(updated);
-  }, []);
+
+    // Debounce pushing to the undo stack (300ms) to avoid capturing every keystroke
+    if (undoPushTimerRef.current) clearTimeout(undoPushTimerRef.current);
+    undoPushTimerRef.current = setTimeout(() => {
+      undoRedo.pushState(updated);
+    }, 300);
+  }, [undoRedo]);
+
+  /**
+   * Restore a stripped undo/redo snapshot by re-attaching live image data
+   * from the current project state (images are stripped from snapshots).
+   */
+  const restoreSnapshot = useCallback(
+    (snapshot: CarouselProject): CarouselProject => {
+      // Re-attach image URLs from the current project
+      const imageUrlMap = new Map(
+        project.uploadedImages.map((img) => [img.id, { url: img.url, thumbnailUrl: img.thumbnailUrl }])
+      );
+      const slideImageMap = new Map(
+        project.slides.map((s) => [s.id, { imageUrl: s.imageUrl, thumbnailUrl: s.thumbnailUrl }])
+      );
+
+      return {
+        ...snapshot,
+        uploadedImages: snapshot.uploadedImages.map((img) => ({
+          ...img,
+          url: imageUrlMap.get(img.id)?.url || img.url,
+          thumbnailUrl: imageUrlMap.get(img.id)?.thumbnailUrl || img.thumbnailUrl,
+        })),
+        slides: snapshot.slides.map((slide) => ({
+          ...slide,
+          imageUrl: slideImageMap.get(slide.id)?.imageUrl || slide.imageUrl,
+          thumbnailUrl: slideImageMap.get(slide.id)?.thumbnailUrl || slide.thumbnailUrl,
+        })),
+      };
+    },
+    [project]
+  );
+
+  const handleUndo = useCallback(() => {
+    const snapshot = undoRedo.undo();
+    if (snapshot) {
+      setProject(restoreSnapshot(snapshot));
+      toast("Undone", { duration: 1500 });
+    }
+  }, [undoRedo, restoreSnapshot]);
+
+  const handleRedo = useCallback(() => {
+    const snapshot = undoRedo.redo();
+    if (snapshot) {
+      setProject(restoreSnapshot(snapshot));
+      toast("Redone", { duration: 1500 });
+    }
+  }, [undoRedo, restoreSnapshot]);
 
   const handlePostModeChange = useCallback((mode: PostMode) => {
     setProject((prev) => ({
@@ -746,6 +844,7 @@ export default function Home() {
     logActivity("project_reset", "Started new project", activeDraftId ?? undefined);
     setProject(createEmptyProject());
     setActiveDraftId(null);
+    undoRedo.clear();
     setDirection(-1);
     setStep("upload");
     // Refresh draft list
@@ -865,6 +964,7 @@ export default function Home() {
     clearAllStorage();
     setProject(createEmptyProject());
     setActiveDraftId(null);
+    undoRedo.clear();
     setDraftList([]);
     setDirection(-1);
     setStep("upload");
@@ -944,6 +1044,7 @@ export default function Home() {
     const loadedName = result.name || "Untitled Project";
     setProject({ ...result.project!, projectName: loadedName });
     setActiveDraftId(targetDraftId);
+    undoRedo.clear();
     saveProjectName(loadedName);
     const targetStep = result.step as Step;
     setStep(targetStep);
@@ -1074,6 +1175,8 @@ export default function Home() {
 
   useKeyboardShortcuts({
     onSave: handleSaveShortcut,
+    onUndo: handleUndo,
+    onRedo: handleRedo,
     onEscape: step !== "upload" ? handleBack : undefined,
   });
 

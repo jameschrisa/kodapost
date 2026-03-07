@@ -69,7 +69,17 @@ function openDraftDB(): Promise<IDBDatabase> {
       }
     };
 
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const db = request.result;
+      // Handle version change from another tab (e.g., new app deployment)
+      // Close this connection so the other tab's upgrade can proceed
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+        console.warn("[draft-storage] Database version changed in another tab. Connection closed.");
+      };
+      resolve(db);
+    };
     request.onerror = () => {
       dbPromise = null;
       reject(request.error);
