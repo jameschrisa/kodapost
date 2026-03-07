@@ -16,10 +16,11 @@ import type { CarouselProject, DraftMetadata } from "./types";
 // -----------------------------------------------------------------------------
 
 const DB_NAME = "nostalgiaflow-drafts";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const DRAFTS_STORE = "drafts";
 const IMAGES_STORE = "draft-images";
 const ACTIVITY_STORE = "activity-log";
+const AUDIO_STORE = "draft-audio";
 
 // -----------------------------------------------------------------------------
 // Database Lifecycle
@@ -60,6 +61,11 @@ function openDraftDB(): Promise<IDBDatabase> {
           autoIncrement: true,
         });
         logStore.createIndex("timestamp", "timestamp", { unique: false });
+      }
+
+      // Per-draft audio blobs — keyPath: draftId
+      if (!db.objectStoreNames.contains(AUDIO_STORE)) {
+        db.createObjectStore(AUDIO_STORE, { keyPath: "draftId" });
       }
     };
 
@@ -249,8 +255,9 @@ export async function deleteDraft(id: string): Promise<void> {
       tx1.onerror = () => reject(tx1.error);
     });
 
-    // Delete associated images
+    // Delete associated images and audio
     await deleteDraftImages(id);
+    await deleteDraftAudio(id);
   } catch (err) {
     console.warn("[KodaPost] Failed to delete draft:", err);
   }
@@ -394,6 +401,83 @@ async function deleteDraftImages(draftId: string): Promise<void> {
 }
 
 // -----------------------------------------------------------------------------
+// Draft Audio Storage
+// -----------------------------------------------------------------------------
+
+/**
+ * Saves audio blob for a specific draft.
+ * Converts the blob URL to an ArrayBuffer for persistence.
+ */
+export async function saveDraftAudio(
+  draftId: string,
+  audioBlob: Blob,
+  mimeType: string
+): Promise<void> {
+  try {
+    const db = await openDraftDB();
+    const tx = db.transaction(AUDIO_STORE, "readwrite");
+    const store = tx.objectStore(AUDIO_STORE);
+
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    store.put({ draftId, audioData: arrayBuffer, mimeType });
+
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (err) {
+    console.warn("[KodaPost] Failed to save draft audio:", err);
+  }
+}
+
+/**
+ * Loads audio blob for a specific draft.
+ * Returns a new blob URL, or null if no audio is stored.
+ */
+export async function loadDraftAudio(
+  draftId: string
+): Promise<{ objectUrl: string; mimeType: string } | null> {
+  try {
+    const db = await openDraftDB();
+    const tx = db.transaction(AUDIO_STORE, "readonly");
+    const store = tx.objectStore(AUDIO_STORE);
+
+    const record: { draftId: string; audioData: ArrayBuffer; mimeType: string } | undefined =
+      await new Promise((resolve, reject) => {
+        const req = store.get(draftId);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+
+    if (!record) return null;
+
+    const blob = new Blob([record.audioData], { type: record.mimeType });
+    const objectUrl = URL.createObjectURL(blob);
+    return { objectUrl, mimeType: record.mimeType };
+  } catch (err) {
+    console.warn("[KodaPost] Failed to load draft audio:", err);
+    return null;
+  }
+}
+
+/**
+ * Deletes audio for a specific draft.
+ */
+async function deleteDraftAudio(draftId: string): Promise<void> {
+  try {
+    const db = await openDraftDB();
+    const tx = db.transaction(AUDIO_STORE, "readwrite");
+    tx.objectStore(AUDIO_STORE).delete(draftId);
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (err) {
+    console.warn("[KodaPost] Failed to delete draft audio:", err);
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Draft Expiration
 // -----------------------------------------------------------------------------
 
@@ -428,10 +512,11 @@ export async function pruneExpiredDrafts(): Promise<string[]> {
       tx.onerror = () => reject(tx.error);
     });
 
-    // Clean up images for pruned drafts
+    // Clean up images and audio for pruned drafts
     for (const record of all) {
       if (record.expiresAt && new Date(record.expiresAt).getTime() < now) {
         await deleteDraftImages(record.id);
+        await deleteDraftAudio(record.id);
       }
     }
 
@@ -454,12 +539,13 @@ export async function clearDraftDB(): Promise<void> {
     const db = await openDraftDB();
 
     const tx = db.transaction(
-      [DRAFTS_STORE, IMAGES_STORE, ACTIVITY_STORE],
+      [DRAFTS_STORE, IMAGES_STORE, ACTIVITY_STORE, AUDIO_STORE],
       "readwrite"
     );
     tx.objectStore(DRAFTS_STORE).clear();
     tx.objectStore(IMAGES_STORE).clear();
     tx.objectStore(ACTIVITY_STORE).clear();
+    tx.objectStore(AUDIO_STORE).clear();
 
     await new Promise<void>((resolve, reject) => {
       tx.oncomplete = () => resolve();

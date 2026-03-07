@@ -614,7 +614,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         description: error instanceof Error ? error.message : "Please try again or use image export.",
       });
     }
-  }, [selected, isVideoGenerating, generateVideo, project, readySlides.length, videoUrl, videoErrorMessage]);
+  }, [selected, isVideoGenerating, generateVideo, project, readySlides.length, videoUrl, videoErrorMessage, hasProvenance, provenanceEnabled, creatorName, watermarkMode, watermarkText, brandWatermark]);
 
   // Download generated video
   const handleDownloadVideo = useCallback(() => {
@@ -629,13 +629,6 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
     toast.success("Video downloaded!");
     logActivity("video_exported", `Exported video reel for ${platform}`);
   }, [videoBlob, videoUrl, selected]);
-
-  // Clean up video URL on unmount
-  useEffect(() => {
-    return () => {
-      if (videoUrl) URL.revokeObjectURL(videoUrl);
-    };
-  }, [videoUrl]);
 
   // -- Exporting state --
   if (isExporting) {

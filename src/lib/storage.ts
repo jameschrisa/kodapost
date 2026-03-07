@@ -383,7 +383,7 @@ function openImageDB(): Promise<IDBDatabase> {
  * Each image is stored as { id, url } keyed by the image ID.
  */
 export async function saveImagesToIDB(
-  images: { id: string; url: string }[]
+  images: { id: string; url: string; thumbnailUrl?: string }[]
 ): Promise<void> {
   try {
     const db = await openImageDB();
@@ -396,7 +396,7 @@ export async function saveImagesToIDB(
     // Store each image
     for (const img of images) {
       if (img.url && (img.url.startsWith("data:") || img.url.startsWith("blob:"))) {
-        store.put({ id: img.id, url: img.url });
+        store.put({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl });
       }
     }
 
@@ -414,21 +414,25 @@ export async function saveImagesToIDB(
  * Loads all saved image data from IndexedDB.
  * Returns a Map of image ID → data URL.
  */
-export async function loadImagesFromIDB(): Promise<Map<string, string>> {
-  const result = new Map<string, string>();
+export async function loadImagesFromIDB(): Promise<Map<string, string | { url: string; thumbnailUrl?: string }>> {
+  const result = new Map<string, string | { url: string; thumbnailUrl?: string }>();
   try {
     const db = await openImageDB();
     const tx = db.transaction(IDB_STORE, "readonly");
     const store = tx.objectStore(IDB_STORE);
 
-    const all: { id: string; url: string }[] = await new Promise((resolve, reject) => {
+    const all: { id: string; url: string; thumbnailUrl?: string }[] = await new Promise((resolve, reject) => {
       const req = store.getAll();
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
 
     for (const item of all) {
-      result.set(item.id, item.url);
+      if (item.thumbnailUrl) {
+        result.set(item.id, { url: item.url, thumbnailUrl: item.thumbnailUrl });
+      } else {
+        result.set(item.id, item.url);
+      }
     }
     db.close();
   } catch (err) {
@@ -499,9 +503,10 @@ export async function migrateLegacyProject(
     // Also migrate images from the legacy IDB to draft-specific storage
     const imageMap = await loadImagesFromIDB();
     if (imageMap.size > 0) {
-      const images = Array.from(imageMap.entries()).map(([id, url]) => ({
+      const images = Array.from(imageMap.entries()).map(([id, stored]) => ({
         id,
-        url,
+        url: typeof stored === "string" ? stored : stored.url,
+        thumbnailUrl: typeof stored === "string" ? undefined : stored.thumbnailUrl,
       }));
       await saveDraftImages(draftId, images);
     }

@@ -78,9 +78,11 @@ import {
   listDraftMetadata,
   saveDraft,
   saveDraftImages,
+  saveDraftAudio,
   deleteDraft,
   pruneExpiredDrafts,
   loadDraftImages,
+  loadDraftAudio,
   loadDraft,
 } from "@/lib/draft-storage";
 import { createNewDraft, switchDraft } from "@/lib/draft-manager";
@@ -331,6 +333,17 @@ export default function Home() {
               });
             }
 
+            // Restore audio from per-draft IDB
+            if (loaded.project.audioClip && !loaded.project.audioClip.objectUrl) {
+              const audioData = await loadDraftAudio(mostRecent.id);
+              if (audioData) {
+                loaded.project.audioClip = {
+                  ...loaded.project.audioClip,
+                  objectUrl: audioData.objectUrl,
+                };
+              }
+            }
+
             setProject(loaded.project);
             setActiveDraftId(mostRecent.id);
 
@@ -355,10 +368,14 @@ export default function Home() {
           if (saved) {
             const imageMap = await loadImagesFromIDB();
             if (imageMap.size > 0) {
-              saved.uploadedImages = saved.uploadedImages.map((img) => ({
-                ...img,
-                url: imageMap.get(img.id) || img.url,
-              }));
+              saved.uploadedImages = saved.uploadedImages.map((img) => {
+                const stored = imageMap.get(img.id);
+                if (!stored) return img;
+                if (typeof stored === "string") {
+                  return { ...img, url: stored };
+                }
+                return { ...img, url: stored.url, thumbnailUrl: stored.thumbnailUrl || img.thumbnailUrl };
+              });
               saved.slides = saved.slides.map((slide) => {
                 if (slide.metadata?.source === "user_upload" && slide.metadata.referenceImage) {
                   const restored = saved.uploadedImages.find(
@@ -444,7 +461,7 @@ export default function Home() {
       prevImageCountRef.current = currentImageCount;
       const imagesToSave = project.uploadedImages
         .filter(img => img.url && img.url.startsWith("data:"))
-        .map(img => ({ id: img.id, url: img.url }));
+        .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
       if (imagesToSave.length > 0) {
         saveImagesToIDB(imagesToSave).catch(() => {});
       }
@@ -465,6 +482,14 @@ export default function Home() {
           .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
         if (imgs.length > 0) {
           saveDraftImages(activeDraftId, imgs).catch(() => {});
+        }
+
+        // Save audio blob to per-draft storage
+        if (project.audioClip?.objectUrl) {
+          fetch(project.audioClip.objectUrl)
+            .then(res => res.blob())
+            .then(blob => saveDraftAudio(activeDraftId, blob, project.audioClip!.mimeType))
+            .catch(() => {});
         }
       }, 500);
     }

@@ -17,6 +17,8 @@ import {
   pruneExpiredDrafts,
   saveDraftImages,
   loadDraftImages,
+  saveDraftAudio,
+  loadDraftAudio,
 } from "./draft-storage";
 import { createEmptyProject } from "./storage";
 
@@ -101,6 +103,17 @@ export async function switchDraft(
       if (imagesToSave.length > 0) {
         await saveDraftImages(currentDraftId, imagesToSave);
       }
+
+      // Save current draft audio
+      if (currentProject.audioClip?.objectUrl) {
+        try {
+          const res = await fetch(currentProject.audioClip.objectUrl);
+          const blob = await res.blob();
+          await saveDraftAudio(currentDraftId, blob, currentProject.audioClip.mimeType);
+        } catch {
+          // Audio blob URL may have been revoked — skip silently
+        }
+      }
     }
 
     // Load target draft
@@ -134,6 +147,17 @@ export async function switchDraft(
         }
         return slide;
       });
+    }
+
+    // Restore audio from per-draft IDB
+    if (loaded.project.audioClip && !loaded.project.audioClip.objectUrl) {
+      const audioData = await loadDraftAudio(targetDraftId);
+      if (audioData) {
+        loaded.project.audioClip = {
+          ...loaded.project.audioClip,
+          objectUrl: audioData.objectUrl,
+        };
+      }
     }
 
     return {
