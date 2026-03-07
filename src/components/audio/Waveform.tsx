@@ -68,49 +68,70 @@ export function Waveform({
     return () => observer.disconnect();
   }, []);
 
-  // Compute static waveform data from audio URL
+  // Cache raw PCM channel data so we only fetch+decode once per audioUrl.
+  // Downsampling to bars is cheap and re-runs when canvasWidth changes.
+  const [rawChannelData, setRawChannelData] = useState<Float32Array | null>(null);
+  const decodedUrlRef = useRef<string | null>(null);
+
+  // Decode audio once when audioUrl changes
   useEffect(() => {
     if (!audioUrl || analyserNode) return;
 
-    const computeWaveform = async () => {
+    // Already decoded this URL
+    if (decodedUrlRef.current === audioUrl) return;
+
+    let cancelled = false;
+
+    const decode = async () => {
       let audioContext: AudioContext | null = null;
       try {
         const response = await fetch(audioUrl);
+        if (cancelled) return;
         const arrayBuffer = await response.arrayBuffer();
+        if (cancelled) return;
         audioContext = new AudioContext();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        const channelData = audioBuffer.getChannelData(0);
+        if (cancelled) return;
 
-        // Downsample to ~200 bars
-        const bars = Math.min(200, Math.floor(canvasWidth / 3));
-        if (bars <= 0) return;
-
-        const samplesPerBar = Math.floor(channelData.length / bars);
-        const data: number[] = [];
-
-        for (let i = 0; i < bars; i++) {
-          let sum = 0;
-          const start = i * samplesPerBar;
-          for (let j = start; j < start + samplesPerBar && j < channelData.length; j++) {
-            sum += Math.abs(channelData[j]);
-          }
-          data.push(sum / samplesPerBar);
-        }
-
-        // Normalize to 0-1
-        const max = Math.max(...data, 0.01);
-        setWaveformData(data.map((v) => v / max));
+        decodedUrlRef.current = audioUrl;
+        setRawChannelData(audioBuffer.getChannelData(0));
       } catch (err) {
-        console.warn("Failed to compute waveform:", err);
+        console.warn("Failed to decode audio for waveform:", err);
       } finally {
         await audioContext?.close();
       }
     };
 
-    if (canvasWidth > 0) {
-      computeWaveform();
+    // Clear stale data and start decode
+    setRawChannelData(null);
+    setWaveformData([]);
+    decodedUrlRef.current = null;
+    decode();
+    return () => { cancelled = true; };
+  }, [audioUrl, analyserNode]);
+
+  // Downsample raw PCM to bars whenever canvasWidth or rawChannelData changes
+  useEffect(() => {
+    if (analyserNode || !rawChannelData || canvasWidth <= 0) return;
+
+    const bars = Math.min(200, Math.floor(canvasWidth / 3));
+    if (bars <= 0) return;
+
+    const samplesPerBar = Math.floor(rawChannelData.length / bars);
+    const data: number[] = [];
+
+    for (let i = 0; i < bars; i++) {
+      let sum = 0;
+      const start = i * samplesPerBar;
+      for (let j = start; j < start + samplesPerBar && j < rawChannelData.length; j++) {
+        sum += Math.abs(rawChannelData[j]);
+      }
+      data.push(sum / samplesPerBar);
     }
-  }, [audioUrl, analyserNode, canvasWidth]);
+
+    const max = Math.max(...data, 0.01);
+    setWaveformData(data.map((v) => v / max));
+  }, [rawChannelData, canvasWidth, analyserNode]);
 
   // Live waveform rendering
   useEffect(() => {

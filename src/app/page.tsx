@@ -472,7 +472,7 @@ export default function Home() {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
       autoSaveTimerRef.current = setTimeout(() => {
         const name = project.projectName || loadProjectName() || "Untitled Project";
-        saveDraft(activeDraftId, project, step, name).catch(() => {
+        saveDraft(activeDraftId, { ...project, projectName: name }, step, name).catch(() => {
           toast.warning("Auto-save failed. Your work is safe in memory but may not persist if you close the tab.");
         });
 
@@ -652,9 +652,11 @@ export default function Home() {
     if (generationIdRef.current !== thisGenId) return;
 
     if (!result || !result.success) {
-      toast.error("Generation failed", {
-        description: result?.error ?? "Server returned an empty response. Check your API key and try again.",
-      });
+      const errorDesc = result?.error
+        ?? (project.uploadedImages.length === 0
+          ? "No images found. Please upload images first."
+          : "Server returned an empty response. Please try again.");
+      toast.error("Generation failed", { description: errorDesc });
       return;
     }
 
@@ -927,11 +929,19 @@ export default function Home() {
       return;
     }
 
-    setProject(result.project!);
+    // Revoke old audio blob URL to prevent memory leak
+    if (project.audioClip?.objectUrl) {
+      URL.revokeObjectURL(project.audioClip.objectUrl);
+    }
+
+    // Merge draft name into project and update localStorage
+    const loadedName = result.name || "Untitled Project";
+    setProject({ ...result.project!, projectName: loadedName });
     setActiveDraftId(targetDraftId);
+    saveProjectName(loadedName);
     const targetStep = result.step as Step;
     setStep(targetStep);
-    logActivity("draft_switched", `Switched to "${result.name}"`, targetDraftId, result.name);
+    logActivity("draft_switched", `Switched to "${loadedName}"`, targetDraftId, loadedName);
 
     // Refresh draft list
     const drafts = await listDraftMetadata();
@@ -1007,6 +1017,22 @@ export default function Home() {
     setAppMode("create");
   }, [activeDraftId, handleSwitchDraft]);
 
+  // -- Save button callback (updates project state + draft system) --
+  const handleSaveButtonSave = useCallback(async (name: string) => {
+    setProject((prev) => ({ ...prev, projectName: name }));
+    if (activeDraftId) {
+      await saveDraft(activeDraftId, { ...project, projectName: name }, step, name).catch(() => {});
+      const imgs = project.uploadedImages
+        .filter(img => img.url && img.url.startsWith("data:"))
+        .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
+      if (imgs.length > 0) {
+        saveDraftImages(activeDraftId, imgs).catch(() => {});
+      }
+      const drafts = await listDraftMetadata();
+      setDraftList(drafts);
+    }
+  }, [activeDraftId, project, step]);
+
   // -- Keyboard shortcuts --
   const handleSaveShortcut = useCallback(async () => {
     if (step === "configure" || step === "edit") {
@@ -1016,7 +1042,7 @@ export default function Home() {
 
       // Also save to draft system for persistence in draft list
       if (activeDraftId) {
-        await saveDraft(activeDraftId, project, step, name).catch(() => {});
+        await saveDraft(activeDraftId, { ...project, projectName: name }, step, name).catch(() => {});
         const imgs = project.uploadedImages
           .filter(img => img.url && img.url.startsWith("data:"))
           .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
@@ -1121,7 +1147,7 @@ export default function Home() {
                 </span>
               )}
               <motion.div whileTap={buttonTapScale}>
-                <SaveProjectButton project={project} />
+                <SaveProjectButton project={project} onSave={handleSaveButtonSave} />
               </motion.div>
             </div>
           )}

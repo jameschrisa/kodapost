@@ -18,9 +18,10 @@ import type { CarouselProject } from "@/lib/types";
 
 interface SaveProjectButtonProps {
   project: CarouselProject;
+  onSave?: (name: string) => void;
 }
 
-export function SaveProjectButton({ project }: SaveProjectButtonProps) {
+export function SaveProjectButton({ project, onSave }: SaveProjectButtonProps) {
   const [showNameInput, setShowNameInput] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [isSaved, setIsSaved] = useState(false);
@@ -43,13 +44,16 @@ export function SaveProjectButton({ project }: SaveProjectButtonProps) {
     setShowNameInput(false);
     setIsSaved(true);
 
+    // Notify parent so it can update project state and draft system
+    onSave?.(name);
+
     toast.success(`Project saved`, {
       description: `"${name}" has been saved.`,
     });
 
     // Reset saved indicator after 2s
     setTimeout(() => setIsSaved(false), 2000);
-  }, [project, projectName]);
+  }, [project, projectName, onSave]);
 
   const handleClick = useCallback(() => {
     if (projectName.trim()) {
