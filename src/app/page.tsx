@@ -1061,6 +1061,12 @@ export default function Home() {
   }, [activeDraftId, project, step]);
 
   const handleDeleteDraft = useCallback(async (draftId: string) => {
+    // Cancel pending auto-save before deleting to prevent race condition
+    if (draftId === activeDraftId && autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
+
     const draftMeta = draftList.find((d) => d.id === draftId);
     await deleteDraft(draftId);
     logActivity("draft_discarded", `Deleted "${draftMeta?.name || "Untitled"}"`, draftId, draftMeta?.name);
@@ -1069,11 +1075,6 @@ export default function Home() {
     setDraftList(drafts);
 
     if (draftId === activeDraftId) {
-      // Cancel pending auto-save for the deleted draft
-      if (autoSaveTimerRef.current) {
-        clearTimeout(autoSaveTimerRef.current);
-        autoSaveTimerRef.current = null;
-      }
 
       // Deleted the active draft — load next available or start fresh
       const remaining = drafts.filter((d) => d.id !== draftId);
