@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface WaveformProps {
@@ -51,21 +51,40 @@ export function Waveform({
   const [isDragging, setIsDragging] = useState<"start" | "end" | null>(null);
   const [canvasWidth, setCanvasWidth] = useState(0);
 
-  // Resize observer for responsive canvas
-  useEffect(() => {
+  // Resize observer for responsive canvas — use useLayoutEffect for immediate
+  // initial measurement before paint, avoiding a 0-width first frame
+  useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    const updateWidth = () => {
+      const w = Math.floor(container.clientWidth);
+      if (w > 0) setCanvasWidth(w);
+    };
+
+    // Read initial width synchronously
+    updateWidth();
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setCanvasWidth(Math.floor(entry.contentRect.width));
+        const w = Math.floor(entry.contentRect.width);
+        if (w > 0) setCanvasWidth(w);
       }
     });
 
     observer.observe(container);
-    setCanvasWidth(Math.floor(container.clientWidth));
 
-    return () => observer.disconnect();
+    // Retry width measurement after a short delay — handles the case where
+    // the component mounts inside an AnimatePresence animation (height: 0)
+    // and clientWidth is momentarily 0
+    const retryTimer = setTimeout(updateWidth, 100);
+    const retryTimer2 = setTimeout(updateWidth, 300);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(retryTimer);
+      clearTimeout(retryTimer2);
+    };
   }, []);
 
   // Cache raw PCM channel data so we only fetch+decode once per audioUrl.
@@ -78,7 +97,7 @@ export function Waveform({
     if (!audioUrl || analyserNode) return;
 
     // Already decoded this URL
-    if (decodedUrlRef.current === audioUrl) return;
+    if (decodedUrlRef.current === audioUrl && rawChannelData) return;
 
     let cancelled = false;
 
@@ -87,18 +106,30 @@ export function Waveform({
       try {
         const response = await fetch(audioUrl);
         if (cancelled) return;
+        if (!response.ok) {
+          console.warn("[Waveform] Fetch failed:", response.status, audioUrl.slice(0, 50));
+          return;
+        }
         const arrayBuffer = await response.arrayBuffer();
         if (cancelled) return;
+        if (arrayBuffer.byteLength === 0) {
+          console.warn("[Waveform] Empty audio data");
+          return;
+        }
         audioContext = new AudioContext();
+        // Resume context if suspended (required on mobile Safari)
+        if (audioContext.state === "suspended") {
+          await audioContext.resume();
+        }
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         if (cancelled) return;
 
         decodedUrlRef.current = audioUrl;
         setRawChannelData(audioBuffer.getChannelData(0));
       } catch (err) {
-        console.warn("Failed to decode audio for waveform:", err);
+        console.warn("[Waveform] Failed to decode audio:", err);
       } finally {
-        await audioContext?.close();
+        await audioContext?.close().catch(() => {});
       }
     };
 
@@ -108,7 +139,7 @@ export function Waveform({
     decodedUrlRef.current = null;
     decode();
     return () => { cancelled = true; };
-  }, [audioUrl, analyserNode]);
+  }, [audioUrl, analyserNode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Downsample raw PCM to bars whenever canvasWidth or rawChannelData changes
   useEffect(() => {
@@ -118,6 +149,7 @@ export function Waveform({
     if (bars <= 0) return;
 
     const samplesPerBar = Math.floor(rawChannelData.length / bars);
+    if (samplesPerBar <= 0) return;
     const data: number[] = [];
 
     for (let i = 0; i < bars; i++) {
@@ -135,7 +167,7 @@ export function Waveform({
 
   // Live waveform rendering
   useEffect(() => {
-    if (!analyserNode || !canvasRef.current) return;
+    if (!analyserNode || !canvasRef.current || canvasWidth <= 0) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -173,7 +205,7 @@ export function Waveform({
 
   // Static waveform rendering
   useEffect(() => {
-    if (analyserNode || waveformData.length === 0 || !canvasRef.current) return;
+    if (analyserNode || waveformData.length === 0 || !canvasRef.current || canvasWidth <= 0) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -275,7 +307,7 @@ export function Waveform({
     >
       <canvas
         ref={canvasRef}
-        width={canvasWidth}
+        width={canvasWidth || 300}
         height={height}
         className="w-full"
         style={{ height }}
