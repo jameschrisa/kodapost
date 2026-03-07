@@ -807,6 +807,8 @@ export async function compositeSlideImages(
 ): Promise<ActionResult<CompositeResult[]>> {
   await requireAuth();
   try {
+    const compositeStart = Date.now();
+    console.log(`[Export] compositeSlideImages called: ${slides.length} slides, platforms: ${platforms.join(",")}`);
     const results: CompositeResult[] = [];
     const warnings: string[] = [];
 
@@ -816,10 +818,14 @@ export async function compositeSlideImages(
 
       const spec = PLATFORM_IMAGE_SPECS[specKey];
       const format = spec.format === "PNG" ? "png" : "jpeg";
+      // Use lower JPEG quality for large 9:16 images to reduce response payload size
+      const effectiveQuality = (spec.width >= 1080 && spec.height >= 1920) ? Math.min(spec.quality, 80) : spec.quality;
 
-      // Enforce per-platform max image limit
+      // Enforce per-platform max image limit (hard cap at 10)
       const rules = PLATFORM_RULES[platform as keyof typeof PLATFORM_RULES];
-      const maxImages = rules?.maxCarouselImages ?? slides.length;
+      const maxImages = Math.min(rules?.maxCarouselImages ?? 10, 10);
+
+      console.log(`[Export] Platform ${platform}: ${spec.width}x${spec.height} ${format} q${effectiveQuality}, maxImages=${maxImages}`);
 
       for (let i = 0; i < slides.length; i++) {
         if (i >= maxImages) {
@@ -975,8 +981,9 @@ export async function compositeSlideImages(
           if (format === "png") {
             outputBuffer = await pipeline.png({ compressionLevel: 6 }).toBuffer();
           } else {
-            outputBuffer = await pipeline.jpeg({ quality: spec.quality }).toBuffer();
+            outputBuffer = await pipeline.jpeg({ quality: effectiveQuality }).toBuffer();
           }
+          console.log(`[Export] Slide ${i + 1}/${slides.length} for ${platform}: ${(outputBuffer.length / 1024).toFixed(0)}KB encoded`);
 
           // 6. Embed provenance metadata and compute hashes
           let imageHash: string | undefined;
@@ -999,7 +1006,7 @@ export async function compositeSlideImages(
                 );
                 outputBuffer = await sharp(outputBuffer)
                   .withMetadata({ exif: { IFD0: exifData } })
-                  .jpeg({ quality: spec.quality })
+                  .jpeg({ quality: effectiveQuality })
                   .toBuffer();
               } catch (exifErr) {
                 console.warn(`[Export] EXIF embedding failed for slide ${i + 1}:`, exifErr);
@@ -1046,6 +1053,9 @@ export async function compositeSlideImages(
         }
       }
     }
+
+    const totalPayloadKB = results.reduce((sum, r) => sum + r.imageBase64.length * 0.75, 0) / 1024;
+    console.log(`[Export] Composite complete: ${results.length} images, ~${totalPayloadKB.toFixed(0)}KB total payload, ${Date.now() - compositeStart}ms elapsed`);
 
     if (results.length === 0) {
       const platformList = platforms.join(", ");

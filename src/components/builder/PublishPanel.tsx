@@ -276,25 +276,41 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             logoScale: brandWatermark?.scale ?? 0.15,
           } as const
         : undefined;
-      // Batch compositing: process 2 slides per call to stay within response limits
-      const BATCH_SIZE = 2;
+      // Batch compositing: use batch size of 1 for 9:16 to stay under response limits
+      const platformSpec = PLATFORM_IMAGE_SPECS[PLATFORMS.find(p => p.key === platform)?.specKey ?? "instagram_feed"];
+      const BATCH_SIZE = (platformSpec && platformSpec.height >= 1920) ? 1 : 2;
+      console.log(`[Publish] Starting publish: ${readySlides.length} slides for ${platform}, batchSize=${BATCH_SIZE}`);
       const allData: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
       const allWarnings: string[] = [];
 
-      // Enforce per-platform max carousel images client-side
+      // Enforce per-platform max carousel images client-side (hard cap at 10)
       const rules = PLATFORM_RULES[platform as PlatformRulesKey];
-      const maxImages = rules?.maxCarouselImages ?? readySlides.length;
+      const maxImages = Math.min(rules?.maxCarouselImages ?? 10, 10);
       const platformSlides = readySlides.slice(0, maxImages);
 
       for (let batchStart = 0; batchStart < platformSlides.length; batchStart += BATCH_SIZE) {
         const batch = platformSlides.slice(batchStart, batchStart + BATCH_SIZE);
-        const batchResult = await compositeSlideImages(batch, [platform], project.filterConfig, provenanceConfig);
+        console.log(`[Publish] Processing batch ${batchStart / BATCH_SIZE + 1}: slides ${batchStart + 1}-${batchStart + batch.length}`);
+        const batchStartTime = Date.now();
+        const batchResult = await Promise.race([
+          compositeSlideImages(batch, [platform], project.filterConfig, provenanceConfig),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 55_000)),
+        ]);
+        const batchElapsed = Date.now() - batchStartTime;
+        console.log(`[Publish] Batch completed in ${batchElapsed}ms, result: ${batchResult ? (batchResult.success ? "success" : "error") : "empty"}`);
 
         if (!batchResult) {
-          toast.error("Post failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
+          const isTimeout = batchElapsed >= 54_000;
+          console.error(`[Publish] ${isTimeout ? "Timeout" : "Empty response"} for batch starting at slide ${batchStart + 1} (${batchElapsed}ms)`);
+          toast.error("Post failed", {
+            description: isTimeout
+              ? "Processing timed out. Try disabling filters or watermarks, or use fewer slides."
+              : "Server returned an empty response. Your slides may be too large. Try fewer or smaller images.",
+          });
           return;
         }
         if (!batchResult.success) {
+          console.error(`[Publish] Batch error: ${batchResult.error}`);
           toast.error("Post failed", { description: batchResult.error });
           return;
         }
@@ -408,19 +424,24 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
             logoScale: brandWatermark?.scale ?? 0.15,
           } as const
         : undefined;
-      // Batch compositing: process 2 slides per platform per server call.
-      // Iterate per-platform to stay within Vercel's 6MB response limit
-      // (2 slides × 1 platform ≈ 0.5-1.5MB, well under the limit).
-      const BATCH_SIZE = 2;
+      // Batch compositing: process slides per platform per server call.
+      // Use batch size of 1 for 9:16 (TikTok/Shorts) to stay under Vercel's ~6MB response limit.
+      // For smaller aspect ratios, batch 2 at a time.
+      const is916 = platforms.some(p => {
+        const spec = PLATFORM_IMAGE_SPECS[PLATFORMS.find(pp => pp.key === p)?.specKey ?? "instagram_feed"];
+        return spec && spec.height >= 1920;
+      });
+      const BATCH_SIZE = is916 ? 1 : 2;
+      console.log(`[Export] Starting export: ${readySlides.length} slides, ${platforms.length} platforms, batchSize=${BATCH_SIZE}`);
       const allResults: { platform: string; slideIndex: number; imageBase64: string; format: "jpeg" | "png"; imageHash?: string; perceptualHash?: string }[] = [];
       const allWarnings: string[] = [];
 
       for (const platform of platforms) {
         if (cancelExportRef.current) return;
 
-        // Enforce per-platform max carousel images client-side
+        // Enforce per-platform max carousel images client-side (hard cap at 10)
         const rules = PLATFORM_RULES[platform as PlatformRulesKey];
-        const maxImages = rules?.maxCarouselImages ?? readySlides.length;
+        const maxImages = Math.min(rules?.maxCarouselImages ?? 10, 10);
         const platformSlides = readySlides.slice(0, maxImages);
         if (platformSlides.length < readySlides.length) {
           allWarnings.push(`${platform}: limited to ${maxImages} images per platform rules`);
@@ -430,13 +451,27 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
           if (cancelExportRef.current) return;
 
           const batch = platformSlides.slice(batchStart, batchStart + BATCH_SIZE);
-          const batchResult = await compositeSlideImages(batch, [platform], project.filterConfig, provenanceConfig);
+          console.log(`[Export] ${platform}: processing batch ${batchStart / BATCH_SIZE + 1}, slides ${batchStart + 1}-${batchStart + batch.length}`);
+          const batchStartTime = Date.now();
+          const batchResult = await Promise.race([
+            compositeSlideImages(batch, [platform], project.filterConfig, provenanceConfig),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 55_000)),
+          ]);
+          const batchElapsed = Date.now() - batchStartTime;
+          console.log(`[Export] ${platform}: batch completed in ${batchElapsed}ms, result: ${batchResult ? (batchResult.success ? "success" : "error") : "empty"}`);
 
           if (!batchResult) {
-            toast.error("Export failed", { description: "Server returned an empty response. Your slides may be too large. Try fewer or smaller images." });
+            const isTimeout = batchElapsed >= 54_000;
+            console.error(`[Export] ${platform}: ${isTimeout ? "timeout" : "empty response"} for batch at slide ${batchStart + 1} (${batchElapsed}ms)`);
+            toast.error("Export failed", {
+              description: isTimeout
+                ? "Processing timed out. Try disabling filters or watermarks, or use fewer slides."
+                : "Server returned an empty response. Your slides may be too large. Try fewer or smaller images.",
+            });
             return;
           }
           if (!batchResult.success) {
+            console.error(`[Export] ${platform}: batch error: ${batchResult.error}`);
             toast.error("Export failed", { description: batchResult.error });
             return;
           }

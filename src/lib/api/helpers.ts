@@ -157,13 +157,13 @@ export function validateGenerateConfig(raw: unknown): {
     }
   }
 
-  // Optional: slideCount (2-12)
+  // Optional: slideCount (2-10)
   if (c.slideCount !== undefined) {
     const sc = Number(c.slideCount);
-    if (!Number.isInteger(sc) || sc < 2 || sc > 12) {
+    if (!Number.isInteger(sc) || sc < 2 || sc > 10) {
       errors.push({
         field: "slideCount",
-        message: "slideCount must be an integer between 2 and 12",
+        message: "slideCount must be an integer between 2 and 10",
       });
     }
   }

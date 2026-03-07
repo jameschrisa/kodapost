@@ -14,7 +14,7 @@ export function SlideCountSelector({
   value,
   onChange,
   min = 2,
-  max = 12,
+  max = 10,
 }: SlideCountSelectorProps) {
   const counts = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 

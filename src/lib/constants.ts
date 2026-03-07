@@ -56,7 +56,7 @@ export const PLATFORM_LIMITS = {
 
 export const PLATFORM_RULES = {
   instagram: {
-    maxCarouselImages: 20,
+    maxCarouselImages: 10,
     minCarouselImages: 2,
     supportsCarousel: true,
     carouselType: "native_swipe" as const,
@@ -79,7 +79,7 @@ export const PLATFORM_RULES = {
     ],
   },
   tiktok: {
-    maxCarouselImages: 35,
+    maxCarouselImages: 10,
     minCarouselImages: 2,
     supportsCarousel: true,
     carouselType: "photo_mode" as const,
@@ -88,7 +88,7 @@ export const PLATFORM_RULES = {
     hashtagMax: 100,
     hashtagOptimal: { min: 3, max: 5 },
     requirements: [
-      "Photo Mode supports 2–35 images per carousel",
+      "Photo Mode supports 2–10 images per carousel",
       "Supported ratios: 9:16 (recommended), 4:5, 1:1",
       "All images should use the same aspect ratio",
       "Total carousel upload limit: 500 MB (JPEG, PNG)",
@@ -102,7 +102,7 @@ export const PLATFORM_RULES = {
     ],
   },
   linkedin: {
-    maxCarouselImages: 300,
+    maxCarouselImages: 10,
     minCarouselImages: 2,
     supportsCarousel: true,
     carouselType: "pdf_document" as const,
@@ -113,7 +113,7 @@ export const PLATFORM_RULES = {
     requirements: [
       "Carousels are uploaded as PDF documents (max 100 MB)",
       "Supports PDF, PPTX, DOCX formats",
-      "Maximum 300 pages; recommend 5–20 slides",
+      "Maximum 10 slides per carousel",
       "Minimum 24pt headers, 18pt body text for mobile readability",
     ],
     bestPractices: [

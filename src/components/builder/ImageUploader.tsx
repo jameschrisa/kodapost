@@ -212,10 +212,10 @@ export function ImageUploader({
     }
   }, [images.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep slide count in sync with uploaded image count (clamped to 2-12)
+  // Keep slide count in sync with uploaded image count (clamped to 2-10)
   useEffect(() => {
     if (postMode === "carousel" && images.length >= 2) {
-      const clamped = Math.max(2, Math.min(12, images.length));
+      const clamped = Math.max(2, Math.min(10, images.length));
       if (clamped !== slideCount) {
         onSlideCountChange?.(clamped);
       }

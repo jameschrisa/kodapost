@@ -576,7 +576,7 @@ export default function Home() {
         ...prev,
         uploadedImages: images,
         postMode: isSingle ? "single" : prev.postMode,
-        slideCount: isSingle ? 1 : Math.max(2, Math.min(12, images.length)),
+        slideCount: isSingle ? 1 : Math.max(2, Math.min(10, images.length)),
       }));
 
       // Auto-create a draft if none exists so the project persists in the draft list
