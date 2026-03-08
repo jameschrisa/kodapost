@@ -236,6 +236,33 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
 
   const readySlides = project.slides.filter((s) => s.status === "ready");
 
+  // Restore missing image URLs from uploadedImages before export.
+  // Slides can lose their imageUrl after undo/redo, cold resume, or draft restore.
+  const restoreSlideImageUrls = useCallback((slides: typeof readySlides) => {
+    let restoredCount = 0;
+    const restored = slides.map(slide => {
+      // Already has valid data URI or HTTP URL
+      if (slide.imageUrl?.startsWith("data:") || slide.imageUrl?.startsWith("http")) return slide;
+      // Try to restore from project's uploaded images
+      if (slide.metadata?.referenceImage) {
+        const uploaded = project.uploadedImages.find(img => img.id === slide.metadata!.referenceImage);
+        if (uploaded?.url && (uploaded.url.startsWith("data:") || uploaded.url.startsWith("http"))) {
+          restoredCount++;
+          return { ...slide, imageUrl: uploaded.url };
+        }
+      }
+      return slide;
+    });
+    if (restoredCount > 0) {
+      console.log(`[Export] Restored ${restoredCount} missing slide image URLs from uploaded images`);
+    }
+    const missing = restored.filter(s => !s.imageUrl || s.imageUrl.startsWith("blob:"));
+    if (missing.length > 0) {
+      console.warn(`[Export] ${missing.length} slide(s) still have no valid image data after restoration`);
+    }
+    return restored;
+  }, [project.uploadedImages]);
+
   function togglePlatform(platform: Platform) {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -293,7 +320,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       // Enforce per-platform max carousel images client-side (hard cap at 10)
       const rules = PLATFORM_RULES[platform as PlatformRulesKey];
       const maxImages = Math.min(rules?.maxCarouselImages ?? 10, 10);
-      const platformSlides = readySlides.slice(0, maxImages);
+      const platformSlides = restoreSlideImageUrls(readySlides.slice(0, maxImages));
 
       for (let batchStart = 0; batchStart < platformSlides.length; batchStart += BATCH_SIZE) {
         const batch = platformSlides.slice(batchStart, batchStart + BATCH_SIZE);
@@ -459,7 +486,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
         // Enforce per-platform max carousel images client-side (hard cap at 10)
         const rules = PLATFORM_RULES[platform as PlatformRulesKey];
         const maxImages = Math.min(rules?.maxCarouselImages ?? 10, 10);
-        const platformSlides = readySlides.slice(0, maxImages);
+        const platformSlides = restoreSlideImageUrls(readySlides.slice(0, maxImages));
         if (platformSlides.length < readySlides.length) {
           allWarnings.push(`${platform}: limited to ${maxImages} images per platform rules`);
         }

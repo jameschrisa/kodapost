@@ -129,10 +129,31 @@ export function CarouselPreview({
   const handleRetrySlide = useCallback(async (slideIndex: number) => {
     setRetryingSlides((prev) => new Set(prev).add(slideIndex));
     try {
-      const result = await regenerateSlide(project, slideIndex);
+      // Strip base64 image data to avoid exceeding Vercel's request size limit.
+      // regenerateSlide only generates text overlays, not images.
+      const lightProject: CarouselProject = {
+        ...project,
+        uploadedImages: project.uploadedImages.map(img => ({
+          ...img,
+          url: "",
+          thumbnailUrl: undefined,
+        })),
+        slides: project.slides.map(s => ({
+          ...s,
+          imageUrl: s.imageUrl?.startsWith("data:") ? "" : s.imageUrl,
+          thumbnailUrl: undefined,
+        })),
+      };
+      const result = await regenerateSlide(lightProject, slideIndex);
       if (result.success) {
         const updatedSlides = [...project.slides];
-        updatedSlides[slideIndex] = result.data;
+        // Restore image URL from original project since server copy was stripped
+        const originalSlide = project.slides[slideIndex];
+        updatedSlides[slideIndex] = {
+          ...result.data,
+          imageUrl: originalSlide?.imageUrl || result.data.imageUrl,
+          thumbnailUrl: originalSlide?.thumbnailUrl || result.data.thumbnailUrl,
+        };
         onEdit({ ...project, slides: updatedSlides });
         toast.success(`Slide ${slideIndex + 1} regenerated`);
       } else {
@@ -160,14 +181,35 @@ export function CarouselPreview({
     setRetryingSlides(new Set(failedIndices));
     let successCount = 0;
 
+    // Strip base64 image data to avoid exceeding Vercel's request size limit
+    const lightProject: CarouselProject = {
+      ...project,
+      uploadedImages: project.uploadedImages.map(img => ({
+        ...img,
+        url: "",
+        thumbnailUrl: undefined,
+      })),
+      slides: project.slides.map(s => ({
+        ...s,
+        imageUrl: s.imageUrl?.startsWith("data:") ? "" : s.imageUrl,
+        thumbnailUrl: undefined,
+      })),
+    };
+
     // Accumulate all updates into a single slides array to avoid stale closure
     const updatedSlides = [...project.slides];
 
     for (const idx of failedIndices) {
       try {
-        const result = await regenerateSlide(project, idx);
+        const result = await regenerateSlide(lightProject, idx);
         if (result.success) {
-          updatedSlides[idx] = result.data;
+          // Restore image URL from original project
+          const originalSlide = project.slides[idx];
+          updatedSlides[idx] = {
+            ...result.data,
+            imageUrl: originalSlide?.imageUrl || result.data.imageUrl,
+            thumbnailUrl: originalSlide?.thumbnailUrl || result.data.thumbnailUrl,
+          };
           successCount++;
         }
       } catch {

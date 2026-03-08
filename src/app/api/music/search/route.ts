@@ -281,6 +281,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // If no tracks found from any source, check if it's a configuration issue
+    if (tracks.length === 0) {
+      const jamendoConfigured = !!process.env.JAMENDO_CLIENT_ID;
+      const allSourcesFailed = results.every(r => r.status === "rejected" || (r.status === "fulfilled" && r.value.length === 0));
+      if (!jamendoConfigured && allSourcesFailed) {
+        console.warn("[Music Search] No music sources are properly configured");
+        return NextResponse.json({
+          tracks,
+          source,
+          warning: "Music search services are currently unavailable. Please try again later.",
+        });
+      }
+    }
+
     return NextResponse.json({ tracks, source });
   } catch (error) {
     console.error("[Music Search] Unexpected error:", error instanceof Error ? error.message : "unknown");

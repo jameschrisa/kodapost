@@ -893,11 +893,17 @@ export async function compositeSlideImages(
             } else if (slide.imageUrl.startsWith("blob:")) {
               // Blob URLs are client-side only and cannot be resolved server-side.
               // This means the slide image was not converted to a data URI before export.
-              console.warn(`[Export] Skipping slide ${i + 1}: blob URL cannot be resolved server-side`);
-              warnings.push(`Slide ${i + 1} has a temporary image URL. Please re-upload or regenerate.`);
+              console.warn(`[Export] Skipping slide ${i + 1}: blob URL cannot be resolved server-side. The client should convert blob URLs to data URIs before export.`);
+              warnings.push(`Slide ${i + 1} has a temporary image URL that expired. Please re-upload this image.`);
+              continue;
+            } else if (slide.imageUrl === "") {
+              // Empty string means image data was stripped (e.g. after generation)
+              // and not restored by the client before export.
+              console.warn(`[Export] Skipping slide ${i + 1}: imageUrl is empty (image data not restored after generation or lost from draft storage)`);
+              warnings.push(`Slide ${i + 1} image data is missing. Please re-upload this image.`);
               continue;
             } else {
-              console.warn(`[Export] Skipping slide ${i + 1}: unrecognized URL scheme`);
+              console.warn(`[Export] Skipping slide ${i + 1}: unrecognized URL scheme "${slide.imageUrl.slice(0, 20)}..."`);
               continue;
             }
 

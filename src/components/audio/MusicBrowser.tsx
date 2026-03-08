@@ -160,6 +160,9 @@ export function MusicBrowser({
         }
 
         const data = await res.json();
+        if (data.warning) {
+          setError(data.warning);
+        }
         setResults(data.tracks ?? data.results ?? data ?? []);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;

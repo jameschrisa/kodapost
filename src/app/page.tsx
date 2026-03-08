@@ -485,7 +485,9 @@ export default function Home() {
         .filter(img => img.url && img.url.startsWith("data:"))
         .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
       if (imagesToSave.length > 0) {
-        saveImagesToIDB(imagesToSave).catch(() => {});
+        saveImagesToIDB(imagesToSave).catch((err) => {
+          console.warn("[auto-save] Legacy IDB image save failed:", err);
+        });
       }
     }
 
@@ -503,7 +505,10 @@ export default function Home() {
           .filter(img => img.url && img.url.startsWith("data:"))
           .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
         if (imgs.length > 0) {
-          saveDraftImages(activeDraftId, imgs).catch(() => {});
+          saveDraftImages(activeDraftId, imgs).catch((err) => {
+            console.warn("[auto-save] Draft image save failed:", err);
+            toast.warning("Image save failed. Re-upload images if you close this tab.", { id: "idb-save-warn" });
+          });
         }
 
         // Save audio blob to per-draft storage
@@ -1151,7 +1156,10 @@ export default function Home() {
         .filter(img => img.url && img.url.startsWith("data:"))
         .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
       if (imgs.length > 0) {
-        saveDraftImages(activeDraftId, imgs).catch(() => {});
+        saveDraftImages(activeDraftId, imgs).catch((err) => {
+          console.warn("[save] Draft image save failed:", err);
+          toast.warning("Image save failed. Re-upload images if you close this tab.", { id: "idb-save-warn" });
+        });
       }
       const drafts = await listDraftMetadata();
       setDraftList(drafts);
@@ -1172,7 +1180,10 @@ export default function Home() {
           .filter(img => img.url && img.url.startsWith("data:"))
           .map(img => ({ id: img.id, url: img.url, thumbnailUrl: img.thumbnailUrl }));
         if (imgs.length > 0) {
-          saveDraftImages(activeDraftId, imgs).catch(() => {});
+          saveDraftImages(activeDraftId, imgs).catch((err) => {
+            console.warn("[save] Draft image save failed:", err);
+            toast.warning("Image save failed. Re-upload images if you close this tab.", { id: "idb-save-warn" });
+          });
         }
         const drafts = await listDraftMetadata();
         setDraftList(drafts);
