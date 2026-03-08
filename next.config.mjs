@@ -32,7 +32,7 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://js.stripe.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://challenges.cloudflare.com https://*.clerk.accounts.dev https://js.stripe.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' blob: data: https://*.clerk.com https://*.clerk.accounts.dev https://img.clerk.com https://*.stripe.com https://*.audius.co https://*.jamendo.com https://api.dicebear.com",
               "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://api.stripe.com https://unpkg.com https://*.audius.co https://api.jamendo.com https://*.anthropic.com https://*.vercel-insights.com wss://*.clerk.accounts.dev",

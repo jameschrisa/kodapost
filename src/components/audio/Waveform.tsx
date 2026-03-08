@@ -74,16 +74,15 @@ export function Waveform({
 
     observer.observe(container);
 
-    // Retry width measurement after a short delay — handles the case where
+    // Retry width measurement after delays — handles the case where
     // the component mounts inside an AnimatePresence animation (height: 0)
-    // and clientWidth is momentarily 0
-    const retryTimer = setTimeout(updateWidth, 100);
-    const retryTimer2 = setTimeout(updateWidth, 300);
+    // and clientWidth is momentarily 0. Multiple retries cover various
+    // animation durations.
+    const retryTimers = [100, 300, 500, 1000].map(ms => setTimeout(updateWidth, ms));
 
     return () => {
       observer.disconnect();
-      clearTimeout(retryTimer);
-      clearTimeout(retryTimer2);
+      retryTimers.forEach(clearTimeout);
     };
   }, []);
 
@@ -104,6 +103,7 @@ export function Waveform({
     const decode = async () => {
       let audioContext: AudioContext | null = null;
       try {
+        console.log("[Waveform] Fetching audio from:", audioUrl.slice(0, 60));
         const response = await fetch(audioUrl);
         if (cancelled) return;
         if (!response.ok) {
@@ -116,6 +116,7 @@ export function Waveform({
           console.warn("[Waveform] Empty audio data");
           return;
         }
+        console.log("[Waveform] Decoding", arrayBuffer.byteLength, "bytes");
         audioContext = new AudioContext();
         // Resume context if suspended (required on mobile Safari)
         if (audioContext.state === "suspended") {
@@ -124,6 +125,7 @@ export function Waveform({
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         if (cancelled) return;
 
+        console.log("[Waveform] Decoded:", audioBuffer.duration.toFixed(1), "s,", audioBuffer.numberOfChannels, "ch,", audioBuffer.length, "samples");
         decodedUrlRef.current = audioUrl;
         setRawChannelData(audioBuffer.getChannelData(0));
       } catch (err) {

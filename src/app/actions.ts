@@ -12,6 +12,8 @@ import type {
 } from "@/lib/types";
 import { LANGUAGE_NAMES } from "@/i18n/types";
 import { generateOverlaySVG } from "@/lib/svg-overlay";
+import { buildEmbeddedFontStyles, type FontRequest } from "@/lib/font-embed";
+import { resolveFontOption } from "@/lib/constants";
 import { PLATFORM_IMAGE_SPECS, PLATFORM_RULES, PLATFORM_SAFE_AREA, DEFAULT_OVERLAY_STYLING, DEFAULT_OVERLAY_PADDING, FREE_POSITION_FROM_ALIGNMENT, FREE_POSITION_X_FROM_HORIZONTAL } from "@/lib/constants";
 import {
   calculateImageSourceStrategy,
@@ -812,6 +814,40 @@ export async function compositeSlideImages(
     const results: CompositeResult[] = [];
     const warnings: string[] = [];
 
+    // Pre-fetch and embed fonts for text overlays (once for all platforms)
+    let embeddedFontStyle = "";
+    {
+      const fontRequests: FontRequest[] = [];
+      for (const slide of slides) {
+        if (slide.textOverlay?.styling?.fontFamily) {
+          const fontOpt = resolveFontOption(slide.textOverlay.styling.fontFamily);
+          if (!fontOpt) {
+            // Unknown font family -- not in FONT_OPTIONS. Log and skip embedding
+            // (SVG will use the fallback from getFontFamilyWithFallback instead).
+            console.warn(`[Export] Unknown font "${slide.textOverlay.styling.fontFamily}" -- using system fallback`);
+            warnings.push(`Font "${slide.textOverlay.styling.fontFamily}" is not available. A fallback font will be used.`);
+            continue;
+          }
+          const family = fontOpt.value;
+          const needsItalic = slide.textOverlay.styling.fontStyle === "italic";
+          fontRequests.push({ family, italic: needsItalic });
+        }
+      }
+      if (fontRequests.length > 0) {
+        const fontResult = await buildEmbeddedFontStyles(fontRequests, { detailed: true });
+        embeddedFontStyle = fontResult.styleBlock;
+        if (fontResult.embedded.length > 0) {
+          console.log(`[Export] Embedded ${fontResult.embedded.length} font(s) for SVG text overlays`);
+        }
+        if (fontResult.failed.length > 0) {
+          console.warn(`[Export] Failed to embed fonts: ${fontResult.failed.join(", ")}`);
+          for (const f of fontResult.failed) {
+            warnings.push(`Font "${f}" could not be loaded. A fallback font will be used.`);
+          }
+        }
+      }
+    }
+
     for (const platform of platforms) {
       const specKey = PLATFORM_SPEC_MAP[platform];
       if (!specKey) continue;
@@ -923,7 +959,8 @@ export async function compositeSlideImages(
               slide.textOverlay,
               spec.width,
               spec.height,
-              PLATFORM_SAFE_AREA[platform]
+              PLATFORM_SAFE_AREA[platform],
+              embeddedFontStyle || undefined
             );
             if (svgString) {
               const svgBuffer = Buffer.from(svgString);
@@ -1036,6 +1073,20 @@ export async function compositeSlideImages(
             imageHash = computeImageHash(outputBuffer);
           }
 
+          // Guard against oversized images that could blow up the response payload.
+          // PNG slides (e.g. LinkedIn PDF) can be much larger than JPEG.
+          const MAX_SINGLE_IMAGE_BYTES = 2 * 1024 * 1024; // 2MB per image
+          if (outputBuffer.length > MAX_SINGLE_IMAGE_BYTES) {
+            // Re-encode at lower quality / higher compression to shrink
+            if (format === "png") {
+              outputBuffer = await sharp(outputBuffer).png({ compressionLevel: 9 }).toBuffer();
+              console.log(`[Export] Re-compressed PNG slide ${i + 1}: ${(outputBuffer.length / 1024).toFixed(0)}KB`);
+            } else {
+              outputBuffer = await sharp(outputBuffer).jpeg({ quality: Math.max(60, effectiveQuality - 15) }).toBuffer();
+              console.log(`[Export] Re-compressed JPEG slide ${i + 1}: ${(outputBuffer.length / 1024).toFixed(0)}KB`);
+            }
+          }
+
           results.push({
             platform,
             slideIndex: i,
@@ -1049,13 +1100,20 @@ export async function compositeSlideImages(
             `[Export] Failed to composite slide ${i} for ${platform}:`,
             err
           );
-          warnings.push(`Slide ${i + 1} could not be processed for ${platform}`);
+          warnings.push(`Slide ${i + 1} could not be exported for ${platform}. It has been skipped.`);
         }
       }
     }
 
+    // Surface skipped slides prominently
+    const expectedCount = Math.min(slides.filter(s => s.status === "ready").length, 10) * platforms.length;
+    if (results.length < expectedCount) {
+      const skippedCount = expectedCount - results.length;
+      warnings.unshift(`${skippedCount} slide(s) were skipped during export. Check your images and try re-uploading any missing ones.`);
+    }
+
     const totalPayloadKB = results.reduce((sum, r) => sum + r.imageBase64.length * 0.75, 0) / 1024;
-    console.log(`[Export] Composite complete: ${results.length} images, ~${totalPayloadKB.toFixed(0)}KB total payload, ${Date.now() - compositeStart}ms elapsed`);
+    console.log(`[Export] Composite complete: ${results.length}/${expectedCount} images, ~${totalPayloadKB.toFixed(0)}KB total payload, ${Date.now() - compositeStart}ms elapsed`);
 
     if (results.length === 0) {
       const platformList = platforms.join(", ");

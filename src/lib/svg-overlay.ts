@@ -15,7 +15,9 @@ export function generateOverlaySVG(
   overlay: TextOverlay,
   width: number,
   height: number,
-  safeArea?: { top: number; right: number; bottom: number; left: number }
+  safeArea?: { top: number; right: number; bottom: number; left: number },
+  /** Pre-built SVG <style> block with embedded @font-face declarations */
+  embeddedFontStyle?: string
 ): string {
   const { content, styling, positioning } = overlay;
 
@@ -60,8 +62,9 @@ export function generateOverlaySVG(
     opacity: number = 1
   ) {
     if (styling.backgroundColor) {
-      // Estimate text width (approximate: 0.6 * fontSize * text.length)
-      const estimatedWidth = size * 0.6 * text.length;
+      // Estimate text width using per-character width factors.
+      // CJK characters are roughly full-width (1.0), Latin ~0.6.
+      const estimatedWidth = estimateTextWidth(text, size);
       const bgPad = styling.backgroundPadding ?? DEFAULT_BG_PADDING;
       const padX = bgPad.x;
       const padY = bgPad.y;
@@ -134,6 +137,7 @@ export function generateOverlaySVG(
     }
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${embeddedFontStyle ?? ""}
   ${filterDef}
   ${textElements.join("\n  ")}
 </svg>`;
@@ -194,9 +198,49 @@ export function generateOverlaySVG(
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${embeddedFontStyle ?? ""}
   ${filterDef}
   ${textElements.join("\n  ")}
 </svg>`;
+}
+
+/**
+ * Estimates rendered text width in pixels using per-character width factors.
+ * Latin characters average ~0.6em, CJK ideographs are ~1.0em (full-width),
+ * and Arabic/Devanagari average ~0.7em. This prevents undersized background
+ * rects for non-Latin scripts.
+ */
+function estimateTextWidth(text: string, fontSize: number): number {
+  let totalFactor = 0;
+  for (const char of text) {
+    const code = char.codePointAt(0) ?? 0;
+    if (
+      // CJK Unified Ideographs + Extensions
+      (code >= 0x4E00 && code <= 0x9FFF) ||
+      (code >= 0x3400 && code <= 0x4DBF) ||
+      (code >= 0x20000 && code <= 0x2A6DF) ||
+      // CJK Compatibility Ideographs
+      (code >= 0xF900 && code <= 0xFAFF) ||
+      // Katakana / Hiragana
+      (code >= 0x3040 && code <= 0x30FF) ||
+      // Fullwidth Forms
+      (code >= 0xFF01 && code <= 0xFF60) ||
+      // Hangul Syllables
+      (code >= 0xAC00 && code <= 0xD7AF)
+    ) {
+      totalFactor += 1.0; // Full-width characters
+    } else if (
+      // Arabic
+      (code >= 0x0600 && code <= 0x06FF) ||
+      // Devanagari / Thai / other Indic
+      (code >= 0x0900 && code <= 0x0E7F)
+    ) {
+      totalFactor += 0.7; // Medium-width scripts
+    } else {
+      totalFactor += 0.6; // Latin, Cyrillic, etc.
+    }
+  }
+  return fontSize * totalFactor;
 }
 
 /** Escapes special XML characters in text content */

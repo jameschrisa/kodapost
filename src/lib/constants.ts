@@ -572,9 +572,15 @@ export function resolveFontOption(fontName: string): FontOption | undefined {
  */
 export function getFontFamilyWithFallback(fontName: string): string {
   const option = resolveFontOption(fontName);
-  if (!option) return `${fontName}, sans-serif`;
+  if (!option) {
+    // Quote multi-word names for SVG font-family compatibility
+    const quoted = fontName.includes(" ") ? `'${fontName}'` : fontName;
+    return `${quoted}, sans-serif`;
+  }
   const fallback = option.category === "serif" || option.category === "display" ? "serif" : "sans-serif";
-  return `${option.value}, ${fallback}`;
+  // Quote multi-word font names so SVG/librsvg parses them correctly
+  const quoted = option.value.includes(" ") ? `'${option.value}'` : option.value;
+  return `${quoted}, ${fallback}`;
 }
 
 // -----------------------------------------------------------------------------

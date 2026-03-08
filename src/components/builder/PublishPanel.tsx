@@ -199,6 +199,7 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
   }, [videoUrl]);
 
   // Pre-select platforms from saved settings and load brand watermark config
+  // If no platforms are configured, default to Instagram so export/video works immediately
   useEffect(() => {
     const settings = loadSettings();
     const activePlatforms = settings.socialAccounts
@@ -206,12 +207,14 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       .map((a) => a.platform);
     if (activePlatforms.length > 0) {
       setSelected(new Set(activePlatforms));
+    } else if (project.targetPlatforms.length === 0 || selected.size === 0) {
+      setSelected(new Set(["instagram" as Platform]));
     }
     if (settings.brandWatermark) {
       setBrandWatermark(settings.brandWatermark);
       setWatermarkMode(settings.brandWatermark.mode);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch OAuth connection status
   const fetchConnectionStatus = useCallback(async () => {
@@ -849,6 +852,9 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       {/* Platform selection */}
       <div className="space-y-2">
         <p className="text-sm font-medium">Platforms</p>
+        <p className="text-[11px] text-muted-foreground">
+          Select platforms for image dimensions. No account connection needed to download or generate video reels.
+        </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PLATFORMS.map((platform) => {
             const isActive = selected.has(platform.key);
@@ -1035,35 +1041,33 @@ export function PublishPanel({ project, onComplete, onBack }: PublishPanelProps)
       {selected.size > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Export Mode</p>
-          <div className={cn("grid gap-3", project.audioClip?.objectUrl ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
-            {/* Video Reel — primary when audio present */}
-            {project.audioClip?.objectUrl && (
-              <button
-                type="button"
-                onClick={() => setExportMode("video")}
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+            {/* Video Reel — always available */}
+            <button
+              type="button"
+              onClick={() => setExportMode("video")}
+              className={cn(
+                "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
+                exportMode === "video"
+                  ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
+                  : "border-muted-foreground/20 hover:border-muted-foreground/40"
+              )}
+            >
+              <Film
                 className={cn(
-                  "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
+                  "h-5 w-5 shrink-0",
                   exportMode === "video"
-                    ? "border-purple-400 bg-purple-500/10 ring-1 ring-purple-400"
-                    : "border-muted-foreground/20 hover:border-muted-foreground/40"
+                    ? "text-purple-400"
+                    : "text-muted-foreground"
                 )}
-              >
-                <Film
-                  className={cn(
-                    "h-5 w-5 shrink-0",
-                    exportMode === "video"
-                      ? "text-purple-400"
-                      : "text-muted-foreground"
-                  )}
-                />
-                <div>
-                  <p className="text-sm font-medium">Video Reel</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    MP4 with slides + audio
-                  </p>
-                </div>
-              </button>
-            )}
+              />
+              <div>
+                <p className="text-sm font-medium">Video Reel</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {project.audioClip?.objectUrl ? "MP4 with slides + audio" : "MP4 slideshow video"}
+                </p>
+              </div>
+            </button>
             {/* Export Package */}
             {project.audioClip?.objectUrl && (
               <button

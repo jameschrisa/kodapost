@@ -47,3 +47,6 @@ local.db
 
 # local-only generated files (never committed)
 /local/
+
+# engineering handoff (local-only, not deployed)
+HANDOFF.md
